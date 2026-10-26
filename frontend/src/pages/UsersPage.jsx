@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useTheme } from "../context/ThemeContext";
+import TablePagination from "../components/TablePagination";
 
 const DISTRICT_OPTIONS = [
   "PALU1",
@@ -12,18 +13,60 @@ const DISTRICT_OPTIONS = [
   "BUOL",
 ];
 
-export default function UsersPage({ user: currentUser, searchValue, onSearchChange }) {
+// Helper warna avatar dinamis agar persis dengan palet referensi
+const getAvatarColor = (name = "") => {
+  const n = (name || "").trim().toLowerCase();
+  if (n.startsWith("amalia")) return "bg-[#F59E0B]"; // Amber / Oranye
+  if (n.startsWith("ahdayani")) return "bg-[#E11D48]"; // Rose / Merah muda
+  if (n.startsWith("rizky")) return "bg-[#0891B2]"; // Teal / Cyan
+  if (n.startsWith("jasmin")) return "bg-[#7C3AED]"; // Purple / Ungu
+  if (n.startsWith("niki")) return "bg-[#059669]"; // Emerald / Hijau
+  if (n.startsWith("test")) return "bg-[#1677FF]"; // Bright Blue
+
+  const colors = [
+    "bg-[#1677FF]", // Biru
+    "bg-[#0891B2]", // Cyan/Teal
+    "bg-[#F59E0B]", // Amber
+    "bg-[#E11D48]", // Rose/Pink
+    "bg-[#7C3AED]", // Ungu
+    "bg-[#059669]", // Emerald
+    "bg-[#6366F1]", // Indigo
+    "bg-[#EA580C]", // Oranye
+  ];
+  let hash = 0;
+  for (let i = 0; i < n.length; i++) {
+    hash = n.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
+};
+
+// Helper format tanggal: YYYY-MM-DD HH:mm
+const formatDateTime = (dateStr) => {
+  if (!dateStr || dateStr === "-") return "-";
+  const clean = String(dateStr).trim().replace("T", " ");
+  const match = clean.match(/^(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2})/);
+  if (match) return match[1];
+  return clean;
+};
+
+export default function UsersPage({ user: currentUser, searchValue = "", onSearchChange }) {
   const { isDark } = useTheme();
 
-  // State Data
+  // State Data Pengguna
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   const [successToast, setSuccessToast] = useState("");
 
-  // Filter State
+  // Search & Filter State
+  const [localSearch, setLocalSearch] = useState(searchValue || "");
   const [roleFilter, setRoleFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [districtFilter, setDistrictFilter] = useState("all");
+
+  // Sorting & Pagination State
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(15);
 
   // View Mode: 'list' | 'register'
   const [viewMode, setViewMode] = useState("list");
@@ -56,6 +99,13 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
   const [deleteUser, setDeleteUser] = useState(null);
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+
+  // Sync external search value
+  useEffect(() => {
+    if (searchValue !== undefined && searchValue !== localSearch) {
+      setLocalSearch(searchValue);
+    }
+  }, [searchValue]);
 
   // Toast auto-hide
   useEffect(() => {
@@ -97,24 +147,92 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
     fetchUsers();
   }, []);
 
+  // District options gabungan default dan data dari server
+  const districtOptions = useMemo(() => {
+    const set = new Set(DISTRICT_OPTIONS);
+    users.forEach((u) => {
+      if (u.district && u.district.trim() && u.district !== "-") {
+        set.add(u.district.trim());
+      }
+    });
+    return Array.from(set).sort();
+  }, [users]);
+
+  // Handle Search Input Change
+  const handleSearchChange = (val) => {
+    setLocalSearch(val);
+    if (onSearchChange) onSearchChange(val);
+  };
+
+  const handleClearSearch = () => {
+    setLocalSearch("");
+    if (onSearchChange) onSearchChange("");
+  };
+
   // Filtered Users List
   const filteredUsers = useMemo(() => {
     return users.filter((u) => {
-      const q = (searchValue || "").toLowerCase();
+      const q = (localSearch || "").trim().toLowerCase();
+
+      const statusLabel = u.status === "aktif" ? "aktif" : u.status === "pending" ? "pending menunggu" : "nonaktif";
+      const roleLabel = u.role === "admin" ? "super admin" : u.role === "karyawan_tif" ? "karyawan tif" : "teknisi";
+
       const matchSearch =
         !q ||
         (u.name && u.name.toLowerCase().includes(q)) ||
         (u.email && u.email.toLowerCase().includes(q)) ||
-        (u.district && u.district.toLowerCase().includes(q));
+        (u.district && u.district.toLowerCase().includes(q)) ||
+        roleLabel.includes(q) ||
+        (u.role && u.role.toLowerCase().includes(q)) ||
+        statusLabel.includes(q) ||
+        (u.status && u.status.toLowerCase().includes(q));
 
       const matchRole = roleFilter === "all" || u.role === roleFilter;
-      const matchStatus = statusFilter === "all" || u.status === statusFilter;
+      const matchDistrict = districtFilter === "all" || (u.district && u.district.toLowerCase() === districtFilter.toLowerCase());
 
-      return matchSearch && matchRole && matchStatus;
+      return matchSearch && matchRole && matchDistrict;
     });
-  }, [users, searchValue, roleFilter, statusFilter]);
+  }, [users, localSearch, roleFilter, districtFilter]);
 
-  // Handle Registration
+  // Interactive Sorting
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        if (prev.direction === "asc") return { key, direction: "desc" };
+        return { key: null, direction: null };
+      }
+      return { key, direction: "asc" };
+    });
+  };
+
+  const sortedUsers = useMemo(() => {
+    if (!sortConfig.key || !sortConfig.direction) return filteredUsers;
+    const { key, direction } = sortConfig;
+    return [...filteredUsers].sort((a, b) => {
+      const valA = a[key] || "";
+      const valB = b[key] || "";
+      if (key === "created_at") {
+        const timeA = new Date(valA).getTime() || 0;
+        const timeB = new Date(valB).getTime() || 0;
+        return direction === "asc" ? timeA - timeB : timeB - timeA;
+      }
+      const cmp = String(valA).localeCompare(String(valB), "id", { sensitivity: "base" });
+      return direction === "asc" ? cmp : -cmp;
+    });
+  }, [filteredUsers, sortConfig]);
+
+  // Reset pagination saat filter/search berubah
+  useEffect(() => {
+    setPage(1);
+  }, [localSearch, roleFilter, districtFilter, sortConfig]);
+
+  // Paginated Users
+  const paginatedUsers = useMemo(() => {
+    const start = (page - 1) * perPage;
+    return sortedUsers.slice(start, start + perPage);
+  }, [sortedUsers, page, perPage]);
+
+  // Handle Registration Submit
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     setRegError("");
@@ -151,7 +269,6 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
       const data = await res.json();
       if (res.ok && data.success) {
         setSuccessToast(data.message || `Akun ${regName} berhasil didaftarkan.`);
-        // Reset form
         setRegName("");
         setRegEmail("");
         setRegDistrict("");
@@ -296,7 +413,7 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
     }
   };
 
-  // Helper for password strength calculation
+  // Helper password strength score
   const getPasswordStrength = (pw) => {
     let score = 0;
     if (pw.length >= 8) score++;
@@ -308,66 +425,65 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
   const pwScore = getPasswordStrength(regPassword);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* ── TOAST NOTIFICATION ── */}
       {successToast && (
-        <div className="fixed top-20 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 shadow-xl backdrop-blur-md animate-bounce-short">
-          <span className="material-symbols-outlined text-[20px] text-emerald-400">check_circle</span>
+        <div
+          className={`fixed top-20 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl backdrop-blur-md animate-bounce-short ${
+            isDark
+              ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
+              : "bg-emerald-50 border-emerald-300 text-emerald-800"
+          }`}
+        >
+          <span className="material-symbols-outlined text-[20px] text-emerald-500">check_circle</span>
           <span className="text-sm font-medium">{successToast}</span>
           <button
             onClick={() => setSuccessToast("")}
-            className="text-emerald-400 hover:text-emerald-200 ml-2"
+            className={`ml-2 cursor-pointer transition-colors ${
+              isDark ? "text-emerald-400 hover:text-emerald-200" : "text-emerald-600 hover:text-emerald-900"
+            }`}
           >
             <span className="material-symbols-outlined text-[16px]">close</span>
           </button>
         </div>
       )}
 
-      {/* ── TOP HEADER / ACTION BAR ── */}
+      {/* ── HEADER CARD PERSIS DENGAN REFERENSI (ADAPTIF DARK/LIGHT) ── */}
       <div
-        className={`p-6 rounded-2xl border transition-colors duration-300 flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+        className={`p-5 sm:p-6 rounded-2xl border transition-colors duration-300 flex flex-col md:flex-row md:items-center justify-between gap-4 ${
           isDark
-            ? "bg-[#0D1F36] border-[#1E3A5F] shadow-[0_8px_32px_rgba(0,0,0,0.35)]"
+            ? "bg-[#061427] border-[#0d2746] shadow-[0_8px_32px_rgba(0,0,0,0.35)]"
             : "bg-white border-slate-200 shadow-sm"
         }`}
       >
         <div className="flex items-center gap-4">
-          <div
-            className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-md ${
-              isDark
-                ? "bg-gradient-to-br from-[#1677FF]/30 to-[#071426] border border-[#1677FF]/40 text-[#38BDF8]"
-                : "bg-blue-50 border border-blue-200 text-[#1677FF]"
-            }`}
-          >
-            <span className="material-symbols-outlined text-[26px]">manage_accounts</span>
+          {/* Ikon Box Biru Solid Squircle */}
+          <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-[#1677FF] flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/25 text-white">
+            <span className="material-symbols-outlined text-[28px] sm:text-[32px]">
+              group
+            </span>
           </div>
+
           <div>
-            <div className="flex items-center gap-2">
-              <h1
-                className={`text-xl font-bold tracking-tight ${
-                  isDark ? "text-[#E6EDF7]" : "text-slate-900"
-                }`}
-              >
-                Kelola User
-              </h1>
-              <span
-                className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
-                  isDark
-                    ? "bg-[#1677FF]/15 text-[#38BDF8] border-[#1677FF]/30"
-                    : "bg-blue-50 text-blue-700 border-blue-200"
-                }`}
-              >
-                {users.length} Akun Terdaftar
-              </span>
-            </div>
-            <p className={`text-xs mt-1 ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
-              Pusat kendali akun pengguna, otorisasi role, dan pendaftaran personil Telkom
+            <h1
+              className={`text-xl sm:text-2xl font-bold tracking-tight ${
+                isDark ? "text-white" : "text-slate-900"
+              }`}
+            >
+              Kelola User
+            </h1>
+            <p
+              className={`text-xs sm:text-[13px] mt-1 ${
+                isDark ? "text-[#7a94b3]" : "text-slate-500"
+              }`}
+            >
+              Pusat kendali akun pengguna, otorisasi role, dan pendaftaran personil Telkom.
             </p>
           </div>
         </div>
 
         {/* Primary Action Button: Daftarkan User */}
-        <div className="flex items-center gap-3">
+        <div>
           {viewMode === "register" ? (
             <button
               type="button"
@@ -375,9 +491,9 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
                 setViewMode("list");
                 setRegError("");
               }}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${
                 isDark
-                  ? "bg-[#071426] border-[#1E3A5F] text-[#94A3B8] hover:text-[#E6EDF7] hover:border-[#38BDF8]"
+                  ? "bg-[#08182f] border-[#142e52] text-[#94A3B8] hover:text-white hover:border-[#1677FF]"
                   : "bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200"
               }`}
             >
@@ -392,9 +508,9 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
                 setViewMode("register");
                 setRegError("");
               }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1677FF] hover:bg-blue-600 text-white text-xs font-semibold shadow-lg shadow-[#1677FF]/30 transition-all cursor-pointer active:scale-95"
+              className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-[#1677FF] hover:bg-blue-600 active:scale-95 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-[#1677FF]/25 transition-all cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[19px]">person_add</span>
+              <span className="material-symbols-outlined text-[20px]">person_add</span>
               <span>Daftarkan User</span>
             </button>
           )}
@@ -406,14 +522,14 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
           ======================================================== */}
       {viewMode === "register" && (
         <div
-          className={`relative rounded-2xl border transition-all duration-300 overflow-hidden shadow-2xl ${
-            isDark ? "bg-[#0D1F36] border-[#1E3A5F]" : "bg-white border-slate-200"
+          className={`rounded-2xl border transition-all duration-300 overflow-hidden shadow-2xl ${
+            isDark ? "bg-[#061427] border-[#0d2746]" : "bg-white border-slate-200"
           }`}
         >
           {/* Header Form */}
           <div
             className={`px-7 py-5 border-b flex items-center justify-between ${
-              isDark ? "border-[#1A2E4C] bg-[#071426]/50" : "border-slate-100 bg-slate-50"
+              isDark ? "border-[#0f2747] bg-[#040e1c]/60" : "border-slate-100 bg-slate-50"
             }`}
           >
             <div className="flex items-center gap-3">
@@ -429,12 +545,12 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
               <div>
                 <h2
                   className={`text-base font-bold ${
-                    isDark ? "text-[#E6EDF7]" : "text-slate-900"
+                    isDark ? "text-white" : "text-slate-900"
                   }`}
                 >
                   Formulir Pendaftaran Pengguna Baru
                 </h2>
-                <p className={`text-xs ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
+                <p className={`text-xs ${isDark ? "text-[#7a94b3]" : "text-slate-500"}`}>
                   Akun yang dibuat Admin akan langsung berstatus aktif dan siap digunakan login
                 </p>
               </div>
@@ -442,81 +558,74 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
             <button
               type="button"
               onClick={() => setViewMode("list")}
-              className={`p-1.5 rounded-lg transition-colors ${
-                isDark ? "text-[#64748B] hover:text-[#E6EDF7] hover:bg-[#1E3A5F]" : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                isDark ? "text-[#64748B] hover:text-white hover:bg-[#08182f]" : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
               }`}
             >
               <span className="material-symbols-outlined text-[20px]">close</span>
             </button>
           </div>
 
-          {/* Error Banner */}
-          {regError && (
-            <div className="mx-7 mt-5 p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px] text-rose-400">error</span>
-              <span>{regError}</span>
-            </div>
-          )}
-
           {/* Form Content */}
-          <form onSubmit={handleRegisterSubmit} className="p-7 space-y-5" noValidate>
-            {/* 1. Pilihan Role */}
+          <form onSubmit={handleRegisterSubmit} className="p-7 space-y-6">
+            {regError && (
+              <div
+                className={`p-3.5 rounded-xl border text-xs flex items-center gap-2.5 ${
+                  isDark
+                    ? "bg-rose-500/15 border-rose-500/30 text-rose-300"
+                    : "bg-rose-50 border-rose-200 text-rose-700"
+                }`}
+              >
+                <span className="material-symbols-outlined text-[20px]">error</span>
+                <span>{regError}</span>
+              </div>
+            )}
+
+            {/* 1. Pilih Role */}
             <div>
               <label
                 className={`block text-[11px] font-bold uppercase tracking-wider mb-2.5 ${
-                  isDark ? "text-[#94A3B8]" : "text-slate-600"
+                  isDark ? "text-[#7a94b3]" : "text-slate-600"
                 }`}
               >
-                Role Pengguna *
+                Pilih Role Akun *
               </label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {/* Opsi Karyawan TIF */}
                 <div
                   onClick={() => setRegRole("karyawan_tif")}
-                  className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3 ${
+                  className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-start gap-3 ${
                     regRole === "karyawan_tif"
                       ? isDark
-                        ? "bg-[#1677FF]/15 border-[#1677FF] ring-1 ring-[#1677FF]"
-                        : "bg-blue-50 border-blue-500 ring-1 ring-blue-500"
+                        ? "bg-[#1f143d] border-[#7c3aed] text-white ring-1 ring-[#7c3aed]"
+                        : "bg-purple-50 border-purple-500 text-purple-900 ring-1 ring-purple-500"
                       : isDark
-                      ? "bg-[#071426] border-[#1E3A5F] hover:border-slate-600"
-                      : "bg-slate-50 border-slate-200 hover:border-slate-300"
+                      ? "bg-[#051122] border-[#0f2848] text-[#8fa0b5] hover:border-[#1677FF]/50"
+                      : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
                   }`}
                 >
                   <div
                     className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
                       regRole === "karyawan_tif"
-                        ? "bg-[#1677FF] text-white shadow-md shadow-[#1677FF]/30"
+                        ? "bg-[#7c3aed] text-white"
                         : isDark
-                        ? "bg-[#0D1F36] text-[#64748B]"
-                        : "bg-slate-200 text-slate-500"
+                        ? "bg-[#08182f] text-slate-400"
+                        : "bg-slate-100 text-slate-600"
                     }`}
                   >
-                    <span className="material-symbols-outlined text-[20px]">engineering</span>
+                    <span className="material-symbols-outlined text-[20px]">person</span>
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1">
                     <div className="flex items-center justify-between">
-                      <span
-                        className={`text-xs font-bold ${
-                          regRole === "karyawan_tif"
-                            ? isDark
-                              ? "text-white"
-                              : "text-blue-900"
-                            : isDark
-                            ? "text-[#E6EDF7]"
-                            : "text-slate-700"
-                        }`}
-                      >
-                        Karyawan TIF
-                      </span>
+                      <span className="text-xs font-bold">Karyawan TIF</span>
                       {regRole === "karyawan_tif" && (
-                        <span className="material-symbols-outlined text-[18px] text-[#1677FF]">
+                        <span className="material-symbols-outlined text-[18px] text-[#c084fc]">
                           check_circle
                         </span>
                       )}
                     </div>
-                    <p className={`text-[11px] mt-0.5 ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
-                      Akses penuh inventaris, mutasi modul langsung, import & export data
+                    <p className={`text-[11px] mt-0.5 ${isDark ? "text-[#7a94b3]" : "text-slate-500"}`}>
+                      Akses mutasi langsung, manajemen modul, lokasi, dan perangkat
                     </p>
                   </div>
                 </div>
@@ -524,50 +633,38 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
                 {/* Opsi Teknisi */}
                 <div
                   onClick={() => setRegRole("teknisi")}
-                  className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3 ${
+                  className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-start gap-3 ${
                     regRole === "teknisi"
                       ? isDark
-                        ? "bg-[#38BDF8]/15 border-[#38BDF8] ring-1 ring-[#38BDF8]"
-                        : "bg-sky-50 border-sky-500 ring-1 ring-sky-500"
+                        ? "bg-[#072440] border-[#0ea5e9] text-white ring-1 ring-[#0ea5e9]"
+                        : "bg-sky-50 border-sky-500 text-sky-900 ring-1 ring-sky-500"
                       : isDark
-                      ? "bg-[#071426] border-[#1E3A5F] hover:border-slate-600"
-                      : "bg-slate-50 border-slate-200 hover:border-slate-300"
+                      ? "bg-[#051122] border-[#0f2848] text-[#8fa0b5] hover:border-[#1677FF]/50"
+                      : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
                   }`}
                 >
                   <div
                     className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
                       regRole === "teknisi"
-                        ? "bg-[#38BDF8] text-slate-900 shadow-md shadow-[#38BDF8]/30"
+                        ? "bg-[#0ea5e9] text-white"
                         : isDark
-                        ? "bg-[#0D1F36] text-[#64748B]"
-                        : "bg-slate-200 text-slate-500"
+                        ? "bg-[#08182f] text-slate-400"
+                        : "bg-slate-100 text-slate-600"
                     }`}
                   >
-                    <span className="material-symbols-outlined text-[20px]">construction</span>
+                    <span className="material-symbols-outlined text-[20px]">build</span>
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1">
                     <div className="flex items-center justify-between">
-                      <span
-                        className={`text-xs font-bold ${
-                          regRole === "teknisi"
-                            ? isDark
-                              ? "text-white"
-                              : "text-sky-900"
-                            : isDark
-                            ? "text-[#E6EDF7]"
-                            : "text-slate-700"
-                        }`}
-                      >
-                        Teknisi
-                      </span>
+                      <span className="text-xs font-bold">Teknisi</span>
                       {regRole === "teknisi" && (
                         <span className="material-symbols-outlined text-[18px] text-[#38BDF8]">
                           check_circle
                         </span>
                       )}
                     </div>
-                    <p className={`text-[11px] mt-0.5 ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
-                      Akses operasional view-only untuk perangkat, modul, dan lokasi
+                    <p className={`text-[11px] mt-0.5 ${isDark ? "text-[#7a94b3]" : "text-slate-500"}`}>
+                      Akses operasional lapangan view-only untuk data perangkat dan modul
                     </p>
                   </div>
                 </div>
@@ -580,7 +677,7 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
                 <label
                   htmlFor="reg-name"
                   className={`block text-[11px] font-bold uppercase tracking-wider mb-2 ${
-                    isDark ? "text-[#94A3B8]" : "text-slate-600"
+                    isDark ? "text-[#7a94b3]" : "text-slate-600"
                   }`}
                 >
                   Nama Lengkap *
@@ -596,9 +693,9 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
                     value={regName}
                     onChange={(e) => setRegName(e.target.value)}
                     placeholder="Contoh: Budi Santoso"
-                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs transition-all outline-none ${
+                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs sm:text-sm transition-all outline-none ${
                       isDark
-                        ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF]"
+                        ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
                         : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500 focus:bg-white"
                     }`}
                   />
@@ -609,7 +706,7 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
                 <label
                   htmlFor="reg-email"
                   className={`block text-[11px] font-bold uppercase tracking-wider mb-2 ${
-                    isDark ? "text-[#94A3B8]" : "text-slate-600"
+                    isDark ? "text-[#7a94b3]" : "text-slate-600"
                   }`}
                 >
                   Email / Akun *
@@ -625,9 +722,9 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
                     value={regEmail}
                     onChange={(e) => setRegEmail(e.target.value)}
                     placeholder="nama@telkom.co.id"
-                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs transition-all outline-none ${
+                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs sm:text-sm transition-all outline-none ${
                       isDark
-                        ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF]"
+                        ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
                         : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500 focus:bg-white"
                     }`}
                   />
@@ -640,7 +737,7 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
               <label
                 htmlFor="reg-district"
                 className={`block text-[11px] font-bold uppercase tracking-wider mb-2 ${
-                  isDark ? "text-[#94A3B8]" : "text-slate-600"
+                  isDark ? "text-[#7a94b3]" : "text-slate-600"
                 }`}
               >
                 District Penugasan *
@@ -654,16 +751,16 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
                   required
                   value={regDistrict}
                   onChange={(e) => setRegDistrict(e.target.value)}
-                  className={`w-full pl-10 pr-10 py-2.5 rounded-xl border text-xs transition-all outline-none cursor-pointer appearance-none ${
+                  className={`w-full pl-10 pr-10 py-2.5 rounded-xl border text-xs sm:text-sm transition-all outline-none cursor-pointer appearance-none ${
                     isDark
-                      ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] focus:border-[#1677FF]"
+                      ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
                       : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500"
                   }`}
                 >
                   <option value="" disabled>
                     Pilih District Penugasan
                   </option>
-                  {DISTRICT_OPTIONS.map((d) => (
+                  {districtOptions.map((d) => (
                     <option key={d} value={d}>
                       {d}
                     </option>
@@ -681,7 +778,7 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
                 <label
                   htmlFor="reg-password"
                   className={`block text-[11px] font-bold uppercase tracking-wider mb-2 ${
-                    isDark ? "text-[#94A3B8]" : "text-slate-600"
+                    isDark ? "text-[#7a94b3]" : "text-slate-600"
                   }`}
                 >
                   Password Awal *
@@ -697,16 +794,16 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
                     value={regPassword}
                     onChange={(e) => setRegPassword(e.target.value)}
                     placeholder="Minimal 8 karakter"
-                    className={`w-full pl-10 pr-10 py-2.5 rounded-xl border text-xs transition-all outline-none ${
+                    className={`w-full pl-10 pr-10 py-2.5 rounded-xl border text-xs sm:text-sm transition-all outline-none ${
                       isDark
-                        ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] focus:border-[#1677FF]"
+                        ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
                         : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500"
                     }`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowRegPassword(!showRegPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[18px]">
                       {showRegPassword ? "visibility" : "visibility_off"}
@@ -723,9 +820,9 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
                         pwScore >= step
                           ? pwScore <= 2
                             ? "bg-amber-400"
-                            : "bg-emerald-400"
+                            : "bg-emerald-500"
                           : isDark
-                          ? "bg-[#1A2E4C]"
+                          ? "bg-[#0f2848]"
                           : "bg-slate-200"
                       }`}
                     />
@@ -737,7 +834,7 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
                 <label
                   htmlFor="reg-confirm-password"
                   className={`block text-[11px] font-bold uppercase tracking-wider mb-2 ${
-                    isDark ? "text-[#94A3B8]" : "text-slate-600"
+                    isDark ? "text-[#7a94b3]" : "text-slate-600"
                   }`}
                 >
                   Konfirmasi Password *
@@ -752,55 +849,38 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
                     required
                     value={regConfirmPassword}
                     onChange={(e) => setRegConfirmPassword(e.target.value)}
-                    placeholder="Ulangi password di atas"
-                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs transition-all outline-none ${
+                    placeholder="Ketik ulang password awal"
+                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs sm:text-sm transition-all outline-none ${
                       isDark
-                        ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] focus:border-[#1677FF]"
+                        ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
                         : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500"
                     }`}
                   />
                 </div>
-                {regConfirmPassword && regPassword !== regConfirmPassword && (
-                  <p className="text-[11px] text-rose-400 mt-1">Konfirmasi password tidak cocok.</p>
-                )}
               </div>
             </div>
 
-            {/* Info Keamanan */}
+            {/* Tombol Aksi Form */}
             <div
-              className={`p-3.5 rounded-xl border text-xs flex items-center gap-3 ${
-                isDark
-                  ? "bg-[#071426]/70 border-[#1E3A5F] text-[#94A3B8]"
-                  : "bg-slate-50 border-slate-200 text-slate-600"
+              className={`pt-5 border-t flex items-center justify-end gap-3 ${
+                isDark ? "border-[#0f2747]" : "border-slate-100"
               }`}
             >
-              <span className="material-symbols-outlined text-[20px] text-[#38BDF8] shrink-0">
-                security
-              </span>
-              <p className="text-[11px] leading-relaxed">
-                Password awal yang ditentukan akan di-hash secara aman menggunakan algoritma standar
-                PBKDF2/Werkzeug sebelum disimpan ke database. Password tidak pernah disimpan dalam
-                bentuk teks biasa.
-              </p>
-            </div>
-
-            {/* Buttons */}
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#1A2E4C]">
               <button
                 type="button"
                 onClick={() => setViewMode("list")}
-                className={`px-4 py-2.5 rounded-xl text-xs font-medium border transition-colors ${
+                className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${
                   isDark
-                    ? "bg-[#071426] border-[#1E3A5F] text-[#94A3B8] hover:text-[#E6EDF7]"
-                    : "bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200"
+                    ? "bg-[#051122] border-[#0f2848] text-[#8fa0b5] hover:text-white"
+                    : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
                 }`}
               >
-                Batal
+                Batal / Kembali
               </button>
               <button
                 type="submit"
                 disabled={regSubmitting}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#1677FF] hover:bg-blue-600 text-white text-xs font-semibold shadow-lg shadow-[#1677FF]/30 transition-all cursor-pointer disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#1677FF] hover:bg-blue-600 active:scale-95 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-[#1677FF]/25 transition-all cursor-pointer disabled:opacity-50"
               >
                 <span className="material-symbols-outlined text-[18px]">
                   {regSubmitting ? "sync" : "person_add"}
@@ -813,48 +893,61 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
       )}
 
       {/* ========================================================
-          MODE 2: TABEL DAFTAR PENGGUNA (MAIN VIEW)
+          MODE 2: TABEL DAFTAR PENGGUNA (SESUAI GAMBAR REFERENSI)
           ======================================================== */}
       {viewMode === "list" && (
         <div
-          className={`rounded-2xl border transition-colors duration-300 overflow-hidden shadow-xl ${
-            isDark ? "bg-[#0D1F36] border-[#1E3A5F]" : "bg-white border-slate-200"
+          className={`rounded-2xl border transition-colors duration-300 overflow-hidden ${
+            isDark ? "bg-[#061427] border-[#0d2746] shadow-xl" : "bg-white border-slate-200 shadow-sm"
           }`}
         >
           {/* Bar Filter & Search */}
-          <div
-            className={`p-4 border-b flex flex-col md:flex-row items-center justify-between gap-3 ${
-              isDark ? "border-[#1A2E4C] bg-[#071426]/40" : "border-slate-100 bg-slate-50/50"
-            }`}
-          >
-            {/* Search Input */}
-            <div className="relative w-full md:w-80">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px] text-slate-400 pointer-events-none">
+          <div className="p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
+            {/* Search Input dengan ikon search dan tombol clear 'X' */}
+            <div className="relative w-full md:max-w-md lg:max-w-lg">
+              <span
+                className={`absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px] pointer-events-none ${
+                  isDark ? "text-[#4d6686]" : "text-slate-400"
+                }`}
+              >
                 search
               </span>
               <input
                 type="text"
-                value={searchValue || ""}
-                onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
-                placeholder="Cari nama, email, atau district..."
-                className={`w-full pl-10 pr-4 py-2 rounded-xl border text-xs outline-none transition-all ${
+                value={localSearch}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                placeholder="Cari nama, email, role, district, atau status..."
+                className={`w-full pl-10 pr-9 py-2.5 rounded-xl border text-xs sm:text-sm outline-none transition-all ${
                   isDark
-                    ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] focus:border-[#1677FF]"
-                    : "bg-white border-slate-300 text-slate-900 focus:border-blue-500"
+                    ? "bg-[#051122] border-[#0f2848] text-white placeholder-[#4d6686] focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF]"
+                    : "bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:bg-white"
                 }`}
               />
+              {localSearch && (
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  title="Hapus pencarian"
+                  className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors cursor-pointer ${
+                    isDark ? "text-[#4d6686] hover:text-white" : "text-slate-400 hover:text-slate-700"
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[16px]">close</span>
+                </button>
+              )}
             </div>
 
-            {/* Filter Role & Status */}
-            <div className="flex items-center gap-2 w-full md:w-auto">
+            {/* Filter Dropdowns: Semua Role & Semua District */}
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              {/* Dropdown 1: Semua Role */}
               <div className="relative flex-1 md:w-44">
                 <select
                   value={roleFilter}
                   onChange={(e) => setRoleFilter(e.target.value)}
-                  className={`w-full pl-3 pr-8 py-2 rounded-xl border text-xs outline-none cursor-pointer appearance-none ${
+                  className={`w-full pl-3.5 pr-8 py-2.5 rounded-xl border text-xs sm:text-sm outline-none cursor-pointer appearance-none transition-all ${
                     isDark
-                      ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7]"
-                      : "bg-white border-slate-300 text-slate-900"
+                      ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
+                      : "bg-slate-50 border-slate-300 text-slate-800 focus:border-blue-500 focus:bg-white"
                   }`}
                 >
                   <option value="all">Semua Role</option>
@@ -862,27 +955,38 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
                   <option value="karyawan_tif">Karyawan TIF</option>
                   <option value="teknisi">Teknisi</option>
                 </select>
-                <span className="absolute right-2.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[16px] text-slate-400 pointer-events-none">
-                  filter_alt
+                <span
+                  className={`absolute right-2.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px] pointer-events-none ${
+                    isDark ? "text-[#4d6686]" : "text-slate-400"
+                  }`}
+                >
+                  expand_more
                 </span>
               </div>
 
-              <div className="relative flex-1 md:w-40">
+              {/* Dropdown 2: Semua District */}
+              <div className="relative flex-1 md:w-48">
                 <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className={`w-full pl-3 pr-8 py-2 rounded-xl border text-xs outline-none cursor-pointer appearance-none ${
+                  value={districtFilter}
+                  onChange={(e) => setDistrictFilter(e.target.value)}
+                  className={`w-full pl-3.5 pr-8 py-2.5 rounded-xl border text-xs sm:text-sm outline-none cursor-pointer appearance-none transition-all ${
                     isDark
-                      ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7]"
-                      : "bg-white border-slate-300 text-slate-900"
+                      ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
+                      : "bg-slate-50 border-slate-300 text-slate-800 focus:border-blue-500 focus:bg-white"
                   }`}
                 >
-                  <option value="all">Semua Status</option>
-                  <option value="aktif">Aktif</option>
-                  <option value="pending">Pending</option>
-                  <option value="nonaktif">Nonaktif</option>
+                  <option value="all">Semua District</option>
+                  {districtOptions.map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
                 </select>
-                <span className="absolute right-2.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[16px] text-slate-400 pointer-events-none">
+                <span
+                  className={`absolute right-2.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px] pointer-events-none ${
+                    isDark ? "text-[#4d6686]" : "text-slate-400"
+                  }`}
+                >
                   expand_more
                 </span>
               </div>
@@ -891,20 +995,26 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
 
           {/* Loading or Error */}
           {loading ? (
-            <div className="p-12 text-center text-xs text-slate-400 flex flex-col items-center justify-center gap-2">
-              <span className="material-symbols-outlined text-[28px] animate-spin text-[#1677FF]">
+            <div className={`p-16 text-center text-xs flex flex-col items-center justify-center gap-2 ${
+              isDark ? "text-slate-400" : "text-slate-500"
+            }`}>
+              <span className="material-symbols-outlined text-[32px] animate-spin text-[#1677FF]">
                 sync
               </span>
               <span>Memuat data pengguna...</span>
             </div>
           ) : errorMsg ? (
-            <div className="p-8 text-center text-xs text-rose-400 flex flex-col items-center justify-center gap-2">
-              <span className="material-symbols-outlined text-[28px]">gpp_bad</span>
+            <div className={`p-10 text-center text-xs flex flex-col items-center justify-center gap-2 ${
+              isDark ? "text-rose-400" : "text-rose-600"
+            }`}>
+              <span className="material-symbols-outlined text-[32px]">gpp_bad</span>
               <span>{errorMsg}</span>
             </div>
-          ) : filteredUsers.length === 0 ? (
-            <div className="p-12 text-center text-xs text-slate-400 flex flex-col items-center justify-center gap-2">
-              <span className="material-symbols-outlined text-[32px] text-slate-500">
+          ) : sortedUsers.length === 0 ? (
+            <div className={`p-16 text-center text-xs flex flex-col items-center justify-center gap-2 ${
+              isDark ? "text-slate-400" : "text-slate-500"
+            }`}>
+              <span className="material-symbols-outlined text-[36px] text-slate-400">
                 group_off
               </span>
               <span>Tidak ada akun pengguna yang sesuai dengan filter pencarian.</span>
@@ -915,75 +1025,153 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr
-                    className={`border-b text-[11px] font-bold uppercase tracking-wider ${
+                    className={`border-t border-b text-[11px] font-bold uppercase tracking-wider ${
                       isDark
-                        ? "border-[#1A2E4C] bg-[#071426]/60 text-[#94A3B8]"
+                        ? "border-[#0f2747] bg-[#061427] text-[#5b7699]"
                         : "border-slate-200 bg-slate-50 text-slate-600"
                     }`}
                   >
-                    <th className="py-3 px-5">Nama & Identitas</th>
-                    <th className="py-3 px-4">Role</th>
-                    <th className="py-3 px-4">District</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4">Dibuat Pada</th>
-                    <th className="py-3 px-5 text-right">Aksi</th>
+                    {/* 1. NAMA & IDENTITAS (Tetap rata kiri) */}
+                    <th className="py-3 px-5 text-left">
+                      <button
+                        type="button"
+                        onClick={() => handleSort("name")}
+                        className={`flex items-center gap-1.5 uppercase font-bold text-[11px] tracking-wider transition-colors cursor-pointer ${
+                          isDark ? "hover:text-white" : "hover:text-slate-900"
+                        }`}
+                      >
+                        <span>NAMA & IDENTITAS</span>
+                        <span className="material-symbols-outlined text-[14px]">
+                          {sortConfig.key === "name"
+                            ? sortConfig.direction === "asc"
+                              ? "arrow_upward"
+                              : "arrow_downward"
+                            : "unfold_more"}
+                        </span>
+                      </button>
+                    </th>
+
+                    {/* 2. ROLE (DITENGAHKAN) */}
+                    <th className="py-3 px-4 text-center">
+                      <span className="block text-center">ROLE</span>
+                    </th>
+
+                    {/* 3. DISTRICT (DITENGAHKAN) */}
+                    <th className="py-3 px-4 text-center">
+                      <button
+                        type="button"
+                        onClick={() => handleSort("district")}
+                        className={`inline-flex items-center justify-center gap-1.5 uppercase font-bold text-[11px] tracking-wider transition-colors mx-auto cursor-pointer ${
+                          isDark ? "hover:text-white" : "hover:text-slate-900"
+                        }`}
+                      >
+                        <span>DISTRICT</span>
+                        <span className="material-symbols-outlined text-[14px]">
+                          {sortConfig.key === "district"
+                            ? sortConfig.direction === "asc"
+                              ? "arrow_upward"
+                              : "arrow_downward"
+                            : "unfold_more"}
+                        </span>
+                      </button>
+                    </th>
+
+                    {/* 4. STATUS (DITENGAHKAN) */}
+                    <th className="py-3 px-4 text-center">
+                      <button
+                        type="button"
+                        onClick={() => handleSort("status")}
+                        className={`inline-flex items-center justify-center gap-1.5 uppercase font-bold text-[11px] tracking-wider transition-colors mx-auto cursor-pointer ${
+                          isDark ? "hover:text-white" : "hover:text-slate-900"
+                        }`}
+                      >
+                        <span>STATUS</span>
+                        <span className="material-symbols-outlined text-[14px]">
+                          {sortConfig.key === "status"
+                            ? sortConfig.direction === "asc"
+                              ? "arrow_upward"
+                              : "arrow_downward"
+                            : "unfold_more"}
+                        </span>
+                      </button>
+                    </th>
+
+                    {/* 5. DIBUAT PADA (DITENGAHKAN) */}
+                    <th className="py-3 px-4 text-center">
+                      <button
+                        type="button"
+                        onClick={() => handleSort("created_at")}
+                        className={`inline-flex items-center justify-center gap-1.5 uppercase font-bold text-[11px] tracking-wider transition-colors mx-auto cursor-pointer ${
+                          isDark ? "hover:text-white" : "hover:text-slate-900"
+                        }`}
+                      >
+                        <span>DIBUAT PADA</span>
+                        <span className="material-symbols-outlined text-[14px]">
+                          {sortConfig.key === "created_at"
+                            ? sortConfig.direction === "asc"
+                              ? "arrow_upward"
+                              : "arrow_downward"
+                            : "unfold_more"}
+                        </span>
+                      </button>
+                    </th>
+
+                    {/* 6. AKSI (DITENGAHKAN) */}
+                    <th className="py-3 px-4 text-center">
+                      <span className="block text-center">AKSI</span>
+                    </th>
                   </tr>
                 </thead>
+
                 <tbody
                   className={`divide-y text-xs ${
-                    isDark ? "divide-[#1A2E4C]" : "divide-slate-100"
+                    isDark ? "divide-[#0d213b]" : "divide-slate-200"
                   }`}
                 >
-                  {filteredUsers.map((u) => {
+                  {paginatedUsers.map((u) => {
                     const isSelf = currentUser && currentUser.id === u.user_id;
+                    const avatarBg = getAvatarColor(u.name);
+                    const initial = (u.name || "U").trim()[0].toUpperCase();
 
                     return (
                       <tr
                         key={u.user_id}
                         className={`transition-colors ${
-                          isDark ? "hover:bg-[#12243C]" : "hover:bg-slate-50"
+                          isDark ? "hover:bg-[#0b213d]/60" : "hover:bg-slate-50/80 even:bg-slate-50/30"
                         }`}
                       >
-                        {/* Nama & Email */}
+                        {/* 1. Nama & Identitas (Rata Kiri) */}
                         <td className="py-3.5 px-5">
                           <div className="flex items-center gap-3">
                             <div
-                              className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs uppercase shrink-0 ${
-                                u.avatar_url
-                                  ? ""
-                                  : isDark
-                                  ? "bg-gradient-to-br from-[#1677FF] to-[#0D1F36] text-white"
-                                  : "bg-blue-100 text-[#1677FF]"
-                              }`}
+                              className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-sm text-white shrink-0 shadow-sm ${avatarBg}`}
                             >
-                              {u.avatar_url ? (
-                                <img
-                                  src={u.avatar_url}
-                                  alt={u.name}
-                                  className="w-full h-full rounded-full object-cover"
-                                />
-                              ) : (
-                                u.name.charAt(0)
-                              )}
+                              {initial}
                             </div>
                             <div className="min-w-0">
                               <div className="flex items-center gap-1.5">
                                 <span
-                                  className={`font-semibold truncate max-w-[180px] ${
-                                    isDark ? "text-[#E6EDF7]" : "text-slate-900"
+                                  className={`font-semibold text-[13px] truncate max-w-[190px] sm:max-w-[240px] ${
+                                    isDark ? "text-white" : "text-slate-900"
                                   }`}
                                 >
                                   {u.name}
                                 </span>
                                 {isSelf && (
-                                  <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-[#1677FF]/20 text-[#38BDF8]">
+                                  <span
+                                    className={`px-1.5 py-0.2 rounded text-[10px] font-bold ${
+                                      isDark
+                                        ? "bg-[#1677FF]/20 text-[#38BDF8]"
+                                        : "bg-blue-100 text-blue-700"
+                                    }`}
+                                  >
                                     Anda
                                   </span>
                                 )}
                               </div>
                               <span
-                                className={`text-[11px] block truncate max-w-[200px] ${
-                                  isDark ? "text-[#64748B]" : "text-slate-400"
+                                className={`text-[11px] block truncate max-w-[190px] sm:max-w-[240px] mt-0.5 ${
+                                  isDark ? "text-[#5d799b]" : "text-slate-500"
                                 }`}
                               >
                                 {u.email}
@@ -992,105 +1180,170 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
                           </div>
                         </td>
 
-                        {/* Role Badge */}
-                        <td className="py-3.5 px-4 whitespace-nowrap">
-                          {u.role === "admin" && (
-                            <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-purple-500/15 text-purple-400 border border-purple-500/30">
-                              Super Admin
-                            </span>
-                          )}
-                          {u.role === "karyawan_tif" && (
-                            <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#1677FF]/15 text-[#38BDF8] border border-[#1677FF]/30">
-                              Karyawan TIF
-                            </span>
-                          )}
-                          {u.role === "teknisi" && (
-                            <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-sky-500/15 text-sky-300 border border-sky-500/30">
-                              Teknisi
-                            </span>
-                          )}
+                        {/* 2. Role Badge (DITENGAHKAN) */}
+                        <td className="py-3.5 px-4 whitespace-nowrap text-center">
+                          <div className="flex items-center justify-center">
+                            {u.role === "admin" && (
+                              <span
+                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
+                                  isDark
+                                    ? "bg-[#2d153d] border-[#7e22ce] text-[#F472B6]"
+                                    : "bg-purple-50 border-purple-200 text-purple-700"
+                                }`}
+                              >
+                                <span className="material-symbols-outlined text-[14px]">shield_person</span>
+                                <span>Super Admin</span>
+                              </span>
+                            )}
+                            {u.role === "karyawan_tif" && (
+                              <span
+                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
+                                  isDark
+                                    ? "bg-[#1f143d] border-[#5521b5] text-[#C084FC]"
+                                    : "bg-indigo-50 border-indigo-200 text-indigo-700"
+                                }`}
+                              >
+                                <span className="material-symbols-outlined text-[14px]">person</span>
+                                <span>Karyawan TIF</span>
+                              </span>
+                            )}
+                            {u.role === "teknisi" && (
+                              <span
+                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
+                                  isDark
+                                    ? "bg-[#072440] border-[#0d538e] text-[#38BDF8]"
+                                    : "bg-sky-50 border-sky-200 text-sky-700"
+                                }`}
+                              >
+                                <span className="material-symbols-outlined text-[14px]">build</span>
+                                <span>Teknisi</span>
+                              </span>
+                            )}
+                          </div>
                         </td>
 
-                        {/* District */}
-                        <td className="py-3.5 px-4 whitespace-nowrap">
-                          <span className={`font-mono text-[11px] ${isDark ? "text-[#94A3B8]" : "text-slate-600"}`}>
-                            {u.district || "-"}
+                        {/* 3. District (DITENGAHKAN) */}
+                        <td className="py-3.5 px-4 whitespace-nowrap text-center">
+                          <div className="inline-flex items-center justify-center gap-1.5">
+                            <span
+                              className={`material-symbols-outlined text-[16px] ${
+                                isDark ? "text-[#4c678a]" : "text-slate-400"
+                              }`}
+                            >
+                              location_on
+                            </span>
+                            <span
+                              className={`text-xs font-medium uppercase ${
+                                isDark ? "text-[#829bb8]" : "text-slate-700"
+                              }`}
+                            >
+                              {u.district || "-"}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* 4. Status (DITENGAHKAN) */}
+                        <td className="py-3.5 px-4 whitespace-nowrap text-center">
+                          <div className="flex items-center justify-center">
+                            {u.status === "aktif" && (
+                              <span
+                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${
+                                  isDark
+                                    ? "bg-[#062420] border-[#0d544b] text-[#10B981]"
+                                    : "bg-emerald-50 border-emerald-200 text-emerald-700"
+                                }`}
+                              >
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] shadow-[0_0_8px_#10B981]"></span>
+                                <span>Aktif</span>
+                              </span>
+                            )}
+                            {u.status === "pending" && (
+                              <span
+                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${
+                                  isDark
+                                    ? "bg-[#2b1f0e] border-[#6b4713] text-[#F59E0B]"
+                                    : "bg-amber-50 border-amber-200 text-amber-700"
+                                }`}
+                              >
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B] shadow-[0_0_8px_#F59E0B] animate-pulse"></span>
+                                <span>Pending</span>
+                              </span>
+                            )}
+                            {u.status === "nonaktif" && (
+                              <span
+                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${
+                                  isDark
+                                    ? "bg-[#2c1017] border-[#6d1b28] text-[#EF4444]"
+                                    : "bg-rose-50 border-rose-200 text-rose-700"
+                                }`}
+                              >
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#EF4444] shadow-[0_0_8px_#EF4444]"></span>
+                                <span>Nonaktif</span>
+                              </span>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* 5. Dibuat Pada (DITENGAHKAN) */}
+                        <td className="py-3.5 px-4 whitespace-nowrap text-center">
+                          <span
+                            className={`text-xs font-mono ${
+                              isDark ? "text-[#6d88a9]" : "text-slate-600"
+                            }`}
+                          >
+                            {formatDateTime(u.created_at)}
                           </span>
                         </td>
 
-                        {/* Status Badge */}
-                        <td className="py-3.5 px-4 whitespace-nowrap">
-                          {u.status === "aktif" && (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                              Aktif
-                            </span>
-                          )}
-                          {u.status === "pending" && (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/15 text-amber-400 border border-amber-500/30">
-                              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-                              Menunggu
-                            </span>
-                          )}
-                          {u.status === "nonaktif" && (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-rose-500/15 text-rose-400 border border-rose-500/30">
-                              <span className="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
-                              Nonaktif
-                            </span>
-                          )}
-                        </td>
-
-                        {/* Tanggal Dibuat */}
-                        <td className="py-3.5 px-4 whitespace-nowrap">
-                          <span className={`text-[11px] ${isDark ? "text-[#64748B]" : "text-slate-400"}`}>
-                            {u.created_at || "-"}
-                          </span>
-                        </td>
-
-                        {/* Action Buttons */}
-                        <td className="py-3.5 px-5 text-right whitespace-nowrap">
-                          <div className="flex items-center justify-end gap-1.5">
-                            {/* Tombol Setujui jika status pending */}
+                        {/* 6. Aksi (DITENGAHKAN, IKON LEBIH KECIL & MENGIKUTI WARNA HALAMAN PERANGKAT) */}
+                        <td className="py-3.5 px-3 whitespace-nowrap text-center">
+                          <div className="flex items-center justify-center gap-1.5 flex-nowrap shrink-0 mx-auto">
+                            {/* Tombol Cepat Setujui jika akun pending */}
                             {u.status === "pending" && (
                               <button
                                 type="button"
                                 onClick={() => handleApproveUser(u)}
                                 title="Setujui Akun"
-                                className="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-[11px] font-semibold transition-all cursor-pointer"
+                                className="px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold flex items-center gap-1 transition-all cursor-pointer shadow-sm active:scale-95"
                               >
-                                Setujui
+                                <span className="material-symbols-outlined text-[13px]">check</span>
+                                <span>Setujui</span>
                               </button>
                             )}
 
-                            {/* Detail */}
+                            {/* 1. Detail / View (Eye) - Mengikuti warna cyan/teal di halaman perangkat */}
                             <button
                               type="button"
                               onClick={() => setDetailUser(u)}
                               title="Lihat Detail Akun"
-                              className={`p-1.5 rounded-lg border transition-colors ${
+                              className={`w-7 h-7 min-w-[28px] min-h-[28px] max-w-[28px] max-h-[28px] p-0 shrink-0 rounded-lg flex items-center justify-center border transition-all cursor-pointer shadow-sm hover:scale-105 active:scale-95 ${
                                 isDark
-                                  ? "bg-[#071426] border-[#1E3A5F] text-[#94A3B8] hover:text-[#38BDF8] hover:border-[#38BDF8]"
-                                  : "bg-white border-slate-200 text-slate-500 hover:text-blue-600 hover:border-blue-400"
+                                  ? "bg-[#07383E] hover:bg-[#0A4E57] text-[#00E5FF] border-[#0A545E]"
+                                  : "bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border-cyan-200"
                               }`}
                             >
-                              <span className="material-symbols-outlined text-[17px]">visibility</span>
+                              <span className="material-symbols-outlined text-[15px] leading-none select-none flex items-center justify-center pointer-events-none">
+                                visibility
+                              </span>
                             </button>
 
-                            {/* Edit */}
+                            {/* 2. Edit (Pencil) - Mengikuti warna amber/kuning di halaman perangkat */}
                             <button
                               type="button"
                               onClick={() => openEditModal(u)}
                               title="Edit Pengguna"
-                              className={`p-1.5 rounded-lg border transition-colors ${
+                              className={`w-7 h-7 min-w-[28px] min-h-[28px] max-w-[28px] max-h-[28px] p-0 shrink-0 rounded-lg flex items-center justify-center border transition-all cursor-pointer shadow-sm hover:scale-105 active:scale-95 ${
                                 isDark
-                                  ? "bg-[#071426] border-[#1E3A5F] text-[#94A3B8] hover:text-[#1677FF] hover:border-[#1677FF]"
-                                  : "bg-white border-slate-200 text-slate-500 hover:text-blue-600 hover:border-blue-400"
+                                  ? "bg-[#3D2C0D] hover:bg-[#523B11] text-[#FBBF24] border-[#5E4413]"
+                                  : "bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200"
                               }`}
                             >
-                              <span className="material-symbols-outlined text-[17px]">edit</span>
+                              <span className="material-symbols-outlined text-[15px] leading-none select-none flex items-center justify-center pointer-events-none">
+                                edit
+                              </span>
                             </button>
 
-                            {/* Reset Password */}
+                            {/* 3. Reset Password (Key) - Nuansa indigo/purple serasi */}
                             <button
                               type="button"
                               onClick={() => {
@@ -1100,17 +1353,19 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
                                 setResetError("");
                               }}
                               title="Reset Password Akun"
-                              className={`p-1.5 rounded-lg border transition-colors ${
+                              className={`w-7 h-7 min-w-[28px] min-h-[28px] max-w-[28px] max-h-[28px] p-0 shrink-0 rounded-lg flex items-center justify-center border transition-all cursor-pointer shadow-sm hover:scale-105 active:scale-95 ${
                                 isDark
-                                  ? "bg-[#071426] border-[#1E3A5F] text-[#94A3B8] hover:text-amber-400 hover:border-amber-400"
-                                  : "bg-white border-slate-200 text-slate-500 hover:text-amber-600 hover:border-amber-400"
+                                  ? "bg-[#241A4C] hover:bg-[#34266D] text-[#A78BFA] border-[#3B2C78]"
+                                  : "bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200"
                               }`}
                             >
-                              <span className="material-symbols-outlined text-[17px]">key</span>
+                              <span className="material-symbols-outlined text-[15px] leading-none select-none flex items-center justify-center pointer-events-none">
+                                key
+                              </span>
                             </button>
 
-                            {/* Delete (kecuali akun sendiri) */}
-                            {!isSelf && (
+                            {/* 4. Delete (Trash) - Mengikuti warna rose/merah di halaman perangkat */}
+                            {!isSelf ? (
                               <button
                                 type="button"
                                 onClick={() => {
@@ -1118,13 +1373,30 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
                                   setDeleteError("");
                                 }}
                                 title="Hapus Akun Pengguna"
-                                className={`p-1.5 rounded-lg border transition-colors ${
+                                className={`w-7 h-7 min-w-[28px] min-h-[28px] max-w-[28px] max-h-[28px] p-0 shrink-0 rounded-lg flex items-center justify-center border transition-all cursor-pointer shadow-sm hover:scale-105 active:scale-95 ${
                                   isDark
-                                    ? "bg-[#071426] border-[#1E3A5F] text-[#94A3B8] hover:text-rose-400 hover:border-rose-400"
-                                    : "bg-white border-slate-200 text-slate-500 hover:text-rose-600 hover:border-rose-400"
+                                    ? "bg-[#3C1318] hover:bg-[#541B22] text-[#F43F5E] border-[#5C1D25]"
+                                    : "bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200"
                                 }`}
                               >
-                                <span className="material-symbols-outlined text-[17px]">delete</span>
+                                <span className="material-symbols-outlined text-[15px] leading-none select-none flex items-center justify-center pointer-events-none">
+                                  delete
+                                </span>
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                disabled
+                                title="Tidak dapat menghapus akun Anda sendiri"
+                                className={`w-7 h-7 min-w-[28px] min-h-[28px] max-w-[28px] max-h-[28px] p-0 shrink-0 rounded-lg flex items-center justify-center border cursor-not-allowed opacity-30 ${
+                                  isDark
+                                    ? "bg-slate-800/40 border-slate-700 text-slate-500"
+                                    : "bg-slate-100 border-slate-200 text-slate-400"
+                                }`}
+                              >
+                                <span className="material-symbols-outlined text-[15px] leading-none select-none flex items-center justify-center pointer-events-none">
+                                  delete
+                                </span>
                               </button>
                             )}
                           </div>
@@ -1136,81 +1408,152 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
               </table>
             </div>
           )}
+
+          {/* Table Pagination */}
+          {!loading && sortedUsers.length > 0 && (
+            <div className="px-5 pb-4">
+              <TablePagination
+                page={page}
+                perPage={perPage}
+                totalCount={sortedUsers.length}
+                onPageChange={setPage}
+                onPerPageChange={(newPerPage) => {
+                  setPerPage(newPerPage);
+                  setPage(1);
+                }}
+                isDark={isDark}
+              />
+            </div>
+          )}
         </div>
       )}
 
       {/* ========================================================
-          MODAL 1: DETAIL PENGGUNA (TANPA MENAMPILKAN PASSWORD)
+          MODAL 1: DETAIL PENGGUNA (ADAPTIF DARK & LIGHT MODE)
           ======================================================== */}
       {detailUser && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           onClick={() => setDetailUser(null)}
         >
           <div
             className={`w-full max-w-md rounded-2xl border p-6 shadow-2xl transition-all ${
-              isDark ? "bg-[#0D1F36] border-[#1E3A5F] text-[#E6EDF7]" : "bg-white border-slate-200 text-slate-900"
+              isDark
+                ? "bg-[#061427] border-[#0d2746] text-[#E6EDF7]"
+                : "bg-white border-slate-200 text-slate-900"
             }`}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-4 border-b border-[#1A2E4C]">
+            <div
+              className={`flex items-center justify-between pb-4 border-b ${
+                isDark ? "border-[#0f2747]" : "border-slate-100"
+              }`}
+            >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#1677FF]/20 border border-[#1677FF]/40 text-[#38BDF8] flex items-center justify-center">
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                    isDark
+                      ? "bg-[#1677FF]/20 border border-[#1677FF]/40 text-[#38BDF8]"
+                      : "bg-blue-50 border border-blue-200 text-blue-600"
+                  }`}
+                >
                   <span className="material-symbols-outlined text-[20px]">account_circle</span>
                 </div>
                 <div>
                   <h3 className="text-base font-bold">Detail Akun Pengguna</h3>
-                  <p className="text-xs text-slate-400">Informasi profil dan penugasan personil</p>
+                  <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                    Informasi profil dan penugasan personil
+                  </p>
                 </div>
               </div>
               <button
                 onClick={() => setDetailUser(null)}
-                className="text-slate-400 hover:text-slate-200"
+                className={`cursor-pointer transition-colors ${
+                  isDark ? "text-slate-400 hover:text-white" : "text-slate-400 hover:text-slate-700"
+                }`}
               >
                 <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
             </div>
 
             <div className="py-5 space-y-3.5 text-xs">
-              <div className="flex justify-between py-1.5 border-b border-slate-800/40">
-                <span className="text-slate-400">ID Pengguna</span>
+              <div
+                className={`flex justify-between py-1.5 border-b ${
+                  isDark ? "border-slate-800/40" : "border-slate-100"
+                }`}
+              >
+                <span className={isDark ? "text-slate-400" : "text-slate-500"}>ID Pengguna</span>
                 <span className="font-mono font-semibold">#{detailUser.user_id}</span>
               </div>
-              <div className="flex justify-between py-1.5 border-b border-slate-800/40">
-                <span className="text-slate-400">Nama Lengkap</span>
+              <div
+                className={`flex justify-between py-1.5 border-b ${
+                  isDark ? "border-slate-800/40" : "border-slate-100"
+                }`}
+              >
+                <span className={isDark ? "text-slate-400" : "text-slate-500"}>Nama Lengkap</span>
                 <span className="font-semibold">{detailUser.name}</span>
               </div>
-              <div className="flex justify-between py-1.5 border-b border-slate-800/40">
-                <span className="text-slate-400">Email Akun</span>
+              <div
+                className={`flex justify-between py-1.5 border-b ${
+                  isDark ? "border-slate-800/40" : "border-slate-100"
+                }`}
+              >
+                <span className={isDark ? "text-slate-400" : "text-slate-500"}>Email Akun</span>
                 <span className="font-mono font-semibold">{detailUser.email}</span>
               </div>
-              <div className="flex justify-between py-1.5 border-b border-slate-800/40">
-                <span className="text-slate-400">Role Otorisasi</span>
+              <div
+                className={`flex justify-between py-1.5 border-b ${
+                  isDark ? "border-slate-800/40" : "border-slate-100"
+                }`}
+              >
+                <span className={isDark ? "text-slate-400" : "text-slate-500"}>Role Otorisasi</span>
                 <span className="font-semibold capitalize">{detailUser.role}</span>
               </div>
-              <div className="flex justify-between py-1.5 border-b border-slate-800/40">
-                <span className="text-slate-400">District Penugasan</span>
+              <div
+                className={`flex justify-between py-1.5 border-b ${
+                  isDark ? "border-slate-800/40" : "border-slate-100"
+                }`}
+              >
+                <span className={isDark ? "text-slate-400" : "text-slate-500"}>District Penugasan</span>
                 <span className="font-semibold">{detailUser.district || "-"}</span>
               </div>
-              <div className="flex justify-between py-1.5 border-b border-slate-800/40">
-                <span className="text-slate-400">Status Akun</span>
+              <div
+                className={`flex justify-between py-1.5 border-b ${
+                  isDark ? "border-slate-800/40" : "border-slate-100"
+                }`}
+              >
+                <span className={isDark ? "text-slate-400" : "text-slate-500"}>Status Akun</span>
                 <span className="font-semibold capitalize">{detailUser.status}</span>
               </div>
-              <div className="flex justify-between py-1.5 border-b border-slate-800/40">
-                <span className="text-slate-400">Tanggal Didaftarkan</span>
-                <span className="text-slate-300">{detailUser.created_at || "-"}</span>
+              <div
+                className={`flex justify-between py-1.5 border-b ${
+                  isDark ? "border-slate-800/40" : "border-slate-100"
+                }`}
+              >
+                <span className={isDark ? "text-slate-400" : "text-slate-500"}>Tanggal Didaftarkan</span>
+                <span className="font-mono">{formatDateTime(detailUser.created_at)}</span>
               </div>
-              <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300 text-[11px] leading-relaxed flex items-center gap-2.5">
-                <span className="material-symbols-outlined text-[18px] text-[#38BDF8]">shield_locked</span>
-                <span>Password dienkripsi secara aman dan tidak dapat dilihat oleh siapa pun demi keamanan.</span>
+              <div
+                className={`p-3 rounded-xl border text-[11px] leading-relaxed flex items-center gap-2.5 ${
+                  isDark
+                    ? "bg-blue-500/10 border-blue-500/20 text-blue-300"
+                    : "bg-blue-50 border-blue-200 text-blue-700"
+                }`}
+              >
+                <span className="material-symbols-outlined text-[18px] text-[#1677FF]">shield_locked</span>
+                <span>Password dienkripsi secara aman dan tidak dapat dilihat oleh siapa pun demi privasi akun.</span>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-[#1A2E4C] flex justify-end">
+            <div
+              className={`pt-3 border-t flex justify-end ${
+                isDark ? "border-[#0f2747]" : "border-slate-100"
+              }`}
+            >
               <button
                 type="button"
                 onClick={() => setDetailUser(null)}
-                className="px-5 py-2 rounded-xl bg-[#1677FF] text-white text-xs font-semibold hover:bg-blue-600 cursor-pointer"
+                className="px-5 py-2 rounded-xl bg-[#1677FF] text-white text-xs font-semibold hover:bg-blue-600 cursor-pointer shadow-sm"
               >
                 Tutup
               </button>
@@ -1220,39 +1563,61 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
       )}
 
       {/* ========================================================
-          MODAL 2: EDIT PENGGUNA
+          MODAL 2: EDIT PENGGUNA (ADAPTIF DARK & LIGHT MODE)
           ======================================================== */}
       {editUser && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           onClick={() => setEditUser(null)}
         >
           <div
             className={`w-full max-w-lg rounded-2xl border p-6 shadow-2xl transition-all ${
-              isDark ? "bg-[#0D1F36] border-[#1E3A5F] text-[#E6EDF7]" : "bg-white border-slate-200 text-slate-900"
+              isDark
+                ? "bg-[#061427] border-[#0d2746] text-[#E6EDF7]"
+                : "bg-white border-slate-200 text-slate-900"
             }`}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-4 border-b border-[#1A2E4C]">
+            <div
+              className={`flex items-center justify-between pb-4 border-b ${
+                isDark ? "border-[#0f2747]" : "border-slate-100"
+              }`}
+            >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#1677FF]/20 border border-[#1677FF]/40 text-[#38BDF8] flex items-center justify-center">
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                    isDark
+                      ? "bg-[#1677FF]/20 border border-[#1677FF]/40 text-[#38BDF8]"
+                      : "bg-blue-50 border border-blue-200 text-blue-600"
+                  }`}
+                >
                   <span className="material-symbols-outlined text-[20px]">manage_accounts</span>
                 </div>
                 <div>
                   <h3 className="text-base font-bold">Edit Akun Pengguna</h3>
-                  <p className="text-xs text-slate-400">Ubah informasi akun #{editUser.user_id}</p>
+                  <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                    Ubah informasi akun #{editUser.user_id}
+                  </p>
                 </div>
               </div>
               <button
                 onClick={() => setEditUser(null)}
-                className="text-slate-400 hover:text-slate-200"
+                className={`cursor-pointer transition-colors ${
+                  isDark ? "text-slate-400 hover:text-white" : "text-slate-400 hover:text-slate-700"
+                }`}
               >
                 <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
             </div>
 
             {editError && (
-              <div className="mt-4 p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+              <div
+                className={`mt-4 p-3 rounded-xl border text-xs flex items-center gap-2 ${
+                  isDark
+                    ? "bg-rose-500/15 border-rose-500/30 text-rose-300"
+                    : "bg-rose-50 border-rose-200 text-rose-700"
+                }`}
+              >
                 <span className="material-symbols-outlined text-[18px]">error</span>
                 <span>{editError}</span>
               </div>
@@ -1260,40 +1625,52 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
 
             <form onSubmit={handleEditSubmit} className="py-5 space-y-4 text-xs">
               <div>
-                <label className="block font-semibold mb-1 text-slate-300">Nama Lengkap *</label>
+                <label className={`block font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                  Nama Lengkap *
+                </label>
                 <input
                   type="text"
                   required
                   value={editForm.name}
                   onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                  className={`w-full px-3 py-2.5 rounded-xl border outline-none ${
-                    isDark ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7]" : "bg-slate-50 border-slate-300"
+                  className={`w-full px-3.5 py-2.5 rounded-xl border outline-none text-xs sm:text-sm ${
+                    isDark
+                      ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
+                      : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500 focus:bg-white"
                   }`}
                 />
               </div>
 
               <div>
-                <label className="block font-semibold mb-1 text-slate-300">Email Akun *</label>
+                <label className={`block font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                  Email Akun *
+                </label>
                 <input
                   type="email"
                   required
                   value={editForm.email}
                   onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                  className={`w-full px-3 py-2.5 rounded-xl border outline-none ${
-                    isDark ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7]" : "bg-slate-50 border-slate-300"
+                  className={`w-full px-3.5 py-2.5 rounded-xl border outline-none text-xs sm:text-sm ${
+                    isDark
+                      ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
+                      : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500 focus:bg-white"
                   }`}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold mb-1 text-slate-300">Role Otorisasi *</label>
+                  <label className={`block font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                    Role Otorisasi *
+                  </label>
                   <select
                     value={editForm.role}
                     disabled={currentUser && currentUser.id === editUser.user_id}
                     onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
-                    className={`w-full px-3 py-2.5 rounded-xl border outline-none ${
-                      isDark ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7]" : "bg-slate-50 border-slate-300"
+                    className={`w-full px-3.5 py-2.5 rounded-xl border outline-none text-xs sm:text-sm cursor-pointer ${
+                      isDark
+                        ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
+                        : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500"
                     }`}
                   >
                     <option value="admin">Super Admin</option>
@@ -1303,13 +1680,17 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
                 </div>
 
                 <div>
-                  <label className="block font-semibold mb-1 text-slate-300">Status Akun *</label>
+                  <label className={`block font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                    Status Akun *
+                  </label>
                   <select
                     value={editForm.status}
                     disabled={currentUser && currentUser.id === editUser.user_id}
                     onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                    className={`w-full px-3 py-2.5 rounded-xl border outline-none ${
-                      isDark ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7]" : "bg-slate-50 border-slate-300"
+                    className={`w-full px-3.5 py-2.5 rounded-xl border outline-none text-xs sm:text-sm cursor-pointer ${
+                      isDark
+                        ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
+                        : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500"
                     }`}
                   >
                     <option value="aktif">Aktif</option>
@@ -1320,18 +1701,22 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
               </div>
 
               <div>
-                <label className="block font-semibold mb-1 text-slate-300">District Penugasan *</label>
+                <label className={`block font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                  District Penugasan *
+                </label>
                 <select
                   value={editForm.district}
                   onChange={(e) => setEditForm({ ...editForm, district: e.target.value })}
-                  className={`w-full px-3 py-2.5 rounded-xl border outline-none ${
-                    isDark ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7]" : "bg-slate-50 border-slate-300"
+                  className={`w-full px-3.5 py-2.5 rounded-xl border outline-none text-xs sm:text-sm cursor-pointer ${
+                    isDark
+                      ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
+                      : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500"
                   }`}
                 >
                   <option value="" disabled>
                     Pilih District
                   </option>
-                  {DISTRICT_OPTIONS.map((d) => (
+                  {districtOptions.map((d) => (
                     <option key={d} value={d}>
                       {d}
                     </option>
@@ -1339,18 +1724,26 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
                 </select>
               </div>
 
-              <div className="pt-4 border-t border-[#1A2E4C] flex justify-end gap-2.5">
+              <div
+                className={`pt-4 border-t flex justify-end gap-2.5 ${
+                  isDark ? "border-[#0f2747]" : "border-slate-100"
+                }`}
+              >
                 <button
                   type="button"
                   onClick={() => setEditUser(null)}
-                  className="px-4 py-2 rounded-xl border border-slate-600 text-slate-400 hover:text-white"
+                  className={`px-4 py-2 rounded-xl border cursor-pointer ${
+                    isDark
+                      ? "border-slate-600 text-slate-400 hover:text-white"
+                      : "border-slate-300 text-slate-700 hover:bg-slate-100"
+                  }`}
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={editSubmitting}
-                  className="px-5 py-2 rounded-xl bg-[#1677FF] text-white font-semibold hover:bg-blue-600 disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl bg-[#1677FF] text-white font-semibold hover:bg-blue-600 disabled:opacity-50 cursor-pointer shadow-sm"
                 >
                   {editSubmitting ? "Menyimpan..." : "Simpan Perubahan"}
                 </button>
@@ -1361,52 +1754,82 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
       )}
 
       {/* ========================================================
-          MODAL 3: RESET PASSWORD (ADMIN MENETAPKAN PASSWORD BARU)
+          MODAL 3: RESET PASSWORD (ADAPTIF DARK & LIGHT MODE)
           ======================================================== */}
       {resetUser && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           onClick={() => setResetUser(null)}
         >
           <div
             className={`w-full max-w-md rounded-2xl border p-6 shadow-2xl transition-all ${
-              isDark ? "bg-[#0D1F36] border-[#1E3A5F] text-[#E6EDF7]" : "bg-white border-slate-200 text-slate-900"
+              isDark
+                ? "bg-[#061427] border-[#0d2746] text-[#E6EDF7]"
+                : "bg-white border-slate-200 text-slate-900"
             }`}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-4 border-b border-[#1A2E4C]">
+            <div
+              className={`flex items-center justify-between pb-4 border-b ${
+                isDark ? "border-[#0f2747]" : "border-slate-100"
+              }`}
+            >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center">
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                    isDark
+                      ? "bg-[#6366F1]/20 border border-[#6366F1]/40 text-[#A78BFA]"
+                      : "bg-purple-50 border border-purple-200 text-purple-700"
+                  }`}
+                >
                   <span className="material-symbols-outlined text-[20px]">key</span>
                 </div>
                 <div>
                   <h3 className="text-base font-bold">Reset Password Pengguna</h3>
-                  <p className="text-xs text-slate-400">Tetapkan password baru untuk {resetUser.name}</p>
+                  <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                    Tetapkan password baru untuk {resetUser.name}
+                  </p>
                 </div>
               </div>
               <button
                 onClick={() => setResetUser(null)}
-                className="text-slate-400 hover:text-slate-200"
+                className={`cursor-pointer transition-colors ${
+                  isDark ? "text-slate-400 hover:text-white" : "text-slate-400 hover:text-slate-700"
+                }`}
               >
                 <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
             </div>
 
             {resetError && (
-              <div className="mt-4 p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+              <div
+                className={`mt-4 p-3 rounded-xl border text-xs flex items-center gap-2 ${
+                  isDark
+                    ? "bg-rose-500/15 border-rose-500/30 text-rose-300"
+                    : "bg-rose-50 border-rose-200 text-rose-700"
+                }`}
+              >
                 <span className="material-symbols-outlined text-[18px]">error</span>
                 <span>{resetError}</span>
               </div>
             )}
 
             <form onSubmit={handleResetPasswordSubmit} className="py-5 space-y-4 text-xs">
-              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] leading-relaxed">
+              <div
+                className={`p-3 rounded-xl border text-[11px] leading-relaxed ${
+                  isDark
+                    ? "bg-indigo-500/10 border-indigo-500/20 text-indigo-300"
+                    : "bg-purple-50 border-purple-200 text-purple-700"
+                }`}
+              >
                 Password lama pengguna tidak dapat dilihat dan langsung digantikan dengan password baru
                 yang di-hash sebelum disimpan.
               </div>
 
               <div>
-                <label className="block font-semibold mb-1 text-slate-300">Password Baru *</label>
+                <label className={`block font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                  Password Baru *
+                </label>
                 <div className="relative">
                   <input
                     type={showNewPassword ? "text" : "password"}
@@ -1414,14 +1837,16 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Minimal 8 karakter"
-                    className={`w-full px-3 py-2.5 rounded-xl border outline-none pr-10 ${
-                      isDark ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7]" : "bg-slate-50 border-slate-300"
+                    className={`w-full px-3.5 py-2.5 rounded-xl border outline-none pr-10 text-xs sm:text-sm ${
+                      isDark
+                        ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
+                        : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500 focus:bg-white"
                     }`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[18px]">
                       {showNewPassword ? "visibility" : "visibility_off"}
@@ -1431,31 +1856,43 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
               </div>
 
               <div>
-                <label className="block font-semibold mb-1 text-slate-300">Konfirmasi Password Baru *</label>
+                <label className={`block font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                  Konfirmasi Password Baru *
+                </label>
                 <input
                   type={showNewPassword ? "text" : "password"}
                   required
                   value={confirmNewPassword}
                   onChange={(e) => setConfirmNewPassword(e.target.value)}
                   placeholder="Ketik ulang password baru"
-                  className={`w-full px-3 py-2.5 rounded-xl border outline-none ${
-                    isDark ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7]" : "bg-slate-50 border-slate-300"
+                  className={`w-full px-3.5 py-2.5 rounded-xl border outline-none text-xs sm:text-sm ${
+                    isDark
+                      ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
+                      : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500 focus:bg-white"
                   }`}
                 />
               </div>
 
-              <div className="pt-4 border-t border-[#1A2E4C] flex justify-end gap-2.5">
+              <div
+                className={`pt-4 border-t flex justify-end gap-2.5 ${
+                  isDark ? "border-[#0f2747]" : "border-slate-100"
+                }`}
+              >
                 <button
                   type="button"
                   onClick={() => setResetUser(null)}
-                  className="px-4 py-2 rounded-xl border border-slate-600 text-slate-400 hover:text-white"
+                  className={`px-4 py-2 rounded-xl border cursor-pointer ${
+                    isDark
+                      ? "border-slate-600 text-slate-400 hover:text-white"
+                      : "border-slate-300 text-slate-700 hover:bg-slate-100"
+                  }`}
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={resetSubmitting}
-                  className="px-5 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold hover:bg-amber-400 disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl bg-[#6366F1] text-white font-bold hover:bg-indigo-600 disabled:opacity-50 cursor-pointer shadow-sm"
                 >
                   {resetSubmitting ? "Mereset..." : "Reset Password"}
                 </button>
@@ -1466,31 +1903,51 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
       )}
 
       {/* ========================================================
-          MODAL 4: HAPUS PENGGUNA (DENGAN PROTEKSI RELASI DB)
+          MODAL 4: HAPUS PENGGUNA (ADAPTIF DARK & LIGHT MODE)
           ======================================================== */}
       {deleteUser && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           onClick={() => setDeleteUser(null)}
         >
           <div
             className={`w-full max-w-md rounded-2xl border p-6 shadow-2xl transition-all ${
-              isDark ? "bg-[#0D1F36] border-[#1E3A5F] text-[#E6EDF7]" : "bg-white border-slate-200 text-slate-900"
+              isDark
+                ? "bg-[#061427] border-[#0d2746] text-[#E6EDF7]"
+                : "bg-white border-slate-200 text-slate-900"
             }`}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-3 pb-4 border-b border-[#1A2E4C]">
-              <div className="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-400 flex items-center justify-center">
+            <div
+              className={`flex items-center gap-3 pb-4 border-b ${
+                isDark ? "border-[#0f2747]" : "border-slate-100"
+              }`}
+            >
+              <div
+                className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                  isDark
+                    ? "bg-rose-500/20 border border-rose-500/40 text-rose-400"
+                    : "bg-rose-50 border border-rose-200 text-rose-600"
+                }`}
+              >
                 <span className="material-symbols-outlined text-[20px]">warning</span>
               </div>
               <div>
-                <h3 className="text-base font-bold text-rose-400">Konfirmasi Hapus Pengguna</h3>
-                <p className="text-xs text-slate-400">Tindakan ini tidak dapat dibatalkan</p>
+                <h3 className="text-base font-bold text-rose-600 dark:text-rose-400">Konfirmasi Hapus Pengguna</h3>
+                <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                  Tindakan ini tidak dapat dibatalkan
+                </p>
               </div>
             </div>
 
             {deleteError && (
-              <div className="mt-4 p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+              <div
+                className={`mt-4 p-3 rounded-xl border text-xs flex items-center gap-2 ${
+                  isDark
+                    ? "bg-rose-500/15 border-rose-500/30 text-rose-300"
+                    : "bg-rose-50 border-rose-200 text-rose-700"
+                }`}
+              >
                 <span className="material-symbols-outlined text-[18px]">error</span>
                 <span>{deleteError}</span>
               </div>
@@ -1501,18 +1958,32 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
                 Apakah Anda yakin ingin menghapus akun pengguna <strong>{deleteUser.name}</strong> (
                 {deleteUser.email})?
               </p>
-              <div className="p-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-[11px] text-slate-400">
+              <div
+                className={`p-3 rounded-xl border text-[11px] ${
+                  isDark
+                    ? "bg-[#051122] border-[#0f2848] text-slate-400"
+                    : "bg-slate-50 border-slate-200 text-slate-600"
+                }`}
+              >
                 💡 <strong>Catatan Integritas:</strong> Sistem akan memeriksa apakah pengguna memiliki
                 riwayat transaksi modul, mutasi, atau audit log. Jika ada, penghapusan permanen akan
                 dicegah agar riwayat audit sistem tetap utuh.
               </div>
             </div>
 
-            <div className="pt-4 border-t border-[#1A2E4C] flex justify-end gap-2.5 text-xs">
+            <div
+              className={`pt-4 border-t flex justify-end gap-2.5 text-xs ${
+                isDark ? "border-[#0f2747]" : "border-slate-100"
+              }`}
+            >
               <button
                 type="button"
                 onClick={() => setDeleteUser(null)}
-                className="px-4 py-2 rounded-xl border border-slate-600 text-slate-400 hover:text-white"
+                className={`px-4 py-2 rounded-xl border cursor-pointer ${
+                  isDark
+                    ? "border-slate-600 text-slate-400 hover:text-white"
+                    : "border-slate-300 text-slate-700 hover:bg-slate-100"
+                }`}
               >
                 Batal
               </button>
@@ -1520,7 +1991,7 @@ export default function UsersPage({ user: currentUser, searchValue, onSearchChan
                 type="button"
                 disabled={deleteSubmitting}
                 onClick={handleDeleteSubmit}
-                className="px-5 py-2 rounded-xl bg-rose-500 text-white font-semibold hover:bg-rose-600 disabled:opacity-50"
+                className="px-5 py-2 rounded-xl bg-rose-600 text-white font-semibold hover:bg-rose-700 disabled:opacity-50 cursor-pointer shadow-sm"
               >
                 {deleteSubmitting ? "Memeriksa & Menghapus..." : "Ya, Hapus Pengguna"}
               </button>
