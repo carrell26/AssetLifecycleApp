@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useTheme } from "../context/ThemeContext";
 import TablePagination from "../components/TablePagination";
 
@@ -11,6 +11,13 @@ const DISTRICT_OPTIONS = [
   "PARIGI",
   "TOLITOLI",
   "BUOL",
+];
+
+const ROLE_FILTER_OPTIONS = [
+  { value: "all", label: "Semua Role" },
+  { value: "admin", label: "Super Admin" },
+  { value: "karyawan_tif", label: "Karyawan TIF" },
+  { value: "teknisi", label: "Teknisi" },
 ];
 
 // Helper warna avatar dinamis agar persis dengan palet referensi
@@ -62,6 +69,30 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
   const [localSearch, setLocalSearch] = useState(searchValue || "");
   const [roleFilter, setRoleFilter] = useState("all");
   const [districtFilter, setDistrictFilter] = useState("all");
+  const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
+  const [districtDropdownOpen, setDistrictDropdownOpen] = useState(false);
+  const roleDropdownRef = useRef(null);
+  const districtDropdownRef = useRef(null);
+
+  // Close dropdowns when clicked outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (
+        roleDropdownRef.current &&
+        !roleDropdownRef.current.contains(e.target)
+      ) {
+        setRoleDropdownOpen(false);
+      }
+      if (
+        districtDropdownRef.current &&
+        !districtDropdownRef.current.contains(e.target)
+      ) {
+        setDistrictDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Sorting & Pagination State
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
@@ -897,7 +928,7 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
           ======================================================== */}
       {viewMode === "list" && (
         <div
-          className={`rounded-2xl border transition-colors duration-300 overflow-hidden ${
+          className={`rounded-2xl border transition-colors duration-300 ${
             isDark ? "bg-[#061427] border-[#0d2746] shadow-xl" : "bg-white border-slate-200 shadow-sm"
           }`}
         >
@@ -917,9 +948,9 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                 value={localSearch}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder="Cari nama, email, role, district, atau status..."
-                className={`w-full pl-10 pr-9 py-2.5 rounded-xl border text-xs sm:text-sm outline-none transition-all ${
+                className={`w-full h-11 pl-10 pr-9 rounded-xl border text-xs sm:text-sm outline-none transition-all ${
                   isDark
-                    ? "bg-[#051122] border-[#0f2848] text-white placeholder-[#4d6686] focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF]"
+                    ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] placeholder-[#4d6686] focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF]"
                     : "bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:bg-white"
                 }`}
               />
@@ -938,57 +969,203 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
             </div>
 
             {/* Filter Dropdowns: Semua Role & Semua District */}
-            <div className="flex items-center gap-3 w-full md:w-auto">
-              {/* Dropdown 1: Semua Role */}
-              <div className="relative flex-1 md:w-44">
-                <select
-                  value={roleFilter}
-                  onChange={(e) => setRoleFilter(e.target.value)}
-                  className={`w-full pl-3.5 pr-8 py-2.5 rounded-xl border text-xs sm:text-sm outline-none cursor-pointer appearance-none transition-all ${
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+              {/* Filter Dropdown 1: Semua Role */}
+              <div className="relative min-w-[170px]" ref={roleDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRoleDropdownOpen(!roleDropdownOpen);
+                    setDistrictDropdownOpen(false);
+                  }}
+                  className={`relative w-full h-11 px-4 rounded-xl border flex items-center justify-between text-xs font-medium transition-all cursor-pointer ${
                     isDark
-                      ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
-                      : "bg-slate-50 border-slate-300 text-slate-800 focus:border-blue-500 focus:bg-white"
+                      ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
+                      : "bg-slate-50 border-slate-300 text-slate-800 hover:border-blue-500"
                   }`}
                 >
-                  <option value="all">Semua Role</option>
-                  <option value="admin">Super Admin</option>
-                  <option value="karyawan_tif">Karyawan TIF</option>
-                  <option value="teknisi">Teknisi</option>
-                </select>
-                <span
-                  className={`absolute right-2.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px] pointer-events-none ${
-                    isDark ? "text-[#4d6686]" : "text-slate-400"
-                  }`}
-                >
-                  expand_more
-                </span>
+                  <div className="flex items-center gap-2 truncate pr-2">
+                    <span className="material-symbols-outlined text-[18px] text-[#38BDF8] shrink-0">
+                      badge
+                    </span>
+                    <span className="truncate font-semibold">
+                      {ROLE_FILTER_OPTIONS.find((r) => r.value === roleFilter)?.label || "Semua Role"}
+                    </span>
+                  </div>
+                  <span
+                    className={`material-symbols-outlined text-[18px] text-[#94A3B8] transition-transform duration-200 shrink-0 ${
+                      roleDropdownOpen ? "rotate-180" : ""
+                    }`}
+                  >
+                    expand_more
+                  </span>
+                </button>
+
+                {/* Menu Dropdown Role */}
+                {roleDropdownOpen && (
+                  <div
+                    className={`absolute left-0 top-12 mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-30 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-md ${
+                      isDark
+                        ? "bg-[#0A182B]/95 border-[#1E3A5F] text-[#E6EDF7]"
+                        : "bg-white border-slate-200 text-slate-800 shadow-xl"
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRoleFilter("all");
+                        setRoleDropdownOpen(false);
+                      }}
+                      className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
+                        roleFilter === "all"
+                          ? isDark
+                            ? "bg-[#1677FF] text-white"
+                            : "bg-blue-600 text-white"
+                          : isDark
+                          ? "hover:bg-[#122846] text-[#CBD5E1]"
+                          : "hover:bg-slate-100 text-slate-700"
+                      }`}
+                    >
+                      <span>Semua Role</span>
+                      {roleFilter === "all" && (
+                        <span className="material-symbols-outlined text-[16px] shrink-0">
+                          check
+                        </span>
+                      )}
+                    </button>
+
+                    <div className={`h-px my-1 ${isDark ? "bg-[#1A3358]" : "bg-slate-100"}`} />
+
+                    {ROLE_FILTER_OPTIONS.filter((r) => r.value !== "all").map((opt) => {
+                      const isSelected = roleFilter === opt.value;
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => {
+                            setRoleFilter(opt.value);
+                            setRoleDropdownOpen(false);
+                          }}
+                          className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
+                            isSelected
+                              ? isDark
+                                ? "bg-[#1677FF] text-white"
+                                : "bg-blue-600 text-white"
+                              : isDark
+                              ? "hover:bg-[#122846] text-[#CBD5E1]"
+                              : "hover:bg-slate-100 text-slate-700"
+                          }`}
+                        >
+                          <span className="truncate pr-2">{opt.label}</span>
+                          {isSelected && (
+                            <span className="material-symbols-outlined text-[16px] shrink-0">
+                              check
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
-              {/* Dropdown 2: Semua District */}
-              <div className="relative flex-1 md:w-48">
-                <select
-                  value={districtFilter}
-                  onChange={(e) => setDistrictFilter(e.target.value)}
-                  className={`w-full pl-3.5 pr-8 py-2.5 rounded-xl border text-xs sm:text-sm outline-none cursor-pointer appearance-none transition-all ${
+              {/* Filter Dropdown 2: Semua District */}
+              <div className="relative min-w-[170px]" ref={districtDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDistrictDropdownOpen(!districtDropdownOpen);
+                    setRoleDropdownOpen(false);
+                  }}
+                  className={`relative w-full h-11 px-4 rounded-xl border flex items-center justify-between text-xs font-medium transition-all cursor-pointer ${
                     isDark
-                      ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
-                      : "bg-slate-50 border-slate-300 text-slate-800 focus:border-blue-500 focus:bg-white"
+                      ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
+                      : "bg-slate-50 border-slate-300 text-slate-800 hover:border-blue-500"
                   }`}
                 >
-                  <option value="all">Semua District</option>
-                  {districtOptions.map((d) => (
-                    <option key={d} value={d}>
-                      {d}
-                    </option>
-                  ))}
-                </select>
-                <span
-                  className={`absolute right-2.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px] pointer-events-none ${
-                    isDark ? "text-[#4d6686]" : "text-slate-400"
-                  }`}
-                >
-                  expand_more
-                </span>
+                  <div className="flex items-center gap-2 truncate pr-2">
+                    <span className="material-symbols-outlined text-[18px] text-[#38BDF8] shrink-0">
+                      location_on
+                    </span>
+                    <span className="truncate font-semibold">
+                      {districtFilter !== "all" ? districtFilter : "Semua District"}
+                    </span>
+                  </div>
+                  <span
+                    className={`material-symbols-outlined text-[18px] text-[#94A3B8] transition-transform duration-200 shrink-0 ${
+                      districtDropdownOpen ? "rotate-180" : ""
+                    }`}
+                  >
+                    expand_more
+                  </span>
+                </button>
+
+                {/* Menu Dropdown District */}
+                {districtDropdownOpen && (
+                  <div
+                    className={`absolute left-0 top-12 mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-30 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-md ${
+                      isDark
+                        ? "bg-[#0A182B]/95 border-[#1E3A5F] text-[#E6EDF7]"
+                        : "bg-white border-slate-200 text-slate-800 shadow-xl"
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDistrictFilter("all");
+                        setDistrictDropdownOpen(false);
+                      }}
+                      className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
+                        districtFilter === "all"
+                          ? isDark
+                            ? "bg-[#1677FF] text-white"
+                            : "bg-blue-600 text-white"
+                          : isDark
+                          ? "hover:bg-[#122846] text-[#CBD5E1]"
+                          : "hover:bg-slate-100 text-slate-700"
+                      }`}
+                    >
+                      <span>Semua District</span>
+                      {districtFilter === "all" && (
+                        <span className="material-symbols-outlined text-[16px] shrink-0">
+                          check
+                        </span>
+                      )}
+                    </button>
+
+                    <div className={`h-px my-1 ${isDark ? "bg-[#1A3358]" : "bg-slate-100"}`} />
+
+                    {districtOptions.map((d) => {
+                      const isSelected = districtFilter === d;
+                      return (
+                        <button
+                          key={d}
+                          type="button"
+                          onClick={() => {
+                            setDistrictFilter(d);
+                            setDistrictDropdownOpen(false);
+                          }}
+                          className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
+                            isSelected
+                              ? isDark
+                                ? "bg-[#1677FF] text-white"
+                                : "bg-blue-600 text-white"
+                              : isDark
+                              ? "hover:bg-[#122846] text-[#CBD5E1]"
+                              : "hover:bg-slate-100 text-slate-700"
+                          }`}
+                        >
+                          <span className="truncate pr-2">{d}</span>
+                          {isSelected && (
+                            <span className="material-symbols-outlined text-[16px] shrink-0">
+                              check
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1051,17 +1228,17 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                       </button>
                     </th>
 
-                    {/* 2. ROLE (DITENGAHKAN) */}
-                    <th className="py-3 px-4 text-center">
-                      <span className="block text-center">ROLE</span>
+                    {/* 2. ROLE */}
+                    <th className="py-3 px-4 text-left">
+                      <span className="block text-left">ROLE</span>
                     </th>
 
-                    {/* 3. DISTRICT (DITENGAHKAN) */}
-                    <th className="py-3 px-4 text-center">
+                    {/* 3. DISTRICT */}
+                    <th className="py-3 px-4 text-left">
                       <button
                         type="button"
                         onClick={() => handleSort("district")}
-                        className={`inline-flex items-center justify-center gap-1.5 uppercase font-bold text-[11px] tracking-wider transition-colors mx-auto cursor-pointer ${
+                        className={`inline-flex items-center justify-start gap-1.5 uppercase font-bold text-[11px] tracking-wider transition-colors cursor-pointer ${
                           isDark ? "hover:text-white" : "hover:text-slate-900"
                         }`}
                       >
@@ -1180,9 +1357,9 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                           </div>
                         </td>
 
-                        {/* 2. Role Badge (DITENGAHKAN) */}
-                        <td className="py-3.5 px-4 whitespace-nowrap text-center">
-                          <div className="flex items-center justify-center">
+                        {/* 2. Role Badge */}
+                        <td className="py-3.5 px-4 whitespace-nowrap text-left">
+                          <div className="flex items-center justify-start">
                             {u.role === "admin" && (
                               <span
                                 className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
@@ -1222,9 +1399,9 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                           </div>
                         </td>
 
-                        {/* 3. District (DITENGAHKAN) */}
-                        <td className="py-3.5 px-4 whitespace-nowrap text-center">
-                          <div className="inline-flex items-center justify-center gap-1.5">
+                        {/* 3. District */}
+                        <td className="py-3.5 px-4 whitespace-nowrap text-left">
+                          <div className="inline-flex items-center justify-start gap-1.5">
                             <span
                               className={`material-symbols-outlined text-[16px] ${
                                 isDark ? "text-[#4c678a]" : "text-slate-400"
