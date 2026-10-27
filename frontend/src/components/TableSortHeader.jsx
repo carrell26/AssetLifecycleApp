@@ -28,7 +28,7 @@ export default function TableSortHeader({
       type="button"
       onClick={handleClick}
       title={getSortTooltip()}
-      className={`group inline-flex items-center gap-1.5 cursor-pointer select-none transition-colors max-w-full ${
+      className={`group inline-flex items-center gap-1.5 cursor-pointer select-none transition-colors max-w-full whitespace-nowrap flex-nowrap ${
         align === "center"
           ? "justify-center mx-auto"
           : align === "right"

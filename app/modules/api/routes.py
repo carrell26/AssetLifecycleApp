@@ -2315,4 +2315,31 @@ def delete_admin_user(user_id):
     })
 
 
+@api_bp.route("/audit-logs", methods=["GET"])
+@login_required
+def get_audit_logs():
+    entries = AuditLog.query.order_by(AuditLog.audit_id.desc()).all()
+    data = []
+    for e in entries:
+        data.append({
+            "audit_id": e.audit_id,
+            "created_at": e.created_at.strftime("%d %b %Y %H:%M:%S") if e.created_at else "-",
+            "raw_time": e.created_at.isoformat() if e.created_at else "",
+            "aksi": e.aksi or "",
+            "table_name": e.table_name or "-",
+            "record_id": e.record_id if e.record_id is not None else "-",
+            "actor_name": e.actor.name if e.actor else "System",
+            "actor_role": e.actor.role if e.actor else "-",
+            "actor_email": e.actor.email if e.actor else "-",
+            "hash": e.hash or "",
+            "previous_hash": e.previous_hash or "GENESIS",
+            "data_snapshot": e.data_snapshot or "",
+        })
+    return jsonify({
+        "success": True,
+        "entries": data,
+        "total": len(data)
+    })
+
+
 

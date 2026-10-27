@@ -18,6 +18,7 @@ import LocationsPage from "./pages/LocationsPage";
 import DevicesPage from "./pages/DevicesPage";
 import ImportPage from "./pages/ImportPage";
 import ExportPage from "./pages/ExportPage";
+import AuditLogPage from "./pages/AuditLogPage";
 
 export default function App() {
   // Simple client-side routing based on pathname
@@ -38,6 +39,7 @@ export default function App() {
   const isDevicesPage = path.startsWith("/device/devices") || path === "/devices";
   const isImportPage = path.startsWith("/import");
   const isExportPage = path.startsWith("/export");
+  const isAuditPage = path.startsWith("/audit");
 
   const { isDark } = useTheme();
   const [user, setUser] = useState(null);
@@ -86,10 +88,10 @@ export default function App() {
 
   useEffect(() => {
     fetchUser();
-    if (!isModulesPage && !isMutasiPage && !isLocationsPage && !isDevicesPage && !isImportPage && !isExportPage && !isUsersPage) {
+    if (!isModulesPage && !isMutasiPage && !isLocationsPage && !isDevicesPage && !isImportPage && !isExportPage && !isUsersPage && !isAuditPage) {
       fetchStats("30d");
     }
-  }, [isModulesPage, isMutasiPage, isLocationsPage, isDevicesPage, isImportPage, isExportPage, isUsersPage]);
+  }, [isModulesPage, isMutasiPage, isLocationsPage, isDevicesPage, isImportPage, isExportPage, isUsersPage, isAuditPage]);
 
   const handlePeriodChange = (newPeriod) => {
     setPeriod(newPeriod);
@@ -104,9 +106,8 @@ export default function App() {
 
   return (
     <div
-      className={`h-screen w-full flex overflow-hidden transition-colors duration-300 ${
-        isDark ? "bg-[#071426] text-[#E6EDF7]" : "bg-slate-50 text-slate-900"
-      }`}
+      className={`h-screen w-full flex overflow-hidden transition-colors duration-300 ${isDark ? "bg-[#071426] text-[#E6EDF7]" : "bg-slate-50 text-slate-900"
+        }`}
     >
       {/* Sidebar with role-specific menu filtering */}
       <Sidebar user={user} />
@@ -120,6 +121,7 @@ export default function App() {
           onSearchChange={setSearchValue}
           onOpenLogoutModal={() => setLogoutModalOpen(true)}
           onOpenAvatarModal={() => setAvatarModalOpen(true)}
+          showSearch={!isAuditPage}
         />
 
         {/* Main Content: Only this area scrolls */}
@@ -183,6 +185,15 @@ export default function App() {
             /* HALAMAN EXPORT DATA (REDESIGN SESUAI GAMBAR REFERENSI USER)*/
             /* ======================================================== */
             <ExportPage
+              user={user}
+              searchValue={searchValue}
+              onSearchChange={setSearchValue}
+            />
+          ) : isAuditPage ? (
+            /* ======================================================== */
+            /* HALAMAN AUDIT LOG & HASH CHAIN LEDGER (REDESIGN REACT)   */
+            /* ======================================================== */
+            <AuditLogPage
               user={user}
               searchValue={searchValue}
               onSearchChange={setSearchValue}

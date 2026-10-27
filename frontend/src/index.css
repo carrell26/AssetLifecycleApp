@@ -552,5 +552,25 @@ html:not(.dark) {
   display: none;
 }
 
+/* ============================================================
+   AUDIT TABLE: HEADER UNIFORMITY & ZERO TRANSITION LAG
+   ============================================================ */
+#auditTable thead,
+#auditTable thead tr,
+#auditTable thead th {
+  background-color: #f8fafc !important;
+  background-image: none !important;
+  transition: none !important;
+}
+
+html.dark #auditTable thead,
+html.dark #auditTable thead tr,
+html.dark #auditTable thead th {
+  background-color: #071426 !important;
+  background-image: none !important;
+  transition: none !important;
+}
+
+
 
 

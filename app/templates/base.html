@@ -1,66 +1,122 @@
 <!DOCTYPE html>
 <html lang="id" class="dark">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Asset Lifecycle{% endblock %} · Telkom Witel Donggala/Palu</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script id="tailwind-config">
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            colors: {
-              "navy-bg": "#071426",
-              "card-navy": "#0D1F36",
-              "border-navy": "#1E3A5F",
-              "border-navy-subtle": "#1A2E4C",
-              "electric-blue": "#1677FF",
-              "accent-cyan": "#38BDF8",
-              "soft-white": "#E6EDF7",
-              "muted-slate": "#94A3B8"
-            },
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-            }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Asset Lifecycle{% endblock %} · Telkom Witel Donggala/Palu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "navy-bg": "#071426",
+            "card-navy": "#0D1F36",
+            "border-navy": "#1E3A5F",
+            "border-navy-subtle": "#1A2E4C",
+            "electric-blue": "#1677FF",
+            "accent-cyan": "#38BDF8",
+            "soft-white": "#E6EDF7",
+            "muted-slate": "#94A3B8"
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
           }
         }
       }
-    </script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <style>
-      #profileTriggerBtn {
-        margin: 0 !important;
-        padding: 4px !important;
-        background: transparent !important;
-        box-shadow: none !important;
-        border: none !important;
-        outline: none !important;
-      }
-      #profileTriggerBtn:hover {
-        box-shadow: none !important;
-      }
-      html.dark #profileTriggerBtn:hover {
-        background: #0D1F36 !important;
-        box-shadow: none !important;
-      }
-      html:not(.dark) #profileTriggerBtn:hover,
-      html.light #profileTriggerBtn:hover {
-        background: #f1f5f9 !important;
-        box-shadow: none !important;
-      }
-      #profileTriggerBtn:focus,
-      #profileTriggerBtn:active {
-        box-shadow: none !important;
-        outline: none !important;
-      }
-    </style>
-    <script>
-      (function() {
+    }
+  </script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    #profileTriggerBtn {
+      margin: 0 !important;
+      padding: 4px !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      border: none !important;
+      outline: none !important;
+    }
+
+    #profileTriggerBtn:hover {
+      box-shadow: none !important;
+    }
+
+    html.dark #profileTriggerBtn:hover {
+      background: #0D1F36 !important;
+      box-shadow: none !important;
+    }
+
+    html:not(.dark) #profileTriggerBtn:hover,
+    html.light #profileTriggerBtn:hover {
+      background: #f1f5f9 !important;
+      box-shadow: none !important;
+    }
+
+    #profileTriggerBtn:focus,
+    #profileTriggerBtn:active {
+      box-shadow: none !important;
+      outline: none !important;
+    }
+
+    /* Reset & Standardize Theme Switcher Button to match Dashboard */
+    #global-theme-btn {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 40px !important;
+      height: 40px !important;
+      min-width: 40px !important;
+      min-height: 40px !important;
+      border-radius: 9999px !important;
+      border-width: 1px !important;
+      border-style: solid !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      position: relative !important;
+      cursor: pointer !important;
+      outline: none !important;
+      box-sizing: border-box !important;
+      transition: all 0.3s ease !important;
+    }
+
+    html:not(.dark) #global-theme-btn,
+    html.light #global-theme-btn {
+      background-color: #f8fafc !important; /* bg-slate-50 */
+      border-color: #e2e8f0 !important; /* border-slate-200 */
+      color: #d97706 !important; /* text-amber-600 */
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    }
+
+    html:not(.dark) #global-theme-btn:hover,
+    html.light #global-theme-btn:hover {
+      background-color: #f1f5f9 !important; /* hover:bg-slate-100 */
+      border-color: rgba(245, 158, 11, 0.5) !important; /* hover:border-amber-500/50 */
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.25) !important;
+    }
+
+    html.dark #global-theme-btn {
+      background-color: #0D1F36 !important; /* bg-[#0D1F36] */
+      border-color: #1E3A5F !important; /* border-[#1E3A5F] */
+      color: #fbbf24 !important; /* text-amber-400 */
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    }
+
+    html.dark #global-theme-btn:hover {
+      background-color: #122846 !important; /* hover:bg-[#122846] */
+      border-color: rgba(251, 191, 36, 0.5) !important; /* hover:border-amber-400/50 */
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0.3) !important;
+    }
+  </style>
+  <script>
+      (function () {
         const savedTheme = localStorage.getItem('asset-app-theme') || 'dark';
         if (savedTheme === 'light') {
           document.documentElement.classList.remove('dark');
@@ -70,17 +126,23 @@
           document.documentElement.classList.remove('light');
         }
       })();
-    </script>
+  </script>
 </head>
-<body class="m-0 p-0 font-sans h-screen w-full overflow-hidden bg-slate-50 dark:bg-[#071426] text-slate-900 dark:text-[#E6EDF7] transition-colors duration-300">
+
+<body
+  class="m-0 p-0 font-sans h-screen w-full overflow-hidden bg-slate-50 dark:bg-[#071426] text-slate-900 dark:text-[#E6EDF7] transition-colors duration-300">
   <div class="h-screen w-full flex overflow-hidden">
     <!-- SIDEBAR: SELALU DARK NAVY DI SEMUA TEMA -->
-    <aside class="app-sidebar w-[240px] h-screen shrink-0 z-50 flex flex-col justify-between border-r border-[#1A2E4C] bg-[#071426] select-none" style="background-color:#071426!important;border-color:#1A2E4C!important;">
+    <aside
+      class="app-sidebar w-[240px] h-screen shrink-0 z-50 flex flex-col justify-between border-r border-[#1A2E4C] bg-[#071426] select-none"
+      style="background-color:#071426!important;border-color:#1A2E4C!important;">
       <div class="flex flex-col">
         <!-- Logo Header -->
-        <div class="h-[64px] px-5 border-b border-[#1A2E4C] flex flex-col justify-center bg-[#071426]" style="background-color:#071426!important;border-color:#1A2E4C!important;">
+        <div class="h-[64px] px-5 border-b border-[#1A2E4C] flex flex-col justify-center bg-[#071426]"
+          style="background-color:#071426!important;border-color:#1A2E4C!important;">
           <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white shadow-md bg-gradient-to-br from-[#1677FF] to-[#0D1F36]">
+            <div
+              class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white shadow-md bg-gradient-to-br from-[#1677FF] to-[#0D1F36]">
               <span class="material-symbols-outlined text-[20px]">hub</span>
             </div>
             <div class="flex flex-col">
@@ -93,65 +155,86 @@
         <!-- Navigation Links -->
         <nav class="flex flex-col gap-1 px-3 pt-6 pb-3">
           {% set p = request.path %}
-          
-          <a href="{{ url_for('index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 {% if p == '/' or p == '' %}bg-[#1677FF] text-white shadow-lg shadow-[#1677FF]/25 font-semibold{% else %}text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] font-medium{% endif %}">
-            <span class="material-symbols-outlined text-[19px] {% if p == '/' or p == '' %}text-white{% else %}text-[#64748B]{% endif %}">dashboard</span>
+
+          <a href="{{ url_for('index') }}"
+            class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 {% if p == '/' or p == '' %}bg-[#1677FF] text-white shadow-lg shadow-[#1677FF]/25 font-semibold{% else %}text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] font-medium{% endif %}">
+            <span
+              class="material-symbols-outlined text-[19px] {% if p == '/' or p == '' %}text-white{% else %}text-[#64748B]{% endif %}">dashboard</span>
             <span>Dashboard</span>
           </a>
 
-          <a href="{{ url_for('device.devices') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 {% if p.startswith('/device/devices') or p.startswith('/devices') %}bg-[#1677FF] text-white shadow-lg shadow-[#1677FF]/25 font-semibold{% else %}text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] font-medium{% endif %}">
-            <span class="material-symbols-outlined text-[19px] {% if p.startswith('/device/devices') or p.startswith('/devices') %}text-white{% else %}text-[#64748B]{% endif %}">router</span>
+          <a href="{{ url_for('device.devices') }}"
+            class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 {% if p.startswith('/device/devices') or p.startswith('/devices') %}bg-[#1677FF] text-white shadow-lg shadow-[#1677FF]/25 font-semibold{% else %}text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] font-medium{% endif %}">
+            <span
+              class="material-symbols-outlined text-[19px] {% if p.startswith('/device/devices') or p.startswith('/devices') %}text-white{% else %}text-[#64748B]{% endif %}">router</span>
             <span>Perangkat</span>
           </a>
 
-          <a href="{{ url_for('module_request.inventory') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 {% if p.startswith('/modules') and not p.startswith('/modules/requests') and not p.startswith('/modules/new') %}bg-[#1677FF] text-white shadow-lg shadow-[#1677FF]/25 font-semibold{% else %}text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] font-medium{% endif %}">
-            <span class="material-symbols-outlined text-[19px] {% if p.startswith('/modules') and not p.startswith('/modules/requests') and not p.startswith('/modules/new') %}text-white{% else %}text-[#64748B]{% endif %}">memory</span>
+          <a href="{{ url_for('module_request.inventory') }}"
+            class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 {% if p.startswith('/modules') and not p.startswith('/modules/requests') and not p.startswith('/modules/new') %}bg-[#1677FF] text-white shadow-lg shadow-[#1677FF]/25 font-semibold{% else %}text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] font-medium{% endif %}">
+            <span
+              class="material-symbols-outlined text-[19px] {% if p.startswith('/modules') and not p.startswith('/modules/requests') and not p.startswith('/modules/new') %}text-white{% else %}text-[#64748B]{% endif %}">memory</span>
             <span>Modul</span>
           </a>
 
-          <a href="{{ url_for('device.locations') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 {% if p.startswith('/device/locations') %}bg-[#1677FF] text-white shadow-lg shadow-[#1677FF]/25 font-semibold{% else %}text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] font-medium{% endif %}">
-            <span class="material-symbols-outlined text-[19px] {% if p.startswith('/device/locations') %}text-white{% else %}text-[#64748B]{% endif %}">location_on</span>
+          <a href="{{ url_for('device.locations') }}"
+            class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 {% if p.startswith('/device/locations') %}bg-[#1677FF] text-white shadow-lg shadow-[#1677FF]/25 font-semibold{% else %}text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] font-medium{% endif %}">
+            <span
+              class="material-symbols-outlined text-[19px] {% if p.startswith('/device/locations') %}text-white{% else %}text-[#64748B]{% endif %}">location_on</span>
             <span>Lokasi</span>
           </a>
 
           {% if current_user.role in ['admin', 'karyawan_tif'] %}
-          <a href="{{ url_for('module_request.list_requests') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 {% if p.startswith('/modules/requests') or p.startswith('/modules/new') %}bg-[#1677FF] text-white shadow-lg shadow-[#1677FF]/25 font-semibold{% else %}text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] font-medium{% endif %}">
-            <span class="material-symbols-outlined text-[19px] {% if p.startswith('/modules/requests') or p.startswith('/modules/new') %}text-white{% else %}text-[#64748B]{% endif %}">assignment</span>
+          <a href="{{ url_for('module_request.list_requests') }}"
+            class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 {% if p.startswith('/modules/requests') or p.startswith('/modules/new') %}bg-[#1677FF] text-white shadow-lg shadow-[#1677FF]/25 font-semibold{% else %}text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] font-medium{% endif %}">
+            <span
+              class="material-symbols-outlined text-[19px] {% if p.startswith('/modules/requests') or p.startswith('/modules/new') %}text-white{% else %}text-[#64748B]{% endif %}">assignment</span>
             <span>Mutasi Modul</span>
           </a>
           {% endif %}
 
           {% if current_user.role == 'admin' %}
-          <a href="{{ url_for('auth.manage_users') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 {% if p.startswith('/auth/admin/users') %}bg-[#1677FF] text-white shadow-lg shadow-[#1677FF]/25 font-semibold{% else %}text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] font-medium{% endif %}">
-            <span class="material-symbols-outlined text-[19px] {% if p.startswith('/auth/admin/users') %}text-white{% else %}text-[#64748B]{% endif %}">manage_accounts</span>
+          <a href="{{ url_for('auth.manage_users') }}"
+            class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 {% if p.startswith('/auth/admin/users') %}bg-[#1677FF] text-white shadow-lg shadow-[#1677FF]/25 font-semibold{% else %}text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] font-medium{% endif %}">
+            <span
+              class="material-symbols-outlined text-[19px] {% if p.startswith('/auth/admin/users') %}text-white{% else %}text-[#64748B]{% endif %}">manage_accounts</span>
             <span>Kelola User</span>
           </a>
           {% endif %}
 
           {% if current_user.role in ['admin', 'karyawan_tif'] %}
-          <a href="{{ url_for('data_import.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 {% if p.startswith('/import') %}bg-[#1677FF] text-white shadow-lg shadow-[#1677FF]/25 font-semibold{% else %}text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] font-medium{% endif %}">
-            <span class="material-symbols-outlined text-[19px] {% if p.startswith('/import') %}text-white{% else %}text-[#64748B]{% endif %}">upload_file</span>
+          <a href="{{ url_for('data_import.index') }}"
+            class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 {% if p.startswith('/import') %}bg-[#1677FF] text-white shadow-lg shadow-[#1677FF]/25 font-semibold{% else %}text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] font-medium{% endif %}">
+            <span
+              class="material-symbols-outlined text-[19px] {% if p.startswith('/import') %}text-white{% else %}text-[#64748B]{% endif %}">upload_file</span>
             <span>Import Data</span>
           </a>
-          <a href="{{ url_for('export.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 {% if p.startswith('/export') %}bg-[#1677FF] text-white shadow-lg shadow-[#1677FF]/25 font-semibold{% else %}text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] font-medium{% endif %}">
-            <span class="material-symbols-outlined text-[19px] {% if p.startswith('/export') %}text-white{% else %}text-[#64748B]{% endif %}">download</span>
+          <a href="{{ url_for('export.index') }}"
+            class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 {% if p.startswith('/export') %}bg-[#1677FF] text-white shadow-lg shadow-[#1677FF]/25 font-semibold{% else %}text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] font-medium{% endif %}">
+            <span
+              class="material-symbols-outlined text-[19px] {% if p.startswith('/export') %}text-white{% else %}text-[#64748B]{% endif %}">download</span>
             <span>Export Data</span>
           </a>
-          <a href="{{ url_for('audit.logs') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 {% if p.startswith('/audit') %}bg-[#1677FF] text-white shadow-lg shadow-[#1677FF]/25 font-semibold{% else %}text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] font-medium{% endif %}">
-            <span class="material-symbols-outlined text-[19px] {% if p.startswith('/audit') %}text-white{% else %}text-[#64748B]{% endif %}">history</span>
+          <a href="{{ url_for('audit.logs') }}"
+            class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 {% if p.startswith('/audit') %}bg-[#1677FF] text-white shadow-lg shadow-[#1677FF]/25 font-semibold{% else %}text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] font-medium{% endif %}">
+            <span
+              class="material-symbols-outlined text-[19px] {% if p.startswith('/audit') %}text-white{% else %}text-[#64748B]{% endif %}">history</span>
             <span>Audit Log</span>
           </a>
           {% endif %}
 
-          <a href="{{ url_for('ar.scan') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 {% if p.startswith('/ar') %}bg-[#1677FF] text-white shadow-lg shadow-[#1677FF]/25 font-semibold{% else %}text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] font-medium{% endif %}">
-            <span class="material-symbols-outlined text-[19px] {% if p.startswith('/ar') %}text-white{% else %}text-[#64748B]{% endif %}">view_in_ar</span>
+          <a href="{{ url_for('ar.scan') }}"
+            class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 {% if p.startswith('/ar') %}bg-[#1677FF] text-white shadow-lg shadow-[#1677FF]/25 font-semibold{% else %}text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] font-medium{% endif %}">
+            <span
+              class="material-symbols-outlined text-[19px] {% if p.startswith('/ar') %}text-white{% else %}text-[#64748B]{% endif %}">view_in_ar</span>
             <span>Scan</span>
           </a>
         </nav>
       </div>
 
       <!-- Footer Info -->
-      <div class="p-4 mx-3 mb-4 rounded-xl border border-[#1E3A5F] bg-[#0D1F36] text-[#94A3B8]" style="background-color:#0D1F36!important;border-color:#1E3A5F!important;">
+      <div class="p-4 mx-3 mb-4 rounded-xl border border-[#1E3A5F] bg-[#0D1F36] text-[#94A3B8]"
+        style="background-color:#0D1F36!important;border-color:#1E3A5F!important;">
         <div class="flex items-center gap-2 text-xs font-semibold">
           <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
           <span class="text-[#E6EDF7]">Sistem Aktif</span>
@@ -162,81 +245,122 @@
 
     <!-- RIGHT COLUMN: TOPBAR + SCROLLABLE MAIN -->
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
-      <!-- TOPBAR: KONSISTEN DI POSISI ATAS -->
-      <header class="w-full h-[64px] shrink-0 z-30 px-6 flex items-center justify-between border-b gap-6 bg-white dark:bg-[#071426] border-slate-200 dark:border-[#1A2E4C] shadow-sm dark:shadow-[0_2px_8px_rgba(0,0,0,0.35)] transition-colors duration-300">
-        <!-- Search Bar -->
+      <!-- TOPBAR: MENGIKUTI DESIGN HALAMAN DASHBOARD -->
+      <header
+        class="w-full h-[64px] shrink-0 z-40 px-6 flex items-center justify-between border-b gap-6 bg-white dark:bg-[#071426] border-slate-200 dark:border-[#1A2E4C] shadow-sm dark:shadow-[0_2px_8px_rgba(0,0,0,0.35)] transition-colors duration-300">
+        <!-- Search Bar (Max-w-xl Konsisten dengan Dashboard) -->
+        {% block topbar_search %}
+        {% if not (request.path and request.path.startswith('/audit')) %}
         <div class="relative flex items-center w-full flex-1">
-          <span class="material-symbols-outlined absolute left-3.5 text-[20px] pointer-events-none text-slate-400 dark:text-[#64748B]">search</span>
-          <input type="text" placeholder="Cari perangkat, modul, lokasi, atau nomor seri..." class="w-full h-10 pl-10 pr-4 rounded-full text-xs transition-all focus:outline-none bg-slate-100 dark:bg-[#0D1F36] border border-slate-200 dark:border-[#1E3A5F] text-slate-800 dark:text-[#E6EDF7] placeholder:text-slate-400 dark:placeholder:text-[#64748B] focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF]">
+          <span
+            class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[19px] pointer-events-none text-slate-400 dark:text-[#64748B]">search</span>
+          <input type="text" placeholder="Cari perangkat, modul, lokasi, atau nomor seri..."
+            class="w-full max-w-xl h-10 pl-10 pr-4 rounded-full border text-xs font-normal transition-all duration-200 outline-none bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 dark:bg-[#0B172B] dark:border-[#1E3A5F] dark:text-[#E6EDF7] dark:placeholder-[#64748B] focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF]">
         </div>
+        {% else %}
+        <div class="flex-1"></div>
+        {% endif %}
+        {% endblock %}
 
-        <!-- Right Action Items -->
+        <!-- Right Action Items: Theme Toggle & User Profile -->
         <div class="flex items-center gap-4 relative shrink-0">
-          <!-- Theme Switcher -->
-          <button id="global-theme-btn" type="button" title="Ganti Tema" class="relative w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 border cursor-pointer bg-slate-100 dark:bg-[#0D1F36] border-slate-200 dark:border-[#1E3A5F] text-slate-700 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-[#122846] shadow-sm">
-            <span class="material-symbols-outlined text-[21px] block dark:hidden">dark_mode</span>
-            <span class="material-symbols-outlined text-[21px] hidden dark:block">light_mode</span>
-            <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-400 ring-2 ring-white dark:ring-[#071426]"></span>
-          </button>
+          <!-- Modern Theme Switcher Button -->
+          <div class="flex items-center">
+            <button id="global-theme-btn" type="button" title="Ganti Tema"
+              class="relative w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 border cursor-pointer group bg-slate-50 border-slate-200 text-amber-600 hover:border-amber-500/50 hover:bg-slate-100 dark:bg-[#0D1F36] dark:border-[#1E3A5F] dark:text-amber-400 dark:hover:border-amber-400/50 dark:hover:bg-[#122846] shadow-sm hover:shadow-[0_0_12px_rgba(245,158,11,0.25)] dark:hover:shadow-[0_0_12px_rgba(251,191,36,0.3)]">
+              <span
+                class="material-symbols-outlined text-[21px] transition-transform duration-300 group-hover:rotate-45 block dark:hidden text-amber-500">dark_mode</span>
+              <span
+                class="material-symbols-outlined text-[21px] transition-transform duration-300 group-hover:rotate-45 hidden dark:block text-amber-400">light_mode</span>
+              <span
+                class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full ring-2 transition-all duration-300 bg-amber-500 ring-white shadow-[0_0_6px_#f59e0b] dark:bg-amber-400 dark:ring-[#071426] dark:shadow-[0_0_6px_#fbbf24]"></span>
+            </button>
+          </div>
 
           <div class="h-5 w-px bg-slate-200 dark:bg-[#1A2E4C]"></div>
 
           <!-- User Profile -->
           {% if current_user.is_authenticated %}
           <div class="relative" id="profile-container">
-            <button type="button" id="profileTriggerBtn" onclick="toggleProfileDropdown()" class="flex items-center gap-2.5 p-1 rounded-full transition-colors cursor-pointer hover:bg-slate-100 dark:hover:bg-[#0D1F36]">
+            <button type="button" id="profileTriggerBtn" onclick="toggleProfileDropdown()"
+              class="flex items-center gap-2.5 p-1 rounded-full transition-colors cursor-pointer hover:bg-slate-100 dark:hover:bg-[#0D1F36]">
               <div class="relative shrink-0">
-                <img src="{{ current_user.avatar_url or 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256' }}" alt="{{ current_user.name }}" class="w-9 h-9 rounded-full object-cover ring-2 shadow-sm ring-[#1677FF]">
-                <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+                <img
+                  src="{{ current_user.avatar_url or 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256' }}"
+                  alt="{{ current_user.name }}"
+                  class="w-9 h-9 rounded-full object-cover ring-2 shadow-sm ring-[#1677FF]">
+                <span
+                  class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#10B981] ring-2 ring-white dark:ring-[#071426]"
+                  title="Status Online"></span>
               </div>
               <div class="flex flex-col text-left justify-center min-w-0 pr-1">
                 <div class="flex items-center gap-1 leading-tight">
-                  <span class="text-xs font-semibold max-w-[130px] truncate text-slate-800 dark:text-[#E6EDF7]">{{ current_user.name }}</span>
-                  <span id="profile-chevron" class="material-symbols-outlined text-[17px] text-slate-500 dark:text-[#94A3B8] transition-transform duration-200">expand_more</span>
+                  <span class="text-xs font-semibold max-w-[130px] truncate text-slate-800 dark:text-[#E6EDF7]">{{
+                    current_user.name }}</span>
+                  <span id="profile-chevron"
+                    class="material-symbols-outlined text-[17px] text-slate-500 dark:text-[#94A3B8] transition-transform duration-200">expand_more</span>
                 </div>
-                <span class="text-[11px] leading-none mt-0.5 capitalize text-blue-600 dark:text-[#38BDF8]">{{ current_user.role|replace('_', ' ') }}</span>
+                <span class="text-[11px] leading-none mt-0.5 capitalize text-slate-500 dark:text-[#94A3B8]">{{
+                  current_user.role|replace('_', ' ') }}</span>
               </div>
             </button>
 
             <!-- User Profile Dropdown Card -->
-            <div id="userProfileDropdown" class="hidden absolute right-0 top-12 mt-2 w-[340px] rounded-2xl shadow-2xl p-5 z-50 border backdrop-blur-md transition-all duration-200 bg-white/95 dark:bg-[#0D1F36]/95 border-slate-200 dark:border-[#1E3653] text-slate-800 dark:text-[#E6EDF7]">
+            <div id="userProfileDropdown"
+              class="hidden absolute right-0 top-12 mt-2 w-[340px] rounded-2xl shadow-2xl p-5 z-50 border backdrop-blur-md transition-all duration-200 bg-white/95 dark:bg-[#0D1F36]/95 border-slate-200 dark:border-[#1E3653] text-slate-800 dark:text-[#E6EDF7]">
               <!-- Header inside dropdown with Avatar -->
               <div class="flex items-center gap-3.5 pb-4 border-b border-slate-100 dark:border-[#1A2E4C] relative">
                 <div class="relative group">
-                  <img src="{{ current_user.avatar_url or 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256' }}" alt="{{ current_user.name }}" class="w-12 h-12 rounded-full object-cover ring-2 shadow-md ring-[#1677FF]/40">
-                  <button type="button" onclick="document.getElementById('baseAvatarInput').click()" title="Ubah Foto Profil (Kamera / Galeri)" class="avatar-camera-btn absolute -bottom-1 -right-1 w-6 h-6 rounded-full text-white flex items-center justify-center shadow-md border transition-transform hover:scale-110 cursor-pointer bg-[#1677FF] hover:bg-[#38BDF8] border-white dark:border-[#071426]">
+                  <img
+                    src="{{ current_user.avatar_url or 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256' }}"
+                    alt="{{ current_user.name }}"
+                    class="w-12 h-12 rounded-full object-cover ring-2 shadow-md ring-[#1677FF]/40">
+                  <button type="button" onclick="document.getElementById('baseAvatarInput').click()"
+                    title="Ubah Foto Profil (Kamera / Galeri)"
+                    class="avatar-camera-btn absolute -bottom-1 -right-1 w-6 h-6 rounded-full text-white flex items-center justify-center shadow-md border transition-transform hover:scale-110 cursor-pointer bg-[#1677FF] hover:bg-[#38BDF8] border-white dark:border-[#071426]">
                     <span class="material-symbols-outlined text-[13px]">photo_camera</span>
                   </button>
                 </div>
                 <div class="flex flex-col min-w-0 flex-1">
-                  <h4 class="text-sm font-semibold truncate text-slate-900 dark:text-[#E6EDF7]">{{ current_user.name }}</h4>
-                  <p class="text-[11px] font-medium leading-tight mt-0.5 capitalize text-blue-600 dark:text-[#38BDF8]">{{ current_user.role|replace('_', ' ') }}</p>
+                  <h4 class="text-sm font-semibold truncate text-slate-900 dark:text-[#E6EDF7]">{{ current_user.name }}
+                  </h4>
+                  <p class="text-[11px] font-medium leading-tight mt-0.5 capitalize text-blue-600 dark:text-[#38BDF8]">
+                    {{ current_user.role|replace('_', ' ') }}</p>
                 </div>
               </div>
 
               <!-- Account Information Details -->
               <div class="py-3.5 space-y-2.5">
-                <span class="text-[10px] font-semibold tracking-wide uppercase font-mono text-slate-500 dark:text-[#94A3B8]">Informasi Akun</span>
-                <div class="rounded-xl p-3 border space-y-2 text-xs bg-slate-50 dark:bg-[#071426] border-slate-200 dark:border-[#1A2E4C]">
+                <span
+                  class="text-[10px] font-semibold tracking-wide uppercase font-mono text-slate-500 dark:text-[#94A3B8]">Informasi
+                  Akun</span>
+                <div
+                  class="rounded-xl p-3 border space-y-2 text-xs bg-slate-50 dark:bg-[#071426] border-slate-200 dark:border-[#1A2E4C]">
                   <div class="flex items-start justify-between gap-2">
                     <span class="text-[11px] shrink-0 text-slate-500 dark:text-[#94A3B8]">District</span>
-                    <span class="font-medium text-right truncate text-[11px] text-slate-800 dark:text-[#E6EDF7]">{{ current_user.district or "—" }}</span>
+                    <span class="font-medium text-right truncate text-[11px] text-slate-800 dark:text-[#E6EDF7]">{{
+                      current_user.district or "—" }}</span>
                   </div>
-                  <div class="flex items-start justify-between gap-2 pt-1 border-t border-slate-200 dark:border-[#1A2E4C]/60">
+                  <div
+                    class="flex items-start justify-between gap-2 pt-1 border-t border-slate-200 dark:border-[#1A2E4C]/60">
                     <span class="text-[11px] shrink-0 text-slate-500 dark:text-[#94A3B8]">Email</span>
-                    <span class="font-mono text-right truncate text-[11px] text-blue-600 dark:text-[#38BDF8]">{{ current_user.email }}</span>
+                    <span class="font-mono text-right truncate text-[11px] text-blue-600 dark:text-[#38BDF8]">{{
+                      current_user.email }}</span>
                   </div>
                 </div>
               </div>
 
               <!-- Action Buttons -->
               <div class="pt-3 border-t border-slate-100 dark:border-[#1A2E4C] flex flex-col gap-2">
-                <button type="button" onclick="document.getElementById('baseAvatarInput').click()" class="btn-change-avatar rounded-xl px-4 py-2 w-full flex items-center justify-center gap-2 font-medium text-xs transition-colors cursor-pointer border bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100 dark:bg-[#1677FF]/15 dark:text-[#38BDF8] dark:border-[#1677FF]/30 dark:hover:bg-[#1677FF]/25">
+                <button type="button" onclick="document.getElementById('baseAvatarInput').click()"
+                  class="btn-change-avatar rounded-xl px-4 py-2 w-full flex items-center justify-center gap-2 font-medium text-xs transition-colors cursor-pointer border bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100 dark:bg-[#1677FF]/15 dark:text-[#38BDF8] dark:border-[#1677FF]/30 dark:hover:bg-[#1677FF]/25">
                   <span class="material-symbols-outlined text-[16px]">photo_camera</span>
                   Ganti Foto Profil
                 </button>
-                <input type="file" id="baseAvatarInput" accept="image/png,image/jpeg,image/webp" class="hidden" onchange="uploadBaseAvatar(this)">
-                <a href="{{ url_for('auth.logout') }}" class="btn-logout text-rose-500 bg-rose-500/10 hover:bg-rose-500 hover:text-white border border-rose-500/25 rounded-xl px-4 py-2 w-full flex items-center justify-center gap-2 font-medium text-xs transition duration-200 cursor-pointer shadow-sm active:scale-[0.98]">
+                <input type="file" id="baseAvatarInput" accept="image/png,image/jpeg,image/webp" class="hidden"
+                  onchange="uploadBaseAvatar(this)">
+                <a href="{{ url_for('auth.logout') }}"
+                  class="btn-logout text-rose-500 bg-rose-500/10 hover:bg-rose-500 hover:text-white border border-rose-500/25 rounded-xl px-4 py-2 w-full flex items-center justify-center gap-2 font-medium text-xs transition duration-200 cursor-pointer shadow-sm active:scale-[0.98]">
                   <span class="material-symbols-outlined text-[16px]">logout</span>
                   Keluar dari akun
                 </a>
@@ -244,7 +368,8 @@
             </div>
           </div>
           {% else %}
-          <a href="{{ url_for('auth.login') }}" class="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-[#1677FF] hover:bg-blue-600">Masuk</a>
+          <a href="{{ url_for('auth.login') }}"
+            class="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-[#1677FF] hover:bg-blue-600">Masuk</a>
           {% endif %}
         </div>
       </header>
@@ -252,16 +377,18 @@
       <!-- SCROLLABLE CONTENT AREA: HANYA INI YANG BER-SCROLL -->
       <main class="flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-5 custom-scrollbar">
         {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            <div class="space-y-2 mb-4">
-              {% for category, message in messages %}
-                <div class="px-4 py-3 rounded-xl border text-xs font-semibold flex items-center gap-2 {% if category == 'success' %}bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-500/40 text-emerald-700 dark:text-emerald-300{% else %}bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-500/40 text-rose-700 dark:text-rose-300{% endif %}">
-                  <span class="material-symbols-outlined text-[18px]">{% if category == 'success' %}check_circle{% else %}error{% endif %}</span>
-                  <span>{{ message }}</span>
-                </div>
-              {% endfor %}
-            </div>
-          {% endif %}
+        {% if messages %}
+        <div class="space-y-2 mb-4">
+          {% for category, message in messages %}
+          <div
+            class="px-4 py-3 rounded-xl border text-xs font-semibold flex items-center gap-2 {% if category == 'success' %}bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-500/40 text-emerald-700 dark:text-emerald-300{% else %}bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-500/40 text-rose-700 dark:text-rose-300{% endif %}">
+            <span class="material-symbols-outlined text-[18px]">{% if category == 'success' %}check_circle{% else
+              %}error{% endif %}</span>
+            <span>{{ message }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
         {% endwith %}
 
         {% block content %}{% endblock %}
@@ -270,7 +397,7 @@
   </div>
 
   <script>
-    document.getElementById('global-theme-btn')?.addEventListener('click', function() {
+    document.getElementById('global-theme-btn')?.addEventListener('click', function () {
       const isDark = document.documentElement.classList.contains('dark');
       if (isDark) {
         document.documentElement.classList.remove('dark');
@@ -297,7 +424,7 @@
       }
     }
 
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
       const container = document.getElementById('profile-container');
       const dd = document.getElementById('userProfileDropdown');
       const ch = document.getElementById('profile-chevron');
@@ -315,19 +442,20 @@
         method: 'POST',
         body: formData
       })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.avatar_url) {
-          window.location.reload();
-        } else {
-          alert(data.error || 'Gagal mengunggah foto profil');
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        alert('Terjadi kesalahan saat mengunggah foto profil');
-      });
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.avatar_url) {
+            window.location.reload();
+          } else {
+            alert(data.error || 'Gagal mengunggah foto profil');
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          alert('Terjadi kesalahan saat mengunggah foto profil');
+        });
     }
   </script>
 </body>
+
 </html>
