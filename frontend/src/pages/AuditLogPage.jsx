@@ -41,16 +41,32 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
   // Detail Modal state
   const [selectedAuditDetail, setSelectedAuditDetail] = useState(null);
 
-  // Verifikasi Integritas state & auto-dismiss toast
-  const [verifyToast, setVerifyToast] = useState(null);
+  // Verifikasi Integritas Direct Action (Tanpa modal konfirmasi awal)
   const [verifying, setVerifying] = useState(false);
-  const toastTimerRef = useRef(null);
+  const [verifyToast, setVerifyToast] = useState(null);
 
-  useEffect(() => {
-    return () => {
-      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    };
-  }, []);
+  const handleExecuteVerify = async () => {
+    if (verifying) return;
+    setVerifying(true);
+    try {
+      await fetch("/audit/verify", {
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+      });
+      setVerifyToast({
+        message: "Integritas hash chain terverifikasi VALID — tidak ada data yang dimanipulasi.",
+        type: "success",
+      });
+      setTimeout(() => setVerifyToast(null), 3500);
+    } catch {
+      setVerifyToast({
+        message: "Gagal memverifikasi integritas hash chain.",
+        type: "error",
+      });
+      setTimeout(() => setVerifyToast(null), 3500);
+    } finally {
+      setVerifying(false);
+    }
+  };
 
   // Fetch audit data if not already pre-populated
   useEffect(() => {
@@ -61,38 +77,14 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
         .then((data) => {
           if (data && data.success && Array.isArray(data.entries)) {
             setEntries(data.entries);
+          } else if (Array.isArray(data)) {
+            setEntries(data);
           }
         })
         .catch((err) => console.error("Error fetching audit logs:", err))
         .finally(() => setLoading(false));
     }
   }, []);
-
-  const handleVerifyIntegrity = async (e) => {
-    if (e) e.preventDefault();
-    setVerifying(true);
-    try {
-      await fetch("/audit/verify", {
-        headers: { "X-Requested-With": "XMLHttpRequest" },
-      });
-      setVerifyToast({
-        type: "success",
-        message: "Integritas hash chain terverifikasi VALID — tidak ada data yang dimanipulasi.",
-      });
-    } catch {
-      setVerifyToast({
-        type: "error",
-        message: "Gagal memverifikasi integritas hash chain.",
-      });
-    } finally {
-      setVerifying(false);
-      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-      // Popup stay beberapa detik (3.5 detik) lalu hilang otomatis
-      toastTimerRef.current = setTimeout(() => {
-        setVerifyToast(null);
-      }, 3500);
-    }
-  };
 
   // Close dropdowns on click outside
   useEffect(() => {
@@ -112,23 +104,6 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Fetch audit data if not available in window.__INITIAL_AUDIT_DATA__
-  useEffect(() => {
-    if (entries.length === 0) {
-      setLoading(true);
-      fetch("/api/audit/logs")
-        .then((res) => (res.ok ? res.json() : Promise.reject(res)))
-        .then((data) => {
-          if (Array.isArray(data)) setEntries(data);
-          else if (data && Array.isArray(data.entries)) setEntries(data.entries);
-        })
-        .catch(() => {
-          // Fallback if API not available yet
-        })
-        .finally(() => setLoading(false));
-    }
   }, []);
 
   // Sync external search change
@@ -334,29 +309,30 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
 
   return (
     <div className="space-y-6 !mt-0" style={{ marginTop: 0 }}>
-      {/* ── TOAST NOTIFICATION VERIFIKASI (AUTO-DISMISS SETELAH BEBERAPA DETIK) ── */}
+      {/* ── TOAST NOTIFICATION VERIFIKASI (STYLE IDENTIK HALAMAN IMPORT DATA) ── */}
       {verifyToast && (
         <div
-          className={`fixed top-20 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl backdrop-blur-md transition-all duration-300 animate-slideIn ${verifyToast.type === "success"
-              ? isDark
-                ? "bg-[#06241E] border-emerald-500/50 text-emerald-300 shadow-emerald-950/40"
-                : "bg-emerald-50 border-emerald-400 text-emerald-800 shadow-lg"
-              : isDark
-                ? "bg-[#2A0E12] border-rose-500/50 text-rose-300 shadow-rose-950/40"
-                : "bg-rose-50 border-rose-400 text-rose-800 shadow-lg"
+          className={`fixed top-20 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl backdrop-blur-md transition-all duration-300 ${verifyToast.type === "success"
+            ? isDark
+              ? "bg-[#06241E] border-emerald-500/50 text-emerald-300 shadow-emerald-950/40"
+              : "bg-emerald-50 border-emerald-400 text-emerald-700 shadow-lg"
+            : isDark
+              ? "bg-[#2A0E12] border-rose-500/50 text-rose-300 shadow-rose-950/40"
+              : "bg-rose-50 border-rose-400 text-rose-700 shadow-lg"
             }`}
         >
-          <span className="material-symbols-outlined text-[20px] text-emerald-500">
+          <span className="material-symbols-outlined text-[20px]">
             {verifyToast.type === "success" ? "check_circle" : "error"}
           </span>
-          <span className="text-xs sm:text-sm font-semibold">{verifyToast.message}</span>
+          <span className="text-xs font-semibold">{verifyToast.message}</span>
           <button
             type="button"
             onClick={() => setVerifyToast(null)}
-            className="ml-2 hover:opacity-75 cursor-pointer text-xs"
+            className="!bg-transparent hover:!bg-transparent !p-0 !m-0 !border-none !shadow-none !outline-none ml-2 hover:opacity-75 cursor-pointer text-xs"
+            style={{ background: "transparent", backgroundColor: "transparent", boxShadow: "none", border: "none", outline: "none", margin: 0, padding: 0 }}
             title="Tutup notifikasi"
           >
-            <span className="material-symbols-outlined text-[16px]">close</span>
+            ✕
           </button>
         </div>
       )}
@@ -367,8 +343,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
            ======================================================== */}
       <div
         className={`relative overflow-hidden rounded-2xl border p-5 sm:p-6 transition-all duration-300 !mt-0 ${isDark
-            ? "border-[#1E3A5F] bg-[#0A182B] shadow-2xl"
-            : "border-slate-200 bg-white shadow-sm"
+          ? "border-[#1E3A5F] bg-[#0A182B] shadow-2xl"
+          : "border-slate-200 bg-white shadow-sm"
           }`}
         style={{ marginTop: 0 }}
       >
@@ -376,13 +352,13 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
         <div className="absolute -top-24 -left-24 w-72 h-72 bg-blue-500/10 dark:bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-cyan-500/10 dark:bg-cyan-600/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 sm:gap-5">
+        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 sm:gap-5 w-full">
           {/* Left: Verified Icon & Header Text */}
-          <div className="flex-1 min-w-0 flex items-center gap-4 sm:gap-5">
+          <div className="flex items-center gap-4 sm:gap-5 shrink-0 max-w-xl">
             <div
               className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shrink-0 border ${isDark
-                  ? "bg-gradient-to-br from-[#1677FF]/40 to-[#0A2540] border-[#38BDF8]/40 shadow-[0_0_24px_rgba(22,119,255,0.45)] text-[#38BDF8]"
-                  : "bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 shadow-sm text-blue-600"
+                ? "bg-gradient-to-br from-[#1677FF]/40 to-[#0A2540] border-[#38BDF8]/40 shadow-[0_0_24px_rgba(22,119,255,0.45)] text-[#38BDF8]"
+                : "bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 shadow-sm text-blue-600"
                 }`}
             >
               <span className="material-symbols-outlined text-[30px] sm:text-[34px]">
@@ -392,13 +368,13 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
 
             <div>
               <h1
-                className={`text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2 !m-0 ${isDark ? "text-white" : "text-slate-900"
+                className={`text-2xl font-bold tracking-tight flex items-center gap-2 !m-0 ${isDark ? "text-white" : "text-slate-900"
                   }`}
               >
                 Audit Log &amp; Hash Chain
               </h1>
               <p
-                className={`text-xs sm:text-[13px] mt-1.5 max-w-xl leading-relaxed !m-0 ${isDark ? "text-[#94A3B8]" : "text-slate-500"
+                className={`text-xs font-normal mt-1 leading-relaxed !m-0 ${isDark ? "text-[#94A3B8]" : "text-slate-500"
                   }`}
               >
                 Ini adalah ledger sistem — satu-satunya sumber kebenaran riwayat perubahan data
@@ -407,29 +383,37 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
             </div>
           </div>
 
-          {/* Center: High-Definition Vector SVG Graphic (No Background, Fixed Box) */}
-          <div className="hidden xl:flex items-center justify-center shrink-0 w-[240px] h-20 select-none">
+          {/* Center: High-Definition Vector SVG Graphic (Di tengah di antara h2 dan button) */}
+          <div className="hidden xl:flex items-center justify-center flex-1 px-4 select-none">
             <img
               src="/static/img/audit_banner_graphic.svg"
               alt="Audit Hash Chain Ledger Nodes HD"
-              className="h-full w-auto object-contain drop-shadow-md dark:drop-shadow-[0_0_20px_rgba(56,189,248,0.35)] pointer-events-none"
+              className="h-16 w-auto object-contain drop-shadow-md dark:drop-shadow-[0_0_20px_rgba(56,189,248,0.35)] pointer-events-none"
             />
           </div>
 
-          {/* Right: Verifikasi Integritas Button (Fixed Width 230px so Graphic Never Shifts) */}
+          {/* Right: Button Verifikasi Integritas (Direct Action) */}
           <div className="shrink-0 w-full sm:w-[230px] flex justify-end">
             <button
               type="button"
-              id="btn-verifikasi-integritas"
-              onClick={handleVerifyIntegrity}
+              id="verifyIntegrityBtn"
+              data-testid="btn-verifikasi-integritas"
+              onClick={handleExecuteVerify}
               disabled={verifying}
-              className="w-full sm:w-[230px] flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl bg-[#1677FF] hover:bg-blue-600 active:bg-blue-700 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-[#1677FF]/25 hover:shadow-[#1677FF]/40 transition-colors duration-150 cursor-pointer disabled:opacity-60 !m-0"
+              className="w-full sm:w-[230px] flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl bg-[#1677FF] hover:bg-blue-600 active:scale-95 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-[#1677FF]/25 hover:shadow-[#1677FF]/40 transition-all duration-150 cursor-pointer disabled:opacity-60 !m-0"
             >
-              <span className={`material-symbols-outlined text-[19px] ${verifying ? "animate-spin" : ""}`}>
-                {verifying ? "progress_activity" : "check_circle"}
-              </span>
-              <span>{verifying ? "Memverifikasi..." : "Verifikasi Integritas"}</span>
-              <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+              {verifying ? (
+                <>
+                  <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  <span>Memverifikasi...</span>
+                </>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-[19px]">verified_user</span>
+                  <span>Verifikasi Integritas</span>
+                  <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -441,8 +425,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
            ======================================================== */}
       <div
         className={`rounded-2xl border transition-all duration-300 overflow-visible ${isDark
-            ? "border-[#162F52] bg-[#0A182B] shadow-2xl"
-            : "border-slate-200 bg-white shadow-sm"
+          ? "border-[#162F52] bg-[#0A182B] shadow-2xl"
+          : "border-slate-200 bg-white shadow-sm"
           }`}
       >
         {/* Controls Toolbar: Search & Dropdowns */}
@@ -460,12 +444,13 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
             </span>
             <input
               type="text"
+              id="auditSearchInput"
               value={localSearch}
               onChange={(e) => handleSearchChange(e.target.value)}
               placeholder="Cari nama, aksi, tabel, atau user..."
-              className={`w-full h-11 pl-10 pr-9 rounded-xl border text-xs outline-none transition-all ${isDark
-                  ? "border-[#1E3A5F] bg-[#071426] text-white placeholder-[#64748B] focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF]"
-                  : "border-slate-300 bg-slate-50 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:bg-white"
+              className={`w-full h-11 pl-10 pr-9 rounded-xl border text-xs sm:text-sm outline-none transition-all duration-200 ease-in-out ${isDark
+                ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] placeholder-[#4d6686] focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF]"
+                : "bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:bg-white"
                 }`}
             />
             {localSearch && (
@@ -488,8 +473,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                 type="button"
                 onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
                 className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center justify-between text-xs font-medium transition-all cursor-pointer ${isDark
-                    ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
-                    : "border-slate-300 bg-slate-50 text-slate-800 hover:border-blue-500"
+                  ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
+                  : "border-slate-300 bg-slate-50 text-slate-800 hover:border-blue-500"
                   }`}
               >
                 <div className="flex items-center gap-2 min-w-0">
@@ -512,8 +497,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
               {roleDropdownOpen && (
                 <div
                   className={`absolute left-0 top-12 mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-40 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-md ${isDark
-                      ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7]"
-                      : "border-slate-200 bg-white text-slate-800 shadow-xl"
+                    ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7]"
+                    : "border-slate-200 bg-white text-slate-800 shadow-xl"
                     }`}
                   style={{
                     backgroundColor: isDark ? "#0A182B" : "#FFFFFF",
@@ -537,12 +522,12 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                             setCurrentPage(1);
                           }}
                           className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${isSelected
-                              ? isDark
-                                ? "bg-[#1677FF] text-white font-semibold"
-                                : "bg-blue-600 text-white font-semibold"
-                              : isDark
-                                ? "hover:bg-[#122846] text-[#CBD5E1]"
-                                : "hover:bg-slate-100 text-slate-700"
+                            ? isDark
+                              ? "bg-[#1677FF] text-white font-semibold"
+                              : "bg-blue-600 text-white font-semibold"
+                            : isDark
+                              ? "hover:bg-[#122846] text-[#CBD5E1]"
+                              : "hover:bg-slate-100 text-slate-700"
                             }`}
                         >
                           <span className="truncate pr-2">{opt.label}</span>
@@ -565,8 +550,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                 type="button"
                 onClick={() => setActionDropdownOpen(!actionDropdownOpen)}
                 className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center justify-between text-xs font-medium transition-all cursor-pointer ${isDark
-                    ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
-                    : "border-slate-300 bg-slate-50 text-slate-800 hover:border-blue-500"
+                  ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
+                  : "border-slate-300 bg-slate-50 text-slate-800 hover:border-blue-500"
                   }`}
               >
                 <div className="flex items-center gap-2 min-w-0">
@@ -589,8 +574,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
               {actionDropdownOpen && (
                 <div
                   className={`absolute left-0 top-12 mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-40 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-md ${isDark
-                      ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7]"
-                      : "border-slate-200 bg-white text-slate-800 shadow-xl"
+                    ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7]"
+                    : "border-slate-200 bg-white text-slate-800 shadow-xl"
                     }`}
                   style={{
                     backgroundColor: isDark ? "#0A182B" : "#FFFFFF",
@@ -614,12 +599,12 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                             setCurrentPage(1);
                           }}
                           className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${isSelected
-                              ? isDark
-                                ? "bg-[#1677FF] text-white font-semibold"
-                                : "bg-blue-600 text-white font-semibold"
-                              : isDark
-                                ? "hover:bg-[#122846] text-[#CBD5E1]"
-                                : "hover:bg-slate-100 text-slate-700"
+                            ? isDark
+                              ? "bg-[#1677FF] text-white font-semibold"
+                              : "bg-blue-600 text-white font-semibold"
+                            : isDark
+                              ? "hover:bg-[#122846] text-[#CBD5E1]"
+                              : "hover:bg-slate-100 text-slate-700"
                             }`}
                         >
                           <span>{opt.label}</span>
@@ -642,8 +627,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                 type="button"
                 onClick={() => setDateDropdownOpen(!dateDropdownOpen)}
                 className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center justify-between text-xs font-medium transition-all cursor-pointer ${isDark
-                    ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
-                    : "border-slate-300 bg-slate-50 text-slate-800 hover:border-blue-500"
+                  ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
+                  : "border-slate-300 bg-slate-50 text-slate-800 hover:border-blue-500"
                   }`}
               >
                 <div className="flex items-center gap-2 min-w-0">
@@ -669,8 +654,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
               {dateDropdownOpen && (
                 <div
                   className={`absolute left-0 top-12 mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-40 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-md ${isDark
-                      ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7]"
-                      : "border-slate-200 bg-white text-slate-800 shadow-xl"
+                    ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7]"
+                    : "border-slate-200 bg-white text-slate-800 shadow-xl"
                     }`}
                   style={{
                     backgroundColor: isDark ? "#0A182B" : "#FFFFFF",
@@ -694,12 +679,12 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                             setCurrentPage(1);
                           }}
                           className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${isSelected
-                              ? isDark
-                                ? "bg-[#1677FF] text-white font-semibold"
-                                : "bg-blue-600 text-white font-semibold"
-                              : isDark
-                                ? "hover:bg-[#122846] text-[#CBD5E1]"
-                                : "hover:bg-slate-100 text-slate-700"
+                            ? isDark
+                              ? "bg-[#1677FF] text-white font-semibold"
+                              : "bg-blue-600 text-white font-semibold"
+                            : isDark
+                              ? "hover:bg-[#122846] text-[#CBD5E1]"
+                              : "hover:bg-slate-100 text-slate-700"
                             }`}
                         >
                           <span>{opt.label}</span>
@@ -739,8 +724,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
             <thead>
               <tr
                 className={`border-b text-[11px] font-bold uppercase tracking-wider ${isDark
-                    ? "border-[#142D4C] text-[#94A3B8]"
-                    : "border-slate-200 text-slate-600"
+                  ? "border-[#142D4C] text-[#94A3B8]"
+                  : "border-slate-200 text-slate-600"
                   }`}
               >
                 <th
@@ -893,8 +878,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                     <tr
                       key={item.audit_id || idx}
                       className={`transition-colors border-b ${isDark
-                          ? "border-[#0F2238] hover:bg-[#0D2138]/80 text-[#E6EDF7]"
-                          : "border-slate-100 hover:bg-slate-50/80 text-slate-800"
+                        ? "border-[#0F2238] hover:bg-[#0D2138]/80 text-[#E6EDF7]"
+                        : "border-slate-100 hover:bg-slate-50/80 text-slate-800"
                         }`}
                     >
                       {/* # Index */}
@@ -967,8 +952,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                           onClick={() => setSelectedAuditDetail(item)}
                           title="Lihat Detail Snapshot"
                           className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all cursor-pointer mx-auto ${isDark
-                              ? "border-[#1E3A5F] bg-[#071426] hover:bg-[#1677FF]/20 hover:border-[#1677FF] text-[#38BDF8]"
-                              : "border-slate-300 bg-slate-50 hover:bg-blue-50 hover:border-blue-500 text-blue-600"
+                            ? "border-[#1E3A5F] bg-[#071426] hover:bg-[#1677FF]/20 hover:border-[#1677FF] text-[#38BDF8]"
+                            : "border-slate-300 bg-slate-50 hover:bg-blue-50 hover:border-blue-500 text-blue-600"
                             }`}
                         >
                           <span className="material-symbols-outlined text-[16px]">visibility</span>
@@ -1011,8 +996,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                   type="button"
                   onClick={() => setPerPageDropdownOpen(!perPageDropdownOpen)}
                   className={`h-8 px-3 rounded-xl border flex items-center gap-1.5 text-xs font-semibold transition-all cursor-pointer shadow-sm ${isDark
-                      ? "border-[#1E3A5F] bg-[#071426] text-[#E6EDF7] hover:border-[#1677FF]"
-                      : "border-slate-300 bg-slate-50 text-slate-800 hover:border-blue-500"
+                    ? "border-[#1E3A5F] bg-[#071426] text-[#E6EDF7] hover:border-[#1677FF]"
+                    : "border-slate-300 bg-slate-50 text-slate-800 hover:border-blue-500"
                     }`}
                 >
                   <span>{perPage}</span>
@@ -1028,8 +1013,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                 {perPageDropdownOpen && (
                   <div
                     className={`absolute left-0 bottom-full mb-1.5 w-24 rounded-xl border shadow-2xl p-1 z-40 overflow-hidden backdrop-blur-md ${isDark
-                        ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7]"
-                        : "border-slate-200 bg-white text-slate-800 shadow-xl"
+                      ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7]"
+                      : "border-slate-200 bg-white text-slate-800 shadow-xl"
                       }`}
                     style={{
                       backgroundColor: isDark ? "#0A182B" : "#FFFFFF",
@@ -1048,12 +1033,12 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                             setCurrentPage(1);
                           }}
                           className={`w-full px-3 py-1.5 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${isSelected
-                              ? isDark
-                                ? "bg-[#1677FF] text-white font-semibold"
-                                : "bg-blue-600 text-white font-semibold"
-                              : isDark
-                                ? "hover:bg-[#122846] text-[#CBD5E1]"
-                                : "hover:bg-slate-100 text-slate-700"
+                            ? isDark
+                              ? "bg-[#1677FF] text-white font-semibold"
+                              : "bg-blue-600 text-white font-semibold"
+                            : isDark
+                              ? "hover:bg-[#122846] text-[#CBD5E1]"
+                              : "hover:bg-slate-100 text-slate-700"
                             }`}
                         >
                           <span>{num}</span>
@@ -1079,8 +1064,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
               onClick={() => setCurrentPage(Math.max(1, safePage - 1))}
               title="Halaman Sebelumnya"
               className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${isDark
-                  ? "border-[#1E3A5F] bg-[#071426] text-[#CBD5E1] hover:bg-[#122846]"
-                  : "border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100"
+                ? "border-[#1E3A5F] bg-[#071426] text-[#CBD5E1] hover:bg-[#122846]"
+                : "border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100"
                 }`}
             >
               <span className="material-symbols-outlined text-[17px]">chevron_left</span>
@@ -1101,10 +1086,10 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                     type="button"
                     onClick={() => setCurrentPage(p)}
                     className={`w-8 h-8 rounded-lg text-xs font-semibold flex items-center justify-center transition-colors cursor-pointer ${isActive
-                        ? "bg-blue-600 dark:bg-[#1677FF] text-white shadow-md shadow-blue-500/20"
-                        : isDark
-                          ? "border border-[#1E3A5F] bg-[#071426] text-[#CBD5E1] hover:bg-[#122846]"
-                          : "border border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100"
+                      ? "bg-blue-600 dark:bg-[#1677FF] text-white shadow-md shadow-blue-500/20"
+                      : isDark
+                        ? "border border-[#1E3A5F] bg-[#071426] text-[#CBD5E1] hover:bg-[#122846]"
+                        : "border border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100"
                       }`}
                   >
                     {p}
@@ -1118,8 +1103,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
               onClick={() => setCurrentPage(Math.min(totalPages, safePage + 1))}
               title="Halaman Selanjutnya"
               className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${isDark
-                  ? "border-[#1E3A5F] bg-[#071426] text-[#CBD5E1] hover:bg-[#122846]"
-                  : "border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100"
+                ? "border-[#1E3A5F] bg-[#071426] text-[#CBD5E1] hover:bg-[#122846]"
+                : "border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100"
                 }`}
             >
               <span className="material-symbols-outlined text-[17px]">chevron_right</span>
@@ -1141,8 +1126,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
           >
             <div
               className={`w-full max-w-2xl rounded-2xl border shadow-2xl overflow-hidden transition-all flex flex-col max-h-[90vh] ${isDark
-                  ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7]"
-                  : "border-slate-200 bg-white text-slate-800"
+                ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7]"
+                : "border-slate-200 bg-white text-slate-800"
                 }`}
             >
               {/* Modal Header */}
@@ -1153,8 +1138,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                 <div className="flex items-center gap-3">
                   <div
                     className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border overflow-hidden select-none ${isDark
-                        ? "border-[#1677FF]/40 bg-[#1677FF]/20 text-[#38BDF8]"
-                        : "border-blue-200 bg-blue-50 text-blue-600"
+                      ? "border-[#1677FF]/40 bg-[#1677FF]/20 text-[#38BDF8]"
+                      : "border-blue-200 bg-blue-50 text-blue-600"
                       }`}
                   >
                     <span className="material-symbols-outlined text-[22px] select-none">
@@ -1193,8 +1178,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div
                     className={`p-3 rounded-xl border flex flex-col justify-between min-h-[66px] ${isDark
-                        ? "border-[#1E3A5F] bg-[#071426]"
-                        : "border-slate-200 bg-slate-50"
+                      ? "border-[#1E3A5F] bg-[#071426]"
+                      : "border-slate-200 bg-slate-50"
                       }`}
                   >
                     <span
@@ -1215,8 +1200,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
 
                   <div
                     className={`p-3 rounded-xl border flex flex-col justify-between min-h-[66px] ${isDark
-                        ? "border-[#1E3A5F] bg-[#071426]"
-                        : "border-slate-200 bg-slate-50"
+                      ? "border-[#1E3A5F] bg-[#071426]"
+                      : "border-slate-200 bg-slate-50"
                       }`}
                   >
                     <span
@@ -1232,8 +1217,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
 
                   <div
                     className={`p-3 rounded-xl border flex flex-col justify-between min-h-[66px] ${isDark
-                        ? "border-[#1E3A5F] bg-[#071426]"
-                        : "border-slate-200 bg-slate-50"
+                      ? "border-[#1E3A5F] bg-[#071426]"
+                      : "border-slate-200 bg-slate-50"
                       }`}
                   >
                     <span
@@ -1254,8 +1239,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
 
                   <div
                     className={`p-3 rounded-xl border flex flex-col justify-between min-h-[66px] ${isDark
-                        ? "border-[#1E3A5F] bg-[#071426]"
-                        : "border-slate-200 bg-slate-50"
+                      ? "border-[#1E3A5F] bg-[#071426]"
+                      : "border-slate-200 bg-slate-50"
                       }`}
                   >
                     <span
@@ -1278,8 +1263,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                 {/* Hash Chain Details */}
                 <div
                   className={`p-4 rounded-xl border space-y-3 ${isDark
-                      ? "border-[#1E3A5F] bg-[#071426]"
-                      : "border-slate-200 bg-slate-50"
+                    ? "border-[#1E3A5F] bg-[#071426]"
+                    : "border-slate-200 bg-slate-50"
                     }`}
                 >
                   <div>
@@ -1307,8 +1292,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                     </div>
                     <p
                       className={`text-[11px] font-mono p-2.5 rounded-lg border break-all select-all !m-0 ${isDark
-                          ? "bg-[#040C17] border-[#122846] text-[#A5B4FC]"
-                          : "bg-slate-100 border-slate-200 text-slate-800"
+                        ? "bg-[#040C17] border-[#122846] text-[#A5B4FC]"
+                        : "bg-slate-100 border-slate-200 text-slate-800"
                         }`}
                     >
                       {selectedAuditDetail.hash || "-"}
@@ -1338,8 +1323,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                     </div>
                     <p
                       className={`text-[11px] font-mono p-2.5 rounded-lg border break-all select-all !m-0 ${isDark
-                          ? "bg-[#040C17] border-[#122846] text-[#94A3B8]"
-                          : "bg-slate-100 border-slate-200 text-slate-600"
+                        ? "bg-[#040C17] border-[#122846] text-[#94A3B8]"
+                        : "bg-slate-100 border-slate-200 text-slate-600"
                         }`}
                     >
                       {selectedAuditDetail.previous_hash || "GENESIS"}
@@ -1366,8 +1351,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                   </div>
                   <pre
                     className={`p-3.5 rounded-xl border text-[11px] font-mono overflow-x-auto max-h-56 custom-scrollbar leading-relaxed !m-0 ${isDark
-                        ? "bg-[#040C17] border-[#142D4C] text-[#38BDF8]"
-                        : "bg-slate-100 border-slate-200 text-blue-700"
+                      ? "bg-[#040C17] border-[#142D4C] text-[#38BDF8]"
+                      : "bg-slate-100 border-slate-200 text-blue-700"
                       }`}
                   >
                     {(() => {
@@ -1408,6 +1393,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
           </div>
         </ModalPortal>
       )}
+
+
     </div>
   );
 }

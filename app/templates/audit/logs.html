@@ -47,6 +47,46 @@
     background-image: none !important;
     transition: none !important;
   }
+
+  /* ========================================================
+     DESIGN SYSTEM: Search Bar Focus State matching Kelola User
+     ======================================================== */
+  .audit-search-input {
+    outline: none !important;
+    box-shadow: none !important;
+    transition: border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                color 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+  .audit-search-input:focus {
+    outline: none !important;
+  }
+  html.dark .audit-search-input:focus {
+    border-color: #1677FF !important;
+    box-shadow: 0 0 0 1px #1677FF !important;
+    background-color: #0A182B !important;
+  }
+  html:not(.dark) .audit-search-input:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: none !important;
+    background-color: #ffffff !important;
+  }
+
+  /* Toast Notification Close Button Reset to prevent global blue hover from style.css */
+  #audit-verify-toast button,
+  #audit-verify-toast button:hover,
+  #audit-verify-toast button:focus,
+  #audit-verify-toast button:active {
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    outline: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: inherit !important;
+  }
 </style>
 
 <div class="space-y-6 !mt-0" style="margin-top: 0 !important;">
@@ -66,9 +106,9 @@
       class="absolute -bottom-24 -right-24 w-72 h-72 bg-cyan-500/10 dark:bg-cyan-600/10 rounded-full blur-3xl pointer-events-none">
     </div>
 
-    <div class="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 sm:gap-5">
-      <!-- Left: Glowing Verified Icon & Text -->
-      <div class="flex-1 min-w-0 flex items-center gap-4 sm:gap-5">
+    <div class="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 sm:gap-5 w-full">
+      <!-- Left: Glowing Verified Icon & Text (Kembali ke tampilan awal sebelum revisi terakhir) -->
+      <div class="flex items-center gap-4 sm:gap-5 shrink-0 max-w-xl">
         <!-- Squircle Icon Container -->
         <div
           class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-[#1677FF]/40 dark:to-[#0A2540] border border-blue-200 dark:border-[#38BDF8]/40 shadow-sm dark:shadow-[0_0_24px_rgba(22,119,255,0.45)] flex items-center justify-center shrink-0">
@@ -78,29 +118,29 @@
 
         <div>
           <h1
-            class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2 !m-0">
+            class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2 !m-0">
             Audit Log &amp; Hash Chain
           </h1>
-          <p class="text-xs sm:text-[13px] text-slate-500 dark:text-[#94A3B8] mt-1.5 max-w-xl leading-relaxed !m-0">
+          <p class="text-xs text-slate-500 dark:text-[#94A3B8] mt-1 font-normal leading-relaxed !m-0">
             Ini adalah ledger sistem — satu-satunya sumber kebenaran riwayat perubahan data dicatat sebagai rantai hash
             SHA-256 (append-only, tidak pernah diubah).
           </p>
         </div>
       </div>
 
-      <!-- Center: 3D Isometric Nodes Graphic (Ultra-HD Vector SVG, 100% Transparan Tanpa Box Background, Fixed Width) -->
-      <div class="hidden xl:flex items-center justify-center shrink-0 w-[240px] h-20 select-none">
+      <!-- Center: 3D Isometric Nodes Graphic (Di tengah di antara h2 dan button verifikasi) -->
+      <div class="hidden xl:flex items-center justify-center flex-1 px-4 select-none">
         <img src="{{ url_for('static', filename='img/audit_banner_graphic.svg') }}"
           alt="Audit Hash Chain Ledger Nodes HD"
-          class="h-full w-auto object-contain drop-shadow-md dark:drop-shadow-[0_0_20px_rgba(56,189,248,0.35)] pointer-events-none">
+          class="h-16 w-auto object-contain drop-shadow-md dark:drop-shadow-[0_0_20px_rgba(56,189,248,0.35)] pointer-events-none">
       </div>
 
-      <!-- Right: Button Verifikasi Integritas (Fixed Width 230px agar gambar tidak bergerak saat status verifikasi berubah) -->
+      <!-- Right: Button Verifikasi Integritas (Direct Action) -->
       <div class="shrink-0 w-full sm:w-[230px] flex justify-end">
         <button type="button" id="verifyIntegrityBtn"
-          class="w-full sm:w-[230px] flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl bg-[#1677FF] hover:bg-blue-600 active:bg-blue-700 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-[#1677FF]/25 hover:shadow-[#1677FF]/40 transition-colors duration-150 cursor-pointer !m-0">
-          <span id="verifyBtnIcon" class="material-symbols-outlined text-[19px]">check_circle</span>
-          <span id="verifyBtnText">Verifikasi Integritas</span>
+          class="w-full sm:w-[230px] flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl bg-[#1677FF] hover:bg-blue-600 active:scale-95 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-[#1677FF]/25 hover:shadow-[#1677FF]/40 transition-all duration-150 cursor-pointer !m-0">
+          <span class="material-symbols-outlined text-[19px]">verified_user</span>
+          <span>Verifikasi Integritas</span>
           <span class="material-symbols-outlined text-[18px]">chevron_right</span>
         </button>
       </div>
@@ -123,7 +163,7 @@
           search
         </span>
         <input type="text" id="auditSearchInput" placeholder="Cari nama, aksi, tabel, atau user..."
-          class="w-full h-11 pl-10 pr-9 rounded-xl border border-slate-300 dark:border-[#1E3A5F] bg-slate-50 dark:bg-[#071426] text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#64748B] focus:border-blue-500 dark:focus:border-[#1677FF] focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-[#1677FF] transition-all !m-0">
+          class="audit-search-input w-full h-11 pl-10 pr-9 rounded-xl border border-slate-300 dark:border-[#1E3A5F] bg-slate-50 dark:bg-[#0A182B] text-xs sm:text-sm text-slate-900 dark:text-[#E6EDF7] placeholder-slate-400 dark:placeholder-[#4d6686] focus:border-blue-500 focus:bg-white dark:focus:border-[#1677FF] dark:focus:ring-1 dark:focus:ring-[#1677FF] outline-none transition-all duration-200 ease-in-out !m-0">
         <button type="button" id="clearSearchBtn"
           class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:text-[#64748B] dark:hover:text-white cursor-pointer !m-0 !p-0 !bg-transparent !shadow-none">
           <span class="material-symbols-outlined text-[16px]">close</span>
@@ -156,8 +196,7 @@
           <button type="button" id="actionDropdownBtn"
             class="dropdown-trigger-btn relative w-full h-11 px-3.5 rounded-xl text-slate-800 dark:text-[#E6EDF7] flex items-center justify-between text-xs font-medium transition-all cursor-pointer !m-0 !shadow-none">
             <div class="flex items-center gap-2 min-w-0">
-              <span
-                class="material-symbols-outlined text-[18px] text-blue-500 dark:text-[#38BDF8] shrink-0">bolt</span>
+              <span class="material-symbols-outlined text-[18px] text-blue-500 dark:text-[#38BDF8] shrink-0">bolt</span>
               <span id="actionDropdownLabel" class="font-semibold truncate">Semua Aksi</span>
             </div>
             <span id="actionChevron"
@@ -467,6 +506,8 @@
   </div>
 </div>
 
+
+
 <!-- ========================================================
      4. DATA SERIALIZATION & CLIENT-SIDE CONTROLLER
      ======================================================== -->
@@ -475,18 +516,18 @@
   window.__INITIAL_AUDIT_DATA__ = [
     {% for e in entries %}
     {
-      audit_id: {{ e.audit_id|tojson }},
-      created_at: {{ (e.created_at.strftime("%d %b %Y %H:%M:%S") if e.created_at else "-")|tojson }},
-      raw_time: {{ (e.created_at.isoformat() if e.created_at else "")|tojson }},
-      aksi: {{ (e.aksi or "")|tojson }},
-      table_name: {{ (e.table_name or "-")|tojson }},
-      record_id: {{ (e.record_id if e.record_id is not none else "-")|tojson }},
-      actor_name: {{ (e.actor.name if e.actor else "System")|tojson }},
-      actor_role: {{ (e.actor.role if e.actor else "-")|tojson }},
-      actor_email: {{ (e.actor.email if e.actor else "-")|tojson }},
-      hash: {{ (e.hash or "")|tojson }},
-      previous_hash: {{ (e.previous_hash or "GENESIS")|tojson }},
-      data_snapshot: {{ (e.data_snapshot or "")|tojson }}
+      audit_id: {{ e.audit_id | tojson }},
+      created_at: {{ (e.created_at.strftime("%d %b %Y %H:%M:%S") if e.created_at else "-") | tojson }},
+      raw_time: {{ (e.created_at.isoformat() if e.created_at else "") | tojson }},
+      aksi: {{ (e.aksi or "") | tojson }},
+      table_name: {{ (e.table_name or "-") | tojson }},
+      record_id: {{ (e.record_id if e.record_id is not none else "-") | tojson }},
+      actor_name: {{ (e.actor.name if e.actor else "System") | tojson }},
+      actor_role: {{ (e.actor.role if e.actor else "-") | tojson }},
+      actor_email: {{ (e.actor.email if e.actor else "-") | tojson }},
+      hash: {{ (e.hash or "") | tojson }},
+      previous_hash: {{ (e.previous_hash or "GENESIS") | tojson }},
+      data_snapshot: {{ (e.data_snapshot or "") | tojson }}
     },
     {% endfor %}
   ];
@@ -1100,7 +1141,7 @@
       renderTable();
     });
 
-    // 15. Verifikasi Integritas AJAX Handler & Auto-Dismiss Toast
+    // 15. Verifikasi Integritas Direct AJAX Handler & Auto-Dismiss Toast (Identik Import Data)
     let toastTimeout = null;
     function showAutoDismissToast(message, type = "success") {
       const existing = document.getElementById("audit-verify-toast");
@@ -1111,25 +1152,25 @@
       const toast = document.createElement("div");
       toast.id = "audit-verify-toast";
       toast.className = `fixed top-20 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl backdrop-blur-md transition-all duration-300 ${type === "success"
-          ? isDark
-            ? "bg-[#06241E] border-emerald-500/50 text-emerald-300 shadow-emerald-950/40"
-            : "bg-emerald-50 border-emerald-400 text-emerald-800 shadow-lg"
-          : isDark
-            ? "bg-[#2A0E12] border-rose-500/50 text-rose-300 shadow-rose-950/40"
-            : "bg-rose-50 border-rose-400 text-rose-800 shadow-lg"
+        ? isDark
+          ? "bg-[#06241E] border-emerald-500/50 text-emerald-300 shadow-emerald-950/40"
+          : "bg-emerald-50 border-emerald-400 text-emerald-700 shadow-lg"
+        : isDark
+          ? "bg-[#2A0E12] border-rose-500/50 text-rose-300 shadow-rose-950/40"
+          : "bg-rose-50 border-rose-400 text-rose-700 shadow-lg"
         }`;
       toast.innerHTML = `
-        <span class="material-symbols-outlined text-[20px] ${type === 'success' ? 'text-emerald-500' : 'text-rose-500'}">
+        <span class="material-symbols-outlined text-[20px]">
           ${type === 'success' ? 'check_circle' : 'error'}
         </span>
-        <span class="text-xs sm:text-sm font-semibold">${message}</span>
-        <button type="button" onclick="this.parentElement.remove()" class="ml-2 hover:opacity-75 cursor-pointer text-xs" title="Tutup">
-          <span class="material-symbols-outlined text-[16px]">close</span>
+        <span class="text-xs font-semibold">${message}</span>
+        <button type="button" onclick="this.parentElement.remove()" class="!bg-transparent hover:!bg-transparent !p-0 !m-0 !border-none !shadow-none !outline-none ml-2 hover:opacity-75 cursor-pointer text-xs" style="background: transparent !important; background-color: transparent !important; box-shadow: none !important; border: none !important; outline: none !important; margin: 0 !important; padding: 0 !important;" title="Tutup">
+          ✕
         </button>
       `;
       document.body.appendChild(toast);
 
-      // Popup stay beberapa detik (3.5 detik) lalu hilang otomatis
+      // Auto dismiss setelah 3.5 detik dengan transisi halus
       toastTimeout = setTimeout(() => {
         toast.style.transition = "opacity 0.4s ease, transform 0.4s ease";
         toast.style.opacity = "0";
@@ -1138,48 +1179,61 @@
       }, 3500);
     }
 
-    const verifyBtn = document.getElementById("verifyIntegrityBtn");
-    if (verifyBtn) {
-      verifyBtn.addEventListener("click", async function () {
-        const icon = document.getElementById("verifyBtnIcon");
-        const text = document.getElementById("verifyBtnText");
-        if (icon) {
-          icon.textContent = "progress_activity";
-          icon.classList.add("animate-spin");
-        }
-        if (text) text.textContent = "Memverifikasi...";
-        verifyBtn.style.pointerEvents = "none";
+  // ========================================================
+  // Direct Action Verifikasi Integritas (Tanpa Modal Konfirmasi Awal)
+  // ========================================================
+  window.executeDirectVerification = async function () {
+    const btn = document.getElementById("verifyIntegrityBtn");
+    if (!btn || btn.disabled) return;
 
-        try {
-          await fetch("{{ url_for('audit.verify') }}", {
-            headers: { "X-Requested-With": "XMLHttpRequest" }
-          });
-          showAutoDismissToast("Integritas hash chain terverifikasi VALID — tidak ada data yang dimanipulasi.", "success");
-        } catch {
-          showAutoDismissToast("Gagal memverifikasi integritas hash chain.", "error");
-        } finally {
-          if (icon) {
-            icon.textContent = "check_circle";
-            icon.classList.remove("animate-spin");
-          }
-          if (text) text.textContent = "Verifikasi Integritas";
-          verifyBtn.style.pointerEvents = "auto";
-        }
+    // Tampilkan Loading State pada tombol secara langsung
+    const originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.classList.add("opacity-75", "cursor-wait");
+    btn.innerHTML = `
+      <span class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+      <span>Memverifikasi...</span>
+    `;
+
+    try {
+      await fetch("{{ url_for('audit.verify') }}", {
+        headers: { "X-Requested-With": "XMLHttpRequest" }
       });
+      showAutoDismissToast("Integritas hash chain terverifikasi VALID — tidak ada data yang dimanipulasi.", "success");
+    } catch {
+      showAutoDismissToast("Gagal memverifikasi integritas hash chain.", "error");
+    } finally {
+      btn.disabled = false;
+      btn.classList.remove("opacity-75", "cursor-wait");
+      btn.innerHTML = originalHtml;
     }
+  };
 
-    // Auto-dismiss pesan flash server jika ada
-    const flashContainer = document.querySelector("main > .space-y-2");
-    if (flashContainer) {
-      setTimeout(() => {
-        flashContainer.style.transition = "opacity 0.4s ease, transform 0.4s ease";
-        flashContainer.style.opacity = "0";
-        flashContainer.style.transform = "translateY(-10px)";
-        setTimeout(() => flashContainer.remove(), 400);
-      }, 3500);
+  // Wire up event listener pada tombol verifikasi
+  const verifyBtn = document.getElementById("verifyIntegrityBtn");
+  if (verifyBtn) {
+    verifyBtn.addEventListener("click", window.executeDirectVerification);
+  }
+
+  // Escape key handler to close detail modal
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") {
+      if (typeof closeDetailModal === "function") closeDetailModal();
     }
-
-    renderTable();
   });
+
+  // Auto-dismiss pesan flash server jika ada
+  const flashContainer = document.querySelector("main > .space-y-2");
+  if (flashContainer) {
+    setTimeout(() => {
+      flashContainer.style.transition = "opacity 0.4s ease, transform 0.4s ease";
+      flashContainer.style.opacity = "0";
+      flashContainer.style.transform = "translateY(-10px)";
+      setTimeout(() => flashContainer.remove(), 400);
+    }, 3500);
+  }
+
+  renderTable();
+});
 </script>
 {% endblock %}
