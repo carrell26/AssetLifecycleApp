@@ -121,7 +121,7 @@ export default function App() {
           onSearchChange={setSearchValue}
           onOpenLogoutModal={() => setLogoutModalOpen(true)}
           onOpenAvatarModal={() => setAvatarModalOpen(true)}
-          showSearch={!isAuditPage}
+          showSearch={!isAuditPage && !isExportPage}
         />
 
         {/* Main Content: Only this area scrolls */}
