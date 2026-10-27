@@ -119,9 +119,26 @@ export default function ImportPage({ user, searchValue = "", onSearchChange }) {
 
   // Data State - Default belum terpilih (Pilih type)
   const [selectedDeviceTypeId, setSelectedDeviceTypeId] = useState("");
+  const [deviceTypes, setDeviceTypes] = useState([{ device_type_id: 1, nama_tipe: "PSS24" }]);
+  const [deviceTypeDropdownOpen, setDeviceTypeDropdownOpen] = useState(false);
+  const deviceTypeDropdownRef = useRef(null);
   const [imports, setImports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (
+        deviceTypeDropdownRef.current &&
+        !deviceTypeDropdownRef.current.contains(e.target)
+      ) {
+        setDeviceTypeDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // File Upload State
   const [selectedFile, setSelectedFile] = useState(null);
@@ -165,6 +182,9 @@ export default function ImportPage({ user, searchValue = "", onSearchChange }) {
       const data = await res.json();
       if (data.success) {
         setImports(data.imports || []);
+        if (data.device_types && Array.isArray(data.device_types) && data.device_types.length > 0) {
+          setDeviceTypes(data.device_types);
+        }
         if (isManualRefresh) {
           showToast("Data histori import berhasil diperbarui.", "success");
         }
@@ -456,44 +476,136 @@ export default function ImportPage({ user, searchValue = "", onSearchChange }) {
 
           {/* Kolom Kanan: Device Type Tujuan, File Preview, dan Tombol Import (5 Kolom, Tinggi Konsisten) */}
           <div className="lg:col-span-5 flex flex-col justify-between h-full gap-3">
-            {/* Dropdown Device Type (Revisi 2: Menu Pilih type dan PSS24 saja, palet rapi) */}
-            <div>
+            {/* Dropdown Device Type (Style Popup Menu Konsisten dengan Halaman Export) */}
+            <div className="relative" ref={deviceTypeDropdownRef}>
               <label
-                htmlFor="device-type-select"
+                htmlFor="device-type-select-btn"
                 className={`block text-xs font-semibold mb-1.5 ${isDark ? "text-[#CBD5E1]" : "text-slate-700"
                   }`}
               >
                 Device Type tujuan
               </label>
               <div className="relative">
+                <button
+                  type="button"
+                  id="device-type-select-btn"
+                  onClick={() => setDeviceTypeDropdownOpen((prev) => !prev)}
+                  className={`relative w-full h-11 pl-10 pr-9 rounded-xl border text-xs font-medium flex items-center justify-between transition-all cursor-pointer outline-none ${
+                    isDark
+                      ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
+                      : "bg-white border-slate-300 text-slate-800 hover:border-blue-500"
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[18px] text-[#38BDF8] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none select-none">
+                    desktop_windows
+                  </span>
+                  <span className="truncate font-semibold">
+                    {selectedDeviceTypeId
+                      ? deviceTypes.find(
+                          (t) => String(t.device_type_id) === String(selectedDeviceTypeId)
+                        )?.nama_tipe || "PSS24"
+                      : "Pilih type"}
+                  </span>
+                  <span
+                    className={`material-symbols-outlined text-[18px] text-[#94A3B8] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none select-none transition-transform duration-200 ${
+                      deviceTypeDropdownOpen ? "rotate-180" : ""
+                    }`}
+                  >
+                    expand_more
+                  </span>
+                </button>
+
+                {/* Pop-up Menu Dropdown Tipe Perangkat (Style Konsisten Export Page) */}
+                {deviceTypeDropdownOpen && (
+                  <div
+                    className={`absolute left-0 right-0 top-full mt-1.5 rounded-xl border shadow-2xl z-40 backdrop-blur-md overflow-hidden ${
+                      isDark
+                        ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7]"
+                        : "bg-white border-slate-200 text-slate-800 shadow-xl"
+                    }`}
+                  >
+                    <div className="max-h-60 overflow-y-auto custom-scrollbar p-1.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedDeviceTypeId("");
+                          setDeviceTypeDropdownOpen(false);
+                        }}
+                        className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
+                          selectedDeviceTypeId === ""
+                            ? isDark
+                              ? "bg-[#1677FF] text-white font-semibold"
+                              : "bg-blue-600 text-white font-semibold"
+                            : isDark
+                            ? "hover:bg-[#122846] text-[#CBD5E1]"
+                            : "hover:bg-slate-100 text-slate-700"
+                        }`}
+                      >
+                        <span>Pilih type</span>
+                        {selectedDeviceTypeId === "" && (
+                          <span className="material-symbols-outlined text-[16px] shrink-0">
+                            check
+                          </span>
+                        )}
+                      </button>
+
+                      <div
+                        className={`h-px my-1 ${
+                          isDark ? "bg-[#1A3358]" : "bg-slate-100"
+                        }`}
+                      />
+
+                      {deviceTypes.map((type) => {
+                        const isSelected =
+                          String(selectedDeviceTypeId) === String(type.device_type_id);
+                        return (
+                          <button
+                            key={type.device_type_id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedDeviceTypeId(String(type.device_type_id));
+                              setDeviceTypeDropdownOpen(false);
+                            }}
+                            className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
+                              isSelected
+                                ? isDark
+                                  ? "bg-[#1677FF] text-white font-semibold"
+                                  : "bg-blue-600 text-white font-semibold"
+                                : isDark
+                                ? "hover:bg-[#122846] text-[#CBD5E1]"
+                                : "hover:bg-slate-100 text-slate-700"
+                            }`}
+                          >
+                            <span className="truncate pr-2">{type.nama_tipe}</span>
+                            {isSelected && (
+                              <span className="material-symbols-outlined text-[16px] shrink-0">
+                                check
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Hidden Native Select untuk Kompatibilitas Otomatisasi & Form Testing */}
                 <select
                   id="device-type-select"
+                  name="device_type_id"
                   value={selectedDeviceTypeId}
                   onChange={(e) => setSelectedDeviceTypeId(e.target.value)}
-                  className={`w-full h-10 px-4 pr-10 rounded-xl text-xs font-medium transition-all appearance-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#1677FF] ${isDark
-                    ? "bg-[#071426] border border-[#1E3A5F] text-[#E6EDF7] hover:border-[#2A5288]"
-                    : "bg-slate-50 border border-slate-300 text-slate-800 hover:border-slate-400"
-                    }`}
+                  className="sr-only"
+                  tabIndex={-1}
+                  aria-hidden="true"
                 >
-                  <option
-                    value=""
-                    className={isDark ? "bg-[#071426] text-[#94A3B8]" : "bg-white text-slate-500"}
-                  >
-                    Pilih type
-                  </option>
-                  <option
-                    value="1"
-                    className={isDark ? "bg-[#071426] text-white" : "bg-white text-slate-900"}
-                  >
-                    PSS24
-                  </option>
+                  <option value="">Pilih type</option>
+                  {deviceTypes.map((type) => (
+                    <option key={type.device_type_id} value={type.device_type_id}>
+                      {type.nama_tipe}
+                    </option>
+                  ))}
                 </select>
-                <span
-                  className={`material-symbols-outlined absolute right-3.5 top-1/2 -translate-y-1/2 text-[18px] pointer-events-none ${isDark ? "text-[#94A3B8]" : "text-slate-400"
-                    }`}
-                >
-                  expand_more
-                </span>
               </div>
             </div>
 
@@ -524,15 +636,15 @@ export default function ImportPage({ user, searchValue = "", onSearchChange }) {
                   </div>
                 </div>
 
-                {/* Tombol aksi: Ikon refresh dan delete konsisten dengan bawah */}
+                {/* Tombol aksi: Ikon refresh dan delete konsisten berwarna */}
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button
                     type="button"
                     onClick={handleTriggerFileInput}
                     title="Ganti file"
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all cursor-pointer ${isDark
-                      ? "bg-[#071426] border-[#1E3A5F] text-[#94A3B8] hover:text-white hover:border-[#38BDF8]/60 hover:bg-[#122846]"
-                      : "bg-white border-slate-300 text-slate-500 hover:text-slate-800 hover:bg-slate-100"
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all cursor-pointer shadow-sm ${isDark
+                      ? "bg-[#162746] hover:bg-[#1E3660] text-[#38BDF8] border-[#203D6E]"
+                      : "bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200"
                       }`}
                   >
                     <span className="material-symbols-outlined text-[17px]">
@@ -543,9 +655,9 @@ export default function ImportPage({ user, searchValue = "", onSearchChange }) {
                     type="button"
                     onClick={handleClearFile}
                     title="Hapus file"
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all cursor-pointer ${isDark
-                      ? "bg-[#071426] border-[#1E3A5F] text-[#94A3B8] hover:text-rose-400 hover:border-rose-500/50 hover:bg-rose-500/10"
-                      : "bg-white border-slate-300 text-slate-500 hover:text-rose-600 hover:bg-rose-50"
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all cursor-pointer shadow-sm ${isDark
+                      ? "bg-[#3C1318] hover:bg-[#541B22] text-[#F43F5E] border-[#5C1D25]"
+                      : "bg-rose-50 hover:bg-rose-100 text-rose-600 border-rose-200"
                       }`}
                   >
                     <span className="material-symbols-outlined text-[17px]">
@@ -813,17 +925,17 @@ export default function ImportPage({ user, searchValue = "", onSearchChange }) {
                           {imp.created_at || "-"}
                         </td>
 
-                        {/* AKSI (Ditengahin) */}
+                        {/* AKSI (Ditengahin, Ikon berwarna jelas) */}
                         <td className="py-3.5 px-5 text-center whitespace-nowrap">
-                          <div className="flex items-center justify-center gap-1.5">
+                          <div className="flex items-center justify-center gap-2">
                             {/* Tombol Unduh File Excel Asli */}
                             <a
                               href={`/import/${imp.import_id}/download`}
                               download={imp.nama_file}
                               title={`Unduh ${imp.nama_file}`}
-                              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors cursor-pointer ${isDark
-                                ? "text-[#94A3B8] hover:text-[#38BDF8] hover:bg-[#122846]"
-                                : "text-slate-500 hover:text-blue-600 hover:bg-blue-50"
+                              className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all cursor-pointer shadow-sm ${isDark
+                                ? "bg-[#162746] hover:bg-[#1E3660] text-[#38BDF8] border-[#203D6E]"
+                                : "bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200"
                                 }`}
                             >
                               <span className="material-symbols-outlined text-[17px]">
@@ -831,7 +943,7 @@ export default function ImportPage({ user, searchValue = "", onSearchChange }) {
                               </span>
                             </a>
 
-                            {/* Tombol Hapus Histori (Ikon delete konsisten) */}
+                            {/* Tombol Hapus Histori (Ikon delete berwarna) */}
                             <button
                               type="button"
                               onClick={() => {
@@ -839,7 +951,10 @@ export default function ImportPage({ user, searchValue = "", onSearchChange }) {
                                 setDeleteModalOpen(true);
                               }}
                               title="Hapus Histori Ini"
-                              className="w-8 h-8 rounded-lg flex items-center justify-center text-[#94A3B8] hover:text-rose-400 hover:bg-rose-500/15 transition-colors cursor-pointer"
+                              className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all cursor-pointer shadow-sm ${isDark
+                                ? "bg-[#3C1318] hover:bg-[#541B22] text-[#F43F5E] border-[#5C1D25]"
+                                : "bg-rose-50 hover:bg-rose-100 text-rose-600 border-rose-200"
+                                }`}
                             >
                               <span className="material-symbols-outlined text-[17px]">
                                 delete
