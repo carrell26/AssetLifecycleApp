@@ -175,6 +175,57 @@ html.light #profileTriggerBtn:hover {
 }
 
 /* ============================================================
+   GLOBAL THEME SWITCHER BUTTON — DASHBOARD REFERENCE
+   ============================================================ */
+#global-theme-btn {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    border-radius: 9999px !important;
+    border-width: 1px !important;
+    border-style: solid !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: relative !important;
+    cursor: pointer !important;
+    outline: none !important;
+    box-sizing: border-box !important;
+    transition: all 0.3s ease !important;
+}
+
+html:not(.dark) #global-theme-btn,
+html.light #global-theme-btn {
+    background-color: #f8fafc !important; /* bg-slate-50 */
+    border-color: #e2e8f0 !important; /* border-slate-200 */
+    color: #d97706 !important; /* text-amber-600 */
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+html:not(.dark) #global-theme-btn:hover,
+html.light #global-theme-btn:hover {
+    background-color: #f1f5f9 !important; /* hover:bg-slate-100 */
+    border-color: rgba(245, 158, 11, 0.5) !important; /* hover:border-amber-500/50 */
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.25) !important;
+}
+
+html.dark #global-theme-btn {
+    background-color: #0D1F36 !important; /* bg-[#0D1F36] */
+    border-color: #1E3A5F !important; /* border-[#1E3A5F] */
+    color: #fbbf24 !important; /* text-amber-400 */
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+html.dark #global-theme-btn:hover {
+    background-color: #122846 !important; /* hover:bg-[#122846] */
+    border-color: rgba(251, 191, 36, 0.5) !important; /* hover:border-amber-400/50 */
+    box-shadow: 0 0 12px rgba(251, 191, 36, 0.3) !important;
+}
+
+/* ============================================================
    GLOBAL PROFILE POPOVER STANDARDIZATION — DASHBOARD REFERENCE
    ============================================================ */
 #userProfileDropdown button,
@@ -281,6 +332,23 @@ th {
 html.dark th {
     background: rgba(56, 189, 248, 0.1);
     color: #38BDF8;
+}
+
+/* Explicit Header Uniformity for Audit Table (Zero Transition Lag & No Semi-Transparent Overlay) */
+#auditTable thead,
+#auditTable thead tr,
+#auditTable thead th {
+    background-color: #f8fafc !important;
+    background-image: none !important;
+    transition: none !important;
+}
+
+html.dark #auditTable thead,
+html.dark #auditTable thead tr,
+html.dark #auditTable thead th {
+    background-color: #071426 !important;
+    background-image: none !important;
+    transition: none !important;
 }
 
 tr:hover td {

@@ -1,50 +1,1185 @@
 {% extends "base.html" %}
-{% block title %}Audit Log{% endblock %}
+{% block title %}Audit Log &amp; Hash Chain{% endblock %}
+{% block topbar_search %}<div class="flex-1"></div>{% endblock %}
+
 {% block content %}
-<div class="page page--wide" style="margin:0;padding:0;max-width:none;">
+<style hidden>
+  :root {
+    --dropdown-btn-bg: #f8fafc;
+    --dropdown-btn-border: #cbd5e1;
+    --dropdown-box-bg: #ffffff;
+    --dropdown-box-border: #e2e8f0;
+    --dropdown-box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  }
 
-<div class="card" style="margin-bottom:20px;">
-    <h1>Audit Log &amp; Hash Chain</h1>
-    <p class="subtitle">
-        Ini adalah ledger sistem -- satu-satunya sumber kebenaran riwayat perubahan data, dicatat
-        sebagai rantai hash SHA-256 (append-only, tidak pernah diubah). Klik "Verifikasi Integritas"
-        untuk memastikan tidak ada data yang dimanipulasi.
-    </p>
-    <a href="{{ url_for('audit.verify') }}" class="btn">Verifikasi Integritas</a>
-</div>
+  html.dark {
+    --dropdown-btn-bg: #0A182B;
+    --dropdown-btn-border: #1E3A5F;
+    --dropdown-box-bg: #0A182B;
+    --dropdown-box-border: #1E3A5F;
+    --dropdown-box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  }
 
-<div class="card">
-    <table>
+  .dropdown-trigger-btn {
+    background-color: var(--dropdown-btn-bg) !important;
+    border: 1px solid var(--dropdown-btn-border) !important;
+  }
+
+  .custom-dropdown-box {
+    background-color: var(--dropdown-box-bg) !important;
+    border: 1px solid var(--dropdown-box-border) !important;
+    box-shadow: var(--dropdown-box-shadow) !important;
+  }
+
+  /* Table Header Background Consistency (Default, Theme Switch & Sorting Mode) */
+  #auditTable thead,
+  #auditTable thead tr,
+  #auditTable thead th {
+    background-color: #f8fafc !important;
+    background-image: none !important;
+    transition: none !important;
+  }
+
+  html.dark #auditTable thead,
+  html.dark #auditTable thead tr,
+  html.dark #auditTable thead th {
+    background-color: #071426 !important;
+    background-image: none !important;
+    transition: none !important;
+  }
+</style>
+
+<div class="space-y-6 !mt-0" style="margin-top: 0 !important;">
+
+  <!-- ========================================================
+       1. HERO / BANNER AUDIT LOG & HASH CHAIN
+       Menggunakan Ikon HD Vector Transparan Tanpa Background Box
+       ======================================================== -->
+  <div
+    class="relative overflow-hidden rounded-2xl border border-slate-200 dark:border-[#1E3A5F] bg-white dark:bg-[#0A182B] p-5 sm:p-6 shadow-sm dark:shadow-2xl transition-all !mt-0"
+    style="margin-top: 0 !important;">
+    <!-- Ambient glow background effects -->
+    <div
+      class="absolute -top-24 -left-24 w-72 h-72 bg-blue-500/10 dark:bg-blue-600/15 rounded-full blur-3xl pointer-events-none">
+    </div>
+    <div
+      class="absolute -bottom-24 -right-24 w-72 h-72 bg-cyan-500/10 dark:bg-cyan-600/10 rounded-full blur-3xl pointer-events-none">
+    </div>
+
+    <div class="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 sm:gap-5">
+      <!-- Left: Glowing Verified Icon & Text -->
+      <div class="flex-1 min-w-0 flex items-center gap-4 sm:gap-5">
+        <!-- Squircle Icon Container -->
+        <div
+          class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-[#1677FF]/40 dark:to-[#0A2540] border border-blue-200 dark:border-[#38BDF8]/40 shadow-sm dark:shadow-[0_0_24px_rgba(22,119,255,0.45)] flex items-center justify-center shrink-0">
+          <span
+            class="material-symbols-outlined text-[30px] sm:text-[34px] text-blue-600 dark:text-[#38BDF8]">verified_user</span>
+        </div>
+
+        <div>
+          <h1
+            class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2 !m-0">
+            Audit Log &amp; Hash Chain
+          </h1>
+          <p class="text-xs sm:text-[13px] text-slate-500 dark:text-[#94A3B8] mt-1.5 max-w-xl leading-relaxed !m-0">
+            Ini adalah ledger sistem — satu-satunya sumber kebenaran riwayat perubahan data dicatat sebagai rantai hash
+            SHA-256 (append-only, tidak pernah diubah).
+          </p>
+        </div>
+      </div>
+
+      <!-- Center: 3D Isometric Nodes Graphic (Ultra-HD Vector SVG, 100% Transparan Tanpa Box Background, Fixed Width) -->
+      <div class="hidden xl:flex items-center justify-center shrink-0 w-[240px] h-20 select-none">
+        <img src="{{ url_for('static', filename='img/audit_banner_graphic.svg') }}"
+          alt="Audit Hash Chain Ledger Nodes HD"
+          class="h-full w-auto object-contain drop-shadow-md dark:drop-shadow-[0_0_20px_rgba(56,189,248,0.35)] pointer-events-none">
+      </div>
+
+      <!-- Right: Button Verifikasi Integritas (Fixed Width 230px agar gambar tidak bergerak saat status verifikasi berubah) -->
+      <div class="shrink-0 w-full sm:w-[230px] flex justify-end">
+        <button type="button" id="verifyIntegrityBtn"
+          class="w-full sm:w-[230px] flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl bg-[#1677FF] hover:bg-blue-600 active:bg-blue-700 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-[#1677FF]/25 hover:shadow-[#1677FF]/40 transition-colors duration-150 cursor-pointer !m-0">
+          <span id="verifyBtnIcon" class="material-symbols-outlined text-[19px]">check_circle</span>
+          <span id="verifyBtnText">Verifikasi Integritas</span>
+          <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       2. PANEL TABEL AUDIT DENGAN SEARCH & FILTER LENGKAP
+       Style Menu Dropdown Konsisten dengan Box Card Halaman Perangkat
+       ======================================================== -->
+  <div
+    class="rounded-2xl border border-slate-200 dark:border-[#162F52] bg-white dark:bg-[#0A182B] shadow-sm dark:shadow-2xl overflow-visible">
+    <!-- Toolbar: Search Bar & Dropdown Filters -->
+    <div
+      class="p-4 sm:p-5 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 sm:gap-4 border-b border-slate-100 dark:border-[#142D4C]">
+      <!-- Left: Search Bar -->
+      <div class="relative flex-1 max-w-md">
+        <span
+          class="absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px] text-slate-400 dark:text-[#64748B] pointer-events-none">
+          search
+        </span>
+        <input type="text" id="auditSearchInput" placeholder="Cari nama, aksi, tabel, atau user..."
+          class="w-full h-11 pl-10 pr-9 rounded-xl border border-slate-300 dark:border-[#1E3A5F] bg-slate-50 dark:bg-[#071426] text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#64748B] focus:border-blue-500 dark:focus:border-[#1677FF] focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-[#1677FF] transition-all !m-0">
+        <button type="button" id="clearSearchBtn"
+          class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:text-[#64748B] dark:hover:text-white cursor-pointer !m-0 !p-0 !bg-transparent !shadow-none">
+          <span class="material-symbols-outlined text-[16px]">close</span>
+        </button>
+      </div>
+
+      <!-- Right: Dropdown Filters (Consistent Box Card Style) -->
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Filter Dropdown 1: Semua Role -->
+        <div class="relative w-[170px] shrink-0" id="roleDropdownWrapper">
+          <button type="button" id="roleDropdownBtn"
+            class="dropdown-trigger-btn relative w-full h-11 px-3.5 rounded-xl text-slate-800 dark:text-[#E6EDF7] flex items-center justify-between text-xs font-medium transition-all cursor-pointer !m-0 !shadow-none">
+            <div class="flex items-center gap-2 min-w-0">
+              <span
+                class="material-symbols-outlined text-[18px] text-blue-500 dark:text-[#38BDF8] shrink-0">badge</span>
+              <span id="roleDropdownLabel" class="font-semibold truncate">Semua Role</span>
+            </div>
+            <span id="roleChevron"
+              class="material-symbols-outlined text-[18px] text-slate-400 dark:text-[#94A3B8] transition-transform duration-200 shrink-0">expand_more</span>
+          </button>
+          <!-- Box Card Menu -->
+          <div id="roleDropdownMenu"
+            class="custom-dropdown-box hidden absolute left-0 top-12 mt-1.5 w-full rounded-xl p-1.5 z-50 max-h-60 overflow-y-auto custom-scrollbar">
+            <!-- Diisi lewat JS -->
+          </div>
+        </div>
+
+        <!-- Filter Dropdown 2: Semua Aksi -->
+        <div class="relative w-[170px] shrink-0" id="actionDropdownWrapper">
+          <button type="button" id="actionDropdownBtn"
+            class="dropdown-trigger-btn relative w-full h-11 px-3.5 rounded-xl text-slate-800 dark:text-[#E6EDF7] flex items-center justify-between text-xs font-medium transition-all cursor-pointer !m-0 !shadow-none">
+            <div class="flex items-center gap-2 min-w-0">
+              <span
+                class="material-symbols-outlined text-[18px] text-blue-500 dark:text-[#38BDF8] shrink-0">bolt</span>
+              <span id="actionDropdownLabel" class="font-semibold truncate">Semua Aksi</span>
+            </div>
+            <span id="actionChevron"
+              class="material-symbols-outlined text-[18px] text-slate-400 dark:text-[#94A3B8] transition-transform duration-200 shrink-0">expand_more</span>
+          </button>
+          <!-- Box Card Menu -->
+          <div id="actionDropdownMenu"
+            class="custom-dropdown-box hidden absolute left-0 top-12 mt-1.5 w-full rounded-xl p-1.5 z-50 max-h-60 overflow-y-auto custom-scrollbar">
+            <!-- Diisi lewat JS -->
+          </div>
+        </div>
+
+        <!-- Filter Dropdown 3: Semua Waktu -->
+        <div class="relative w-[190px] shrink-0" id="dateDropdownWrapper">
+          <button type="button" id="dateDropdownBtn"
+            class="dropdown-trigger-btn relative w-full h-11 px-3.5 rounded-xl text-slate-800 dark:text-[#E6EDF7] flex items-center justify-between text-xs font-medium transition-all cursor-pointer !m-0 !shadow-none">
+            <div class="flex items-center gap-2 min-w-0">
+              <span
+                class="material-symbols-outlined text-[18px] text-blue-500 dark:text-[#38BDF8] shrink-0">calendar_month</span>
+              <span id="dateDropdownLabel" class="font-semibold truncate">Semua Waktu</span>
+            </div>
+            <span id="dateChevron"
+              class="material-symbols-outlined text-[18px] text-slate-400 dark:text-[#94A3B8] transition-transform duration-200 shrink-0">expand_more</span>
+          </button>
+          <!-- Box Card Menu -->
+          <div id="dateDropdownMenu"
+            class="custom-dropdown-box hidden absolute left-0 top-12 mt-1.5 w-full rounded-xl p-1.5 z-50 max-h-60 overflow-y-auto custom-scrollbar">
+            <!-- Diisi lewat JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table Container -->
+    <div class="overflow-x-auto custom-scrollbar">
+      <table id="auditTable" class="w-full text-left border-collapse min-w-[1020px] table-fixed"
+        style="table-layout: fixed; width: 100%;">
+        <colgroup>
+          <col style="width: 4%;" />
+          <col style="width: 14%;" />
+          <col style="width: 10%;" />
+          <col style="width: 11%;" />
+          <col style="width: 12%;" />
+          <col style="width: 12%;" />
+          <col style="width: 15%;" />
+          <col style="width: 16%;" />
+          <col style="width: 6%;" />
+        </colgroup>
         <thead>
-            <tr>
-                <th>#</th>
-                <th>Waktu</th>
-                <th>Aksi</th>
-                <th>Tabel</th>
-                <th>Record ID</th>
-                <th>Oleh</th>
-                <th>Hash</th>
-                <th>Previous Hash</th>
-            </tr>
+          <tr
+            class="border-b border-slate-200 dark:border-[#142D4C] text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-[#94A3B8]">
+            <th class="py-3 px-4 text-center select-none" style="width: 4%;">#</th>
+            <th class="py-3 px-4 text-left cursor-pointer select-none" style="width: 14%;"
+              onclick="handleSort('waktu')">
+              <div class="flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white transition-colors">
+                <span>Waktu</span>
+                <span class="w-3.5 h-3.5 min-w-[14px] max-w-[14px] flex items-center justify-center shrink-0">
+                  <span id="sort-icon-waktu"
+                    class="material-symbols-outlined text-[13px] text-slate-400 dark:text-[#64748B]">unfold_more</span>
+                </span>
+              </div>
+            </th>
+            <th class="py-3 px-4 text-left cursor-pointer select-none" style="width: 10%;" onclick="handleSort('aksi')">
+              <div class="flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white transition-colors">
+                <span>Aksi</span>
+                <span class="w-3.5 h-3.5 min-w-[14px] max-w-[14px] flex items-center justify-center shrink-0">
+                  <span id="sort-icon-aksi"
+                    class="material-symbols-outlined text-[13px] text-slate-400 dark:text-[#64748B]">unfold_more</span>
+                </span>
+              </div>
+            </th>
+            <th class="py-3 px-4 text-left cursor-pointer select-none" style="width: 11%;"
+              onclick="handleSort('tabel')">
+              <div class="flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white transition-colors">
+                <span>Tabel</span>
+                <span class="w-3.5 h-3.5 min-w-[14px] max-w-[14px] flex items-center justify-center shrink-0">
+                  <span id="sort-icon-tabel"
+                    class="material-symbols-outlined text-[13px] text-slate-400 dark:text-[#64748B]">unfold_more</span>
+                </span>
+              </div>
+            </th>
+
+            <!-- RECORD ID: RATA KIRI & TERSUSUN HORIZONTAL -->
+            <th class="py-3 px-4 text-left whitespace-nowrap cursor-pointer select-none" style="width: 12%;"
+              onclick="handleSort('record_id')">
+              <div
+                class="flex items-center justify-start gap-1.5 whitespace-nowrap hover:text-slate-900 dark:hover:text-white transition-colors">
+                <span class="whitespace-nowrap">Record ID</span>
+                <span class="w-3.5 h-3.5 min-w-[14px] max-w-[14px] flex items-center justify-center shrink-0">
+                  <span id="sort-icon-record_id"
+                    class="material-symbols-outlined text-[13px] text-slate-400 dark:text-[#64748B]">unfold_more</span>
+                </span>
+              </div>
+            </th>
+
+            <th class="py-3 px-4 text-left cursor-pointer select-none" style="width: 12%;" onclick="handleSort('oleh')">
+              <div class="flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white transition-colors">
+                <span>Oleh</span>
+                <span class="w-3.5 h-3.5 min-w-[14px] max-w-[14px] flex items-center justify-center shrink-0">
+                  <span id="sort-icon-oleh"
+                    class="material-symbols-outlined text-[13px] text-slate-400 dark:text-[#64748B]">unfold_more</span>
+                </span>
+              </div>
+            </th>
+            <th class="py-3 px-4 text-left cursor-pointer select-none" style="width: 15%;" onclick="handleSort('hash')">
+              <div class="flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white transition-colors">
+                <span>Hash</span>
+                <span class="w-3.5 h-3.5 min-w-[14px] max-w-[14px] flex items-center justify-center shrink-0">
+                  <span id="sort-icon-hash"
+                    class="material-symbols-outlined text-[13px] text-slate-400 dark:text-[#64748B]">unfold_more</span>
+                </span>
+              </div>
+            </th>
+            <th class="py-3 px-4 text-left cursor-pointer select-none" style="width: 16%;"
+              onclick="handleSort('previous_hash')">
+              <div class="flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white transition-colors">
+                <span>Previous Hash</span>
+                <span class="w-3.5 h-3.5 min-w-[14px] max-w-[14px] flex items-center justify-center shrink-0">
+                  <span id="sort-icon-previous_hash"
+                    class="material-symbols-outlined text-[13px] text-slate-400 dark:text-[#64748B]">unfold_more</span>
+                </span>
+              </div>
+            </th>
+            <th class="py-3 px-4 text-center select-none" style="width: 6%;">Detail</th>
+          </tr>
         </thead>
-        <tbody>
-            {% for e in entries %}
-            <tr>
-                <td>{{ e.audit_id }}</td>
-                <td>{{ e.created_at.strftime("%d %b %Y %H:%M:%S") if e.created_at else "-" }}</td>
-                <td>{{ e.aksi }}</td>
-                <td>{{ e.table_name }}</td>
-                <td>{{ e.record_id }}</td>
-                <td>{{ e.actor.name if e.actor else "-" }}</td>
-                <td title="{{ e.hash }}"><code>{{ e.hash[:12] }}&hellip;</code></td>
-                <td title="{{ e.previous_hash }}"><code>{{ e.previous_hash[:12] if e.previous_hash else "GENESIS" }}&hellip;</code></td>
-            </tr>
-            {% else %}
-            <tr><td colspan="8">Belum ada entry audit log.</td></tr>
-            {% endfor %}
+        <tbody id="auditTableBody" class="divide-y divide-slate-100 dark:divide-[#0F2238] text-xs">
+          <!-- Di-render dinamis oleh JavaScript -->
         </tbody>
-    </table>
-</div>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyAuditState"
+      class="hidden p-16 text-center text-xs flex flex-col items-center justify-center gap-2 text-slate-400 dark:text-slate-500">
+      <span class="material-symbols-outlined text-[36px] text-slate-400 dark:text-slate-500">search_off</span>
+      <span class="font-medium">Tidak ada rekaman audit log yang sesuai dengan filter pencarian.</span>
+    </div>
+
+    <!-- Table Footer / Pagination (Style Dropdown Halaman Perangkat) -->
+    <div
+      class="p-4 sm:p-5 border-t border-slate-100 dark:border-[#142D4C] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-[#94A3B8]">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span>Menampilkan</span>
+        <span id="rangeStart" class="font-semibold text-slate-800 dark:text-white">0</span>
+        <span>-</span>
+        <span id="rangeEnd" class="font-semibold text-slate-800 dark:text-white">0</span>
+        <span>dari</span>
+        <span id="totalItems" class="font-semibold text-slate-800 dark:text-white">0</span>
+        <span>entri audit</span>
+
+        <span class="mx-2 text-slate-300 dark:text-[#1E3A5F]">|</span>
+
+        <!-- Custom Dropdown Baris per Halaman (Box Card Popup Style) -->
+        <div class="flex items-center gap-2">
+          <span>Baris per halaman:</span>
+          <div class="relative" id="perPageDropdownWrapper">
+            <button type="button" id="perPageDropdownBtn"
+              class="dropdown-trigger-btn h-8 px-3 rounded-xl text-slate-800 dark:text-[#E6EDF7] flex items-center gap-1.5 text-xs font-semibold transition-all cursor-pointer shadow-sm !m-0 !shadow-none">
+              <span id="perPageDropdownLabel">15</span>
+              <span id="perPageChevron"
+                class="material-symbols-outlined text-[16px] text-slate-400 dark:text-[#94A3B8] transition-transform duration-200">expand_more</span>
+            </button>
+            <!-- Box Card Menu -->
+            <div id="perPageDropdownMenu"
+              class="custom-dropdown-box hidden absolute left-0 bottom-full mb-1.5 w-24 rounded-xl p-1 z-50 overflow-hidden">
+              <!-- Diisi via JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination Buttons -->
+      <div class="flex items-center gap-1.5" id="paginationControls">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+  </div>
 
 </div>
+
+<!-- ========================================================
+     3. DETAIL AUDIT MODAL (INSPEKSI CRYPTOGRAPHIC HASH & SNAPSHOT)
+     Mendukung Dark Mode & Light Mode Penuh
+     ======================================================== -->
+<div id="auditDetailModal" onclick="if(event.target === this) closeDetailModal()"
+  class="hidden fixed inset-0 z-[99999] w-screen h-screen flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm transition-all duration-200">
+  <div
+    class="w-full max-w-2xl rounded-2xl border border-slate-200 dark:border-[#1E3A5F] bg-white dark:bg-[#0A182B] text-slate-800 dark:text-[#E6EDF7] shadow-2xl overflow-hidden transition-all flex flex-col max-h-[90vh]">
+    <!-- Modal Header -->
+    <div
+      class="px-6 py-4 border-b border-slate-200 dark:border-[#142D4C] flex items-center justify-between bg-slate-50 dark:bg-[#071426]">
+      <div class="flex items-center gap-3">
+        <div
+          class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-[#1677FF]/20 border border-blue-200 dark:border-[#1677FF]/40 text-blue-600 dark:text-[#38BDF8] flex items-center justify-center shrink-0 overflow-hidden select-none">
+          <span class="material-symbols-outlined text-[22px] select-none">visibility</span>
+        </div>
+        <div>
+          <h3 id="modalTitle" class="text-base font-bold text-slate-900 dark:text-white !m-0">Detail Rekaman Audit</h3>
+          <p id="modalSubtitle" class="text-xs text-slate-500 dark:text-[#94A3B8] mt-0.5 !m-0">Snapshot transaksi dan
+            hash chain integritas</p>
+        </div>
+      </div>
+      <button type="button" onclick="closeDetailModal()"
+        class="text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer !m-0 !p-1 !bg-transparent !shadow-none">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Content -->
+    <div class="p-6 space-y-4 overflow-y-auto custom-scrollbar">
+      <!-- 4 Card Ringkasan -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div
+          class="p-3 rounded-xl border border-slate-200 dark:border-[#1E3A5F] bg-slate-50 dark:bg-[#071426] flex flex-col justify-between min-h-[66px]">
+          <span class="text-[10px] uppercase font-bold text-slate-400 dark:text-[#64748B] block">Waktu Pencatatan</span>
+          <div class="flex-1 flex items-center mt-1">
+            <span id="modalTime" class="text-xs font-semibold text-slate-900 dark:text-white font-mono">-</span>
+          </div>
+        </div>
+        <div
+          class="p-3 rounded-xl border border-slate-200 dark:border-[#1E3A5F] bg-slate-50 dark:bg-[#071426] flex flex-col justify-between min-h-[66px]">
+          <span class="text-[10px] uppercase font-bold text-slate-400 dark:text-[#64748B] block">Tipe Aksi &amp;
+            Status</span>
+          <div id="modalAksiBadge" class="flex-1 flex items-center mt-1">
+            <!-- Badge -->
+          </div>
+        </div>
+        <div
+          class="p-3 rounded-xl border border-slate-200 dark:border-[#1E3A5F] bg-slate-50 dark:bg-[#071426] flex flex-col justify-between min-h-[66px]">
+          <span class="text-[10px] uppercase font-bold text-slate-400 dark:text-[#64748B] block">Tabel &amp; Record
+            Target</span>
+          <div class="flex-1 flex items-center mt-1">
+            <span id="modalTableRecord"
+              class="text-xs font-semibold text-blue-600 dark:text-[#38BDF8] font-mono">-</span>
+          </div>
+        </div>
+        <div
+          class="p-3 rounded-xl border border-slate-200 dark:border-[#1E3A5F] bg-slate-50 dark:bg-[#071426] flex flex-col justify-between min-h-[66px]">
+          <span class="text-[10px] uppercase font-bold text-slate-400 dark:text-[#64748B] block">Dilakukan Oleh</span>
+          <div class="flex-1 flex items-center mt-1">
+            <span id="modalActor" class="text-xs font-semibold text-slate-900 dark:text-white">-</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hash Chain Information -->
+      <div class="p-4 rounded-xl border border-slate-200 dark:border-[#1E3A5F] bg-slate-50 dark:bg-[#071426] space-y-3">
+        <div>
+          <div class="flex items-center justify-between text-xs mb-1">
+            <span class="font-bold text-blue-600 dark:text-[#38BDF8] flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[15px]">fingerprint</span>
+              Current SHA-256 Hash
+            </span>
+            <button type="button" onclick="copyToClipboard('modalHashVal')"
+              class="text-[11px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer !m-0 !p-0 !bg-transparent !shadow-none">
+              <span class="material-symbols-outlined text-[14px]">content_copy</span>
+              <span>Salin</span>
+            </button>
+          </div>
+          <p id="modalHashVal"
+            class="text-[11px] font-mono p-2.5 rounded-lg bg-slate-100 dark:bg-[#040C17] border border-slate-200 dark:border-[#122846] text-slate-800 dark:text-[#A5B4FC] break-all select-all !m-0">
+          </p>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between text-xs mb-1">
+            <span class="font-bold text-slate-600 dark:text-[#94A3B8] flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[15px]">link</span>
+              Previous Hash
+            </span>
+            <button type="button" onclick="copyToClipboard('modalPrevHashVal')"
+              class="text-[11px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer !m-0 !p-0 !bg-transparent !shadow-none">
+              <span class="material-symbols-outlined text-[14px]">content_copy</span>
+              <span>Salin</span>
+            </button>
+          </div>
+          <p id="modalPrevHashVal"
+            class="text-[11px] font-mono p-2.5 rounded-lg bg-slate-100 dark:bg-[#040C17] border border-slate-200 dark:border-[#122846] text-slate-600 dark:text-[#94A3B8] break-all select-all !m-0">
+          </p>
+        </div>
+      </div>
+
+      <!-- Data Snapshot Payload -->
+      <div>
+        <div class="flex items-center justify-between text-xs mb-1.5">
+          <span class="font-bold text-slate-700 dark:text-[#CBD5E1] flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">data_object</span>
+            Data Snapshot / Payload
+          </span>
+          <span id="snapshotStatus" class="text-[11px] text-slate-400 dark:text-[#64748B]">JSON Record</span>
+        </div>
+        <pre id="modalSnapshot"
+          class="p-3.5 rounded-xl bg-slate-100 dark:bg-[#040C17] border border-slate-200 dark:border-[#142D4C] text-[11px] font-mono text-blue-700 dark:text-[#38BDF8] overflow-x-auto max-h-56 custom-scrollbar leading-relaxed !m-0"></pre>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div
+      class="px-6 py-3.5 border-t border-slate-200 dark:border-[#142D4C] bg-slate-50 dark:bg-[#071426] flex items-center justify-between">
+      <span class="text-[11px] text-slate-400 dark:text-[#64748B]">SHA-256 Validated</span>
+      <button type="button" onclick="closeDetailModal()"
+        class="px-5 py-2 rounded-xl bg-[#1677FF] hover:bg-blue-600 text-white text-xs font-semibold cursor-pointer !m-0">
+        Tutup
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================
+     4. DATA SERIALIZATION & CLIENT-SIDE CONTROLLER
+     ======================================================== -->
+<script>
+  // 1. Raw Audit Entries from Flask Backend
+  window.__INITIAL_AUDIT_DATA__ = [
+    {% for e in entries %}
+    {
+      audit_id: {{ e.audit_id|tojson }},
+      created_at: {{ (e.created_at.strftime("%d %b %Y %H:%M:%S") if e.created_at else "-")|tojson }},
+      raw_time: {{ (e.created_at.isoformat() if e.created_at else "")|tojson }},
+      aksi: {{ (e.aksi or "")|tojson }},
+      table_name: {{ (e.table_name or "-")|tojson }},
+      record_id: {{ (e.record_id if e.record_id is not none else "-")|tojson }},
+      actor_name: {{ (e.actor.name if e.actor else "System")|tojson }},
+      actor_role: {{ (e.actor.role if e.actor else "-")|tojson }},
+      actor_email: {{ (e.actor.email if e.actor else "-")|tojson }},
+      hash: {{ (e.hash or "")|tojson }},
+      previous_hash: {{ (e.previous_hash or "GENESIS")|tojson }},
+      data_snapshot: {{ (e.data_snapshot or "")|tojson }}
+    },
+    {% endfor %}
+  ];
+
+  const auditEntries = window.__INITIAL_AUDIT_DATA__;
+
+  // 2. State Controller
+  let searchQuery = "";
+  let selectedRole = "all";
+  let selectedAksi = "all";
+  let selectedDateRange = "all";
+  let sortConfig = { key: "waktu", direction: "desc" };
+  let currentPage = 1;
+  let perPage = 15;
+
+  // 3. Dropdown UI Management (Sesuai Style Halaman Perangkat)
+  function setupDropdown(btnId, menuId, chevronId) {
+    const btn = document.getElementById(btnId);
+    const menu = document.getElementById(menuId);
+    const chevron = document.getElementById(chevronId);
+    if (!btn || !menu) return;
+
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      const isHidden = menu.classList.contains("hidden");
+      closeAllDropdowns();
+      if (isHidden) {
+        menu.classList.remove("hidden");
+        if (chevron) chevron.classList.add("rotate-180");
+      }
+    });
+  }
+
+  function closeAllDropdowns() {
+    ["roleDropdownMenu", "actionDropdownMenu", "dateDropdownMenu", "perPageDropdownMenu"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add("hidden");
+    });
+    ["roleChevron", "actionChevron", "dateChevron", "perPageChevron"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove("rotate-180");
+    });
+  }
+
+  document.addEventListener("click", closeAllDropdowns);
+
+  // 4. Initialize Role Options
+  function initRoleOptions() {
+    const roles = new Set();
+    auditEntries.forEach(e => {
+      if (e.actor_role && e.actor_role !== "-") roles.add(e.actor_role);
+    });
+
+    const menu = document.getElementById("roleDropdownMenu");
+    if (!menu) return;
+
+    const roleMap = {
+      "super_admin": "Super Admin",
+      "admin": "Admin",
+      "karyawan_tif": "Karyawan TIF",
+      "teknisi": "Teknisi",
+      "viewer": "Viewer"
+    };
+
+    const options = [{ value: "all", label: "Semua Role" }];
+    roles.forEach(r => {
+      options.push({ value: r, label: roleMap[r] || r.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase()) });
+    });
+
+    if (options.length === 1) {
+      options.push(
+        { value: "super_admin", label: "Super Admin" },
+        { value: "admin", label: "Admin" },
+        { value: "karyawan_tif", label: "Karyawan TIF" },
+        { value: "teknisi", label: "Teknisi" }
+      );
+    }
+
+    menu.innerHTML = options.map((opt, idx) => {
+      const isSelected = selectedRole === opt.value;
+      const divider = idx === 1 ? `<div class="h-px bg-slate-100 dark:bg-[#1A3358] my-1"></div>` : "";
+      return `
+        ${divider}
+        <button
+          type="button"
+          onclick="selectRole('${opt.value}', '${opt.label}')"
+          class="w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer !m-0 !shadow-none ${isSelected
+          ? 'bg-blue-600 dark:bg-[#1677FF] text-white font-semibold'
+          : 'hover:bg-slate-100 dark:hover:bg-[#122846] text-slate-700 dark:text-[#CBD5E1]'
+        }"
+        >
+          <span class="truncate pr-2">${opt.label}</span>
+          ${isSelected ? '<span class="material-symbols-outlined text-[16px] shrink-0">check</span>' : ''}
+        </button>
+      `;
+    }).join("");
+  }
+
+  function selectRole(val, label) {
+    selectedRole = val;
+    document.getElementById("roleDropdownLabel").textContent = label;
+    currentPage = 1;
+    closeAllDropdowns();
+    initRoleOptions();
+    renderTable();
+  }
+
+  // 5. Initialize Action Options
+  function initActionOptions() {
+    const menu = document.getElementById("actionDropdownMenu");
+    if (!menu) return;
+
+    const options = [
+      { value: "all", label: "Semua Aksi" },
+      { value: "CREATE", label: "CREATE" },
+      { value: "UPDATE", label: "UPDATE" },
+      { value: "DELETE", label: "DELETE" },
+      { value: "APPROVE", label: "APPROVE" }
+    ];
+
+    menu.innerHTML = options.map((opt, idx) => {
+      const isSelected = selectedAksi === opt.value;
+      const divider = idx === 1 ? `<div class="h-px bg-slate-100 dark:bg-[#1A3358] my-1"></div>` : "";
+      return `
+        ${divider}
+        <button
+          type="button"
+          onclick="selectAction('${opt.value}', '${opt.label}')"
+          class="w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer !m-0 !shadow-none ${isSelected
+          ? 'bg-blue-600 dark:bg-[#1677FF] text-white font-semibold'
+          : 'hover:bg-slate-100 dark:hover:bg-[#122846] text-slate-700 dark:text-[#CBD5E1]'
+        }"
+        >
+          <span>${opt.label}</span>
+          ${isSelected ? '<span class="material-symbols-outlined text-[16px] shrink-0">check</span>' : ''}
+        </button>
+      `;
+    }).join("");
+  }
+
+  function selectAction(val, label) {
+    selectedAksi = val;
+    document.getElementById("actionDropdownLabel").textContent = label;
+    currentPage = 1;
+    closeAllDropdowns();
+    initActionOptions();
+    renderTable();
+  }
+
+  // 6. Initialize Date Options
+  function initDateOptions() {
+    const menu = document.getElementById("dateDropdownMenu");
+    if (!menu) return;
+
+    const options = [
+      { value: "all", label: "Semua Waktu" },
+      { value: "today", label: "Hari Ini (24 Jam)" },
+      { value: "7d", label: "7 Hari Terakhir" },
+      { value: "30d", label: "30 Hari Terakhir" }
+    ];
+
+    menu.innerHTML = options.map((opt, idx) => {
+      const isSelected = selectedDateRange === opt.value;
+      const divider = idx === 1 ? `<div class="h-px bg-slate-100 dark:bg-[#1A3358] my-1"></div>` : "";
+      return `
+        ${divider}
+        <button
+          type="button"
+          onclick="selectDate('${opt.value}', '${opt.label}')"
+          class="w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer !m-0 !shadow-none ${isSelected
+          ? 'bg-blue-600 dark:bg-[#1677FF] text-white font-semibold'
+          : 'hover:bg-slate-100 dark:hover:bg-[#122846] text-slate-700 dark:text-[#CBD5E1]'
+        }"
+        >
+          <span>${opt.label}</span>
+          ${isSelected ? '<span class="material-symbols-outlined text-[16px] shrink-0">check</span>' : ''}
+        </button>
+      `;
+    }).join("");
+  }
+
+  function selectDate(val, label) {
+    selectedDateRange = val;
+    document.getElementById("dateDropdownLabel").textContent = val === "all" ? "Semua Waktu" : label;
+    currentPage = 1;
+    closeAllDropdowns();
+    initDateOptions();
+    renderTable();
+  }
+
+  // 7. Initialize Per Page Options (Box Card Menu Style)
+  function initPerPageOptions() {
+    const menu = document.getElementById("perPageDropdownMenu");
+    if (!menu) return;
+
+    const options = [10, 15, 25, 50, 100];
+    menu.innerHTML = options.map(num => {
+      const isSelected = perPage === num;
+      return `
+        <button
+          type="button"
+          onclick="selectPerPage(${num})"
+          class="w-full px-3 py-1.5 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer !m-0 !shadow-none ${isSelected
+          ? 'bg-blue-600 dark:bg-[#1677FF] text-white font-semibold'
+          : 'hover:bg-slate-100 dark:hover:bg-[#122846] text-slate-700 dark:text-[#CBD5E1]'
+        }"
+        >
+          <span>${num}</span>
+          ${isSelected ? '<span class="material-symbols-outlined text-[15px] shrink-0">check</span>' : ''}
+        </button>
+      `;
+    }).join("");
+  }
+
+  function selectPerPage(num) {
+    perPage = num;
+    document.getElementById("perPageDropdownLabel").textContent = num;
+    currentPage = 1;
+    closeAllDropdowns();
+    initPerPageOptions();
+    renderTable();
+  }
+
+  // 8. Badge Helper
+  function getAksiBadge(action) {
+    const act = (action || "").toUpperCase();
+    if (act.includes("CREATE")) {
+      return `<span class="inline-flex items-center justify-center px-3 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase bg-emerald-50 dark:bg-[#0E5C43] text-emerald-700 dark:text-[#34D399] border border-emerald-200 dark:border-[#059669]/40 min-w-[76px]">CREATE</span>`;
+    }
+    if (act.includes("UPDATE")) {
+      return `<span class="inline-flex items-center justify-center px-3 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase bg-blue-50 dark:bg-[#1D4ED8] text-blue-700 dark:text-[#93C5FD] border border-blue-200 dark:border-[#2563EB]/40 min-w-[76px]">UPDATE</span>`;
+    }
+    if (act.includes("DELETE")) {
+      return `<span class="inline-flex items-center justify-center px-3 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase bg-rose-50 dark:bg-[#991B1B] text-rose-700 dark:text-[#FCA5A5] border border-rose-200 dark:border-[#DC2626]/40 min-w-[76px]">DELETE</span>`;
+    }
+    if (act.includes("APPROVE")) {
+      return `<span class="inline-flex items-center justify-center px-3 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase bg-purple-50 dark:bg-[#6D28D9] text-purple-700 dark:text-[#C4B5FD] border border-purple-200 dark:border-[#7C3AED]/40 min-w-[76px]">APPROVE</span>`;
+    }
+    return `<span class="inline-flex items-center justify-center px-3 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase bg-slate-100 dark:bg-[#1E293B] text-slate-600 dark:text-[#94A3B8] border border-slate-200 dark:border-[#334155] min-w-[76px]">${act}</span>`;
+  }
+
+  // 9. Sorting Handler
+  function handleSort(key) {
+    if (sortConfig.key === key) {
+      if (sortConfig.direction === "asc") {
+        sortConfig.direction = "desc";
+      } else if (sortConfig.direction === "desc") {
+        sortConfig.key = null;
+        sortConfig.direction = null;
+      }
+    } else {
+      sortConfig.key = key;
+      sortConfig.direction = "asc";
+    }
+    updateSortIcons();
+    renderTable();
+  }
+
+  function updateSortIcons() {
+    const keys = ["waktu", "aksi", "tabel", "record_id", "oleh", "hash", "previous_hash"];
+    keys.forEach(k => {
+      const icon = document.getElementById("sort-icon-" + k);
+      if (!icon) return;
+      if (sortConfig.key === k) {
+        icon.textContent = sortConfig.direction === "asc" ? "arrow_upward" : "arrow_downward";
+        icon.classList.remove("text-slate-400", "dark:text-[#64748B]");
+        icon.classList.add("text-blue-600", "dark:text-white");
+      } else {
+        icon.textContent = "unfold_more";
+        icon.classList.remove("text-blue-600", "dark:text-white");
+        icon.classList.add("text-slate-400", "dark:text-[#64748B]");
+      }
+    });
+  }
+
+  // 10. Filter & Sort Execution
+  function getProcessedEntries() {
+    const now = new Date();
+    const q = (searchQuery || "").trim().toLowerCase();
+
+    return auditEntries.filter(e => {
+      const matchSearch =
+        !q ||
+        String(e.audit_id).includes(q) ||
+        (e.created_at && e.created_at.toLowerCase().includes(q)) ||
+        (e.aksi && e.aksi.toLowerCase().includes(q)) ||
+        (e.table_name && e.table_name.toLowerCase().includes(q)) ||
+        String(e.record_id).toLowerCase().includes(q) ||
+        (e.actor_name && e.actor_name.toLowerCase().includes(q)) ||
+        (e.hash && e.hash.toLowerCase().includes(q)) ||
+        (e.previous_hash && e.previous_hash.toLowerCase().includes(q));
+
+      const matchRole =
+        selectedRole === "all" ||
+        (selectedRole === "admin" && (e.actor_role === "admin" || (e.actor_name && e.actor_name.toLowerCase().includes("admin")))) ||
+        (e.actor_role === selectedRole);
+
+      const matchAksi =
+        selectedAksi === "all" ||
+        (e.aksi && e.aksi.toUpperCase().includes(selectedAksi));
+
+      let matchDate = true;
+      if (selectedDateRange !== "all" && e.raw_time) {
+        const itemTime = new Date(e.raw_time).getTime();
+        const diffMs = now.getTime() - itemTime;
+        if (selectedDateRange === "today") {
+          matchDate = diffMs <= 24 * 60 * 60 * 1000;
+        } else if (selectedDateRange === "7d") {
+          matchDate = diffMs <= 7 * 24 * 60 * 60 * 1000;
+        } else if (selectedDateRange === "30d") {
+          matchDate = diffMs <= 30 * 24 * 60 * 60 * 1000;
+        }
+      }
+
+      return matchSearch && matchRole && matchAksi && matchDate;
+    }).sort((a, b) => {
+      if (!sortConfig.key || !sortConfig.direction) return 0;
+      const dir = sortConfig.direction === "asc" ? 1 : -1;
+      let valA, valB;
+
+      switch (sortConfig.key) {
+        case "waktu":
+          valA = a.raw_time ? new Date(a.raw_time).getTime() : 0;
+          valB = b.raw_time ? new Date(b.raw_time).getTime() : 0;
+          return (valA - valB) * dir;
+        case "aksi":
+          valA = a.aksi || "";
+          valB = b.aksi || "";
+          break;
+        case "tabel":
+          valA = a.table_name || "";
+          valB = b.table_name || "";
+          break;
+        case "record_id":
+          valA = Number(a.record_id) || 0;
+          valB = Number(b.record_id) || 0;
+          return (valA - valB) * dir;
+        case "oleh":
+          valA = a.actor_name || "";
+          valB = b.actor_name || "";
+          break;
+        case "hash":
+          valA = a.hash || "";
+          valB = b.hash || "";
+          break;
+        case "previous_hash":
+          valA = a.previous_hash || "";
+          valB = b.previous_hash || "";
+          break;
+        default:
+          return 0;
+      }
+      return String(valA).localeCompare(String(valB), "id") * dir;
+    });
+  }
+
+  // 11. Table Renderer (Record ID Centered)
+  function renderTable() {
+    const list = getProcessedEntries();
+    const total = list.length;
+    const totalPages = Math.max(1, Math.ceil(total / perPage));
+    if (currentPage > totalPages) currentPage = totalPages;
+
+    const startIdx = (currentPage - 1) * perPage;
+    const paginated = list.slice(startIdx, startIdx + perPage);
+
+    const tbody = document.getElementById("auditTableBody");
+    const emptyState = document.getElementById("emptyAuditState");
+
+    if (total === 0) {
+      tbody.innerHTML = "";
+      emptyState.classList.remove("hidden");
+    } else {
+      emptyState.classList.add("hidden");
+      tbody.innerHTML = paginated.map((item, idx) => {
+        const rowNum = startIdx + idx + 1;
+        const hashDisplay = item.hash ? item.hash.substring(0, 14) + "..." : "-";
+        const prevHashDisplay = item.previous_hash === "GENESIS"
+          ? "GENESIS"
+          : (item.previous_hash ? item.previous_hash.substring(0, 14) + "..." : "-");
+
+        return `
+          <tr class="hover:bg-slate-50/80 dark:hover:bg-[#0D2138]/80 transition-colors border-b border-slate-100 dark:border-[#0F2238]">
+            <!-- # Index -->
+            <td class="py-3 px-4 text-center font-mono text-slate-400 dark:text-[#64748B] text-xs font-semibold">
+              ${rowNum}
+            </td>
+
+            <!-- Waktu -->
+            <td class="py-3 px-4 font-mono text-xs text-slate-600 dark:text-[#CBD5E1] whitespace-nowrap">
+              ${item.created_at}
+            </td>
+
+            <!-- Aksi Badge -->
+            <td class="py-3 px-4 whitespace-nowrap">
+              ${getAksiBadge(item.aksi)}
+            </td>
+
+            <!-- Tabel -->
+            <td class="py-3 px-4 font-mono text-xs text-slate-700 dark:text-[#CBD5E1] truncate" title="${item.table_name}">
+              ${item.table_name}
+            </td>
+
+            <!-- RECORD ID (RATA KIRI SESUAI INSTRUKSI) -->
+            <td class="py-3 px-4 text-left font-mono text-xs text-blue-600 dark:text-[#38BDF8] font-semibold truncate">
+              ${item.record_id}
+            </td>
+
+            <!-- Oleh -->
+            <td class="py-3 px-4 whitespace-nowrap">
+              <div class="inline-flex items-center gap-1.5 truncate">
+                <span class="material-symbols-outlined text-[16px] text-slate-400 dark:text-[#94A3B8] shrink-0">person</span>
+                <span class="font-medium text-slate-800 dark:text-[#E6EDF7] truncate">${item.actor_name}</span>
+              </div>
+            </td>
+
+            <!-- Hash -->
+            <td class="py-3 px-4 font-mono text-xs text-slate-500 dark:text-[#94A3B8] whitespace-nowrap truncate" title="${item.hash}">
+              <span class="cursor-pointer hover:text-blue-600 dark:hover:text-[#38BDF8] transition-colors" onclick="openDetailModal(${item.audit_id})">${hashDisplay}</span>
+            </td>
+
+            <!-- Previous Hash -->
+            <td class="py-3 px-4 font-mono text-xs text-slate-500 dark:text-[#94A3B8] whitespace-nowrap truncate" title="${item.previous_hash}">
+              <span class="cursor-pointer hover:text-blue-600 dark:hover:text-[#38BDF8] transition-colors" onclick="openDetailModal(${item.audit_id})">${prevHashDisplay}</span>
+            </td>
+
+            <!-- Detail Action Button -->
+            <td class="py-3 px-4 text-center whitespace-nowrap">
+              <button
+                type="button"
+                onclick="openDetailModal(${item.audit_id})"
+                title="Lihat Detail Snapshot"
+                class="w-8 h-8 rounded-full border border-slate-300 dark:border-[#1E3A5F] bg-slate-50 dark:bg-[#071426] hover:bg-blue-50 dark:hover:bg-[#1677FF]/20 hover:border-blue-500 dark:hover:border-[#1677FF] text-blue-600 dark:text-[#38BDF8] inline-flex items-center justify-center transition-all cursor-pointer !m-0 !p-0"
+              >
+                <span class="material-symbols-outlined text-[16px]">visibility</span>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    // Range info
+    document.getElementById("rangeStart").textContent = total === 0 ? "0" : String(startIdx + 1);
+    document.getElementById("rangeEnd").textContent = String(Math.min(startIdx + perPage, total));
+    document.getElementById("totalItems").textContent = String(total);
+
+    // Pagination buttons
+    renderPagination(totalPages);
+  }
+
+  // 12. Pagination Controls Renderer
+  function renderPagination(totalPages) {
+    const container = document.getElementById("paginationControls");
+    if (!container) return;
+
+    let html = `
+      <button
+        type="button"
+        ${currentPage <= 1 ? "disabled" : ""}
+        onclick="changePage(${currentPage - 1})"
+        class="w-8 h-8 rounded-lg border border-slate-300 dark:border-[#1E3A5F] bg-slate-50 dark:bg-[#071426] text-slate-700 dark:text-[#CBD5E1] hover:bg-slate-100 dark:hover:bg-[#122846] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors cursor-pointer !m-0 !p-0"
+        title="Halaman Sebelumnya"
+      >
+        <span class="material-symbols-outlined text-[17px]">chevron_left</span>
+      </button>
+    `;
+
+    let pages = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 3) {
+        pages = [1, 2, 3, 4, 5];
+      } else if (currentPage >= totalPages - 2) {
+        pages = [totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+      } else {
+        pages = [currentPage - 2, currentPage - 1, currentPage, currentPage + 1, currentPage + 2];
+      }
+    }
+
+    pages.forEach(p => {
+      const isActive = p === currentPage;
+      html += `
+        <button
+          type="button"
+          onclick="changePage(${p})"
+          class="w-8 h-8 rounded-lg text-xs font-semibold flex items-center justify-center transition-colors cursor-pointer !m-0 !p-0 ${isActive
+          ? 'bg-blue-600 dark:bg-[#1677FF] text-white shadow-md shadow-blue-500/20'
+          : 'border border-slate-300 dark:border-[#1E3A5F] bg-slate-50 dark:bg-[#071426] text-slate-700 dark:text-[#CBD5E1] hover:bg-slate-100 dark:hover:bg-[#122846]'
+        }"
+        >
+          ${p}
+        </button>
+      `;
+    });
+
+    html += `
+      <button
+        type="button"
+        ${currentPage >= totalPages ? "disabled" : ""}
+        onclick="changePage(${currentPage + 1})"
+        class="w-8 h-8 rounded-lg border border-slate-300 dark:border-[#1E3A5F] bg-slate-50 dark:bg-[#071426] text-slate-700 dark:text-[#CBD5E1] hover:bg-slate-100 dark:hover:bg-[#122846] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors cursor-pointer !m-0 !p-0"
+        title="Halaman Selanjutnya"
+      >
+        <span class="material-symbols-outlined text-[17px]">chevron_right</span>
+      </button>
+    `;
+
+    container.innerHTML = html;
+  }
+
+  function changePage(page) {
+    currentPage = page;
+    renderTable();
+  }
+
+  // 13. Detail Modal Logic
+  function openDetailModal(auditId) {
+    const entry = auditEntries.find(e => Number(e.audit_id) === Number(auditId));
+    if (!entry) return;
+
+    // Pastikan modal berada langsung di bawah <body> agar overlay menutupi 100% layar tanpa terhalang stacking context
+    const modal = document.getElementById("auditDetailModal");
+    if (modal && modal.parentElement !== document.body) {
+      document.body.appendChild(modal);
+    }
+
+    document.getElementById("modalTitle").textContent = `Detail Audit Log #${entry.audit_id}`;
+    document.getElementById("modalSubtitle").textContent = `Tabel ${entry.table_name} • Record ID #${entry.record_id}`;
+    document.getElementById("modalTime").textContent = entry.created_at;
+    document.getElementById("modalAksiBadge").innerHTML = getAksiBadge(entry.aksi);
+    document.getElementById("modalTableRecord").textContent = `${entry.table_name} (ID: ${entry.record_id})`;
+    document.getElementById("modalActor").textContent = `${entry.actor_name} (${entry.actor_role})`;
+    document.getElementById("modalHashVal").textContent = entry.hash || "-";
+    document.getElementById("modalPrevHashVal").textContent = entry.previous_hash || "GENESIS";
+
+    const pre = document.getElementById("modalSnapshot");
+    if (!entry.data_snapshot || entry.data_snapshot.trim() === "") {
+      pre.textContent = "Tidak ada rekaman data snapshot untuk transaksi ini.";
+      document.getElementById("snapshotStatus").textContent = "Empty";
+    } else {
+      try {
+        const parsed = JSON.parse(entry.data_snapshot);
+        pre.textContent = JSON.stringify(parsed, null, 2);
+        document.getElementById("snapshotStatus").textContent = "Valid JSON Format";
+      } catch {
+        pre.textContent = entry.data_snapshot;
+        document.getElementById("snapshotStatus").textContent = "Raw Text Format";
+      }
+    }
+
+    if (modal) {
+      modal.classList.remove("hidden");
+    }
+  }
+
+  function closeDetailModal() {
+    const modal = document.getElementById("auditDetailModal");
+    if (modal) {
+      modal.classList.add("hidden");
+    }
+  }
+
+  function copyToClipboard(elementId) {
+    const text = document.getElementById(elementId).textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      alert("Hash berhasil disalin ke clipboard!");
+    }).catch(err => {
+      console.error("Gagal menyalin text:", err);
+    });
+  }
+
+  // 14. Event Listeners Setup
+  document.addEventListener("DOMContentLoaded", function () {
+    // Portalkan modal ke document.body sejak awal
+    const auditModal = document.getElementById("auditDetailModal");
+    if (auditModal && auditModal.parentElement !== document.body) {
+      document.body.appendChild(auditModal);
+    }
+
+    setupDropdown("roleDropdownBtn", "roleDropdownMenu", "roleChevron");
+    setupDropdown("actionDropdownBtn", "actionDropdownMenu", "actionChevron");
+    setupDropdown("dateDropdownBtn", "dateDropdownMenu", "dateChevron");
+    setupDropdown("perPageDropdownBtn", "perPageDropdownMenu", "perPageChevron");
+
+    initRoleOptions();
+    initActionOptions();
+    initDateOptions();
+    initPerPageOptions();
+
+    const searchInput = document.getElementById("auditSearchInput");
+    const clearBtn = document.getElementById("clearSearchBtn");
+
+    searchInput.addEventListener("input", function (e) {
+      searchQuery = e.target.value;
+      if (searchQuery.length > 0) {
+        clearBtn.classList.remove("hidden");
+      } else {
+        clearBtn.classList.add("hidden");
+      }
+      currentPage = 1;
+      renderTable();
+    });
+
+    clearBtn.addEventListener("click", function () {
+      searchInput.value = "";
+      searchQuery = "";
+      clearBtn.classList.add("hidden");
+      currentPage = 1;
+      renderTable();
+    });
+
+    // 15. Verifikasi Integritas AJAX Handler & Auto-Dismiss Toast
+    let toastTimeout = null;
+    function showAutoDismissToast(message, type = "success") {
+      const existing = document.getElementById("audit-verify-toast");
+      if (existing) existing.remove();
+      if (toastTimeout) clearTimeout(toastTimeout);
+
+      const isDark = document.documentElement.classList.contains("dark");
+      const toast = document.createElement("div");
+      toast.id = "audit-verify-toast";
+      toast.className = `fixed top-20 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl backdrop-blur-md transition-all duration-300 ${type === "success"
+          ? isDark
+            ? "bg-[#06241E] border-emerald-500/50 text-emerald-300 shadow-emerald-950/40"
+            : "bg-emerald-50 border-emerald-400 text-emerald-800 shadow-lg"
+          : isDark
+            ? "bg-[#2A0E12] border-rose-500/50 text-rose-300 shadow-rose-950/40"
+            : "bg-rose-50 border-rose-400 text-rose-800 shadow-lg"
+        }`;
+      toast.innerHTML = `
+        <span class="material-symbols-outlined text-[20px] ${type === 'success' ? 'text-emerald-500' : 'text-rose-500'}">
+          ${type === 'success' ? 'check_circle' : 'error'}
+        </span>
+        <span class="text-xs sm:text-sm font-semibold">${message}</span>
+        <button type="button" onclick="this.parentElement.remove()" class="ml-2 hover:opacity-75 cursor-pointer text-xs" title="Tutup">
+          <span class="material-symbols-outlined text-[16px]">close</span>
+        </button>
+      `;
+      document.body.appendChild(toast);
+
+      // Popup stay beberapa detik (3.5 detik) lalu hilang otomatis
+      toastTimeout = setTimeout(() => {
+        toast.style.transition = "opacity 0.4s ease, transform 0.4s ease";
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(-10px)";
+        setTimeout(() => toast.remove(), 400);
+      }, 3500);
+    }
+
+    const verifyBtn = document.getElementById("verifyIntegrityBtn");
+    if (verifyBtn) {
+      verifyBtn.addEventListener("click", async function () {
+        const icon = document.getElementById("verifyBtnIcon");
+        const text = document.getElementById("verifyBtnText");
+        if (icon) {
+          icon.textContent = "progress_activity";
+          icon.classList.add("animate-spin");
+        }
+        if (text) text.textContent = "Memverifikasi...";
+        verifyBtn.style.pointerEvents = "none";
+
+        try {
+          await fetch("{{ url_for('audit.verify') }}", {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+          });
+          showAutoDismissToast("Integritas hash chain terverifikasi VALID — tidak ada data yang dimanipulasi.", "success");
+        } catch {
+          showAutoDismissToast("Gagal memverifikasi integritas hash chain.", "error");
+        } finally {
+          if (icon) {
+            icon.textContent = "check_circle";
+            icon.classList.remove("animate-spin");
+          }
+          if (text) text.textContent = "Verifikasi Integritas";
+          verifyBtn.style.pointerEvents = "auto";
+        }
+      });
+    }
+
+    // Auto-dismiss pesan flash server jika ada
+    const flashContainer = document.querySelector("main > .space-y-2");
+    if (flashContainer) {
+      setTimeout(() => {
+        flashContainer.style.transition = "opacity 0.4s ease, transform 0.4s ease";
+        flashContainer.style.opacity = "0";
+        flashContainer.style.transform = "translateY(-10px)";
+        setTimeout(() => flashContainer.remove(), 400);
+      }, 3500);
+    }
+
+    renderTable();
+  });
+</script>
 {% endblock %}

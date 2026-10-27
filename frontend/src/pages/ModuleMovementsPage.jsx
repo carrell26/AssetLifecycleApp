@@ -126,9 +126,8 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1: Total Mutasi */}
         <div
-          className={`rounded-2xl p-4 border relative overflow-hidden flex flex-col justify-between transition-all duration-300 ${
-            isDark ? "bg-[#0D1F36] border-[#1E3A5F] text-[#E6EDF7]" : "bg-white border-slate-200 text-slate-900 shadow-sm"
-          }`}
+          className={`rounded-2xl p-4 border relative overflow-hidden flex flex-col justify-between transition-all duration-300 ${isDark ? "bg-[#0D1F36] border-[#1E3A5F] text-[#E6EDF7]" : "bg-white border-slate-200 text-slate-900 shadow-sm"
+            }`}
         >
           <div className="flex items-start justify-between relative z-10">
             <div>
@@ -151,9 +150,8 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
 
         {/* KPI 2: Bulan Ini */}
         <div
-          className={`rounded-2xl p-4 border relative overflow-hidden flex flex-col justify-between transition-all duration-300 ${
-            isDark ? "bg-[#0D1F36] border-[#1E3A5F] text-[#E6EDF7]" : "bg-white border-slate-200 text-slate-900 shadow-sm"
-          }`}
+          className={`rounded-2xl p-4 border relative overflow-hidden flex flex-col justify-between transition-all duration-300 ${isDark ? "bg-[#0D1F36] border-[#1E3A5F] text-[#E6EDF7]" : "bg-white border-slate-200 text-slate-900 shadow-sm"
+            }`}
         >
           <div className="flex items-start justify-between relative z-10">
             <div>
@@ -176,9 +174,8 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
 
         {/* KPI 3: Modul Terpindah */}
         <div
-          className={`rounded-2xl p-4 border relative overflow-hidden flex flex-col justify-between transition-all duration-300 ${
-            isDark ? "bg-[#0D1F36] border-[#1E3A5F] text-[#E6EDF7]" : "bg-white border-slate-200 text-slate-900 shadow-sm"
-          }`}
+          className={`rounded-2xl p-4 border relative overflow-hidden flex flex-col justify-between transition-all duration-300 ${isDark ? "bg-[#0D1F36] border-[#1E3A5F] text-[#E6EDF7]" : "bg-white border-slate-200 text-slate-900 shadow-sm"
+            }`}
         >
           <div className="flex items-start justify-between relative z-10">
             <div>
@@ -201,9 +198,8 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
 
         {/* KPI 4: Integritas Audit Ledger */}
         <div
-          className={`rounded-2xl p-4 border relative overflow-hidden flex flex-col justify-between transition-all duration-300 ${
-            isDark ? "bg-[#0D1F36] border-[#1E3A5F] text-[#E6EDF7]" : "bg-white border-slate-200 text-slate-900 shadow-sm"
-          }`}
+          className={`rounded-2xl p-4 border relative overflow-hidden flex flex-col justify-between transition-all duration-300 ${isDark ? "bg-[#0D1F36] border-[#1E3A5F] text-[#E6EDF7]" : "bg-white border-slate-200 text-slate-900 shadow-sm"
+            }`}
         >
           <div className="flex items-start justify-between relative z-10">
             <div>
@@ -227,18 +223,16 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
 
       {/* FILTER & CONTROLS BAR */}
       <div
-        className={`p-4 rounded-2xl border flex flex-col md:flex-row items-center justify-between gap-3 ${
-          isDark ? "bg-[#0D1F36] border-[#1E3A5F]" : "bg-white border-slate-200 shadow-sm"
-        }`}
+        className={`p-4 rounded-2xl border flex flex-col md:flex-row items-center justify-between gap-3 ${isDark ? "bg-[#0D1F36] border-[#1E3A5F]" : "bg-white border-slate-200 shadow-sm"
+          }`}
       >
         <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
           {/* Filter Jenis Aktivitas */}
           <select
             value={jenisFilter}
             onChange={(e) => setJenisFilter(e.target.value)}
-            className={`h-9 px-3 rounded-xl text-xs font-medium border focus:outline-none focus:border-[#1677FF] cursor-pointer ${
-              isDark ? "bg-[#071426] border-[#1E3A5F] text-white" : "bg-slate-50 border-slate-300 text-slate-800"
-            }`}
+            className={`h-9 px-3 rounded-xl text-xs font-medium border focus:outline-none focus:border-[#1677FF] cursor-pointer ${isDark ? "bg-[#071426] border-[#1E3A5F] text-white" : "bg-slate-50 border-slate-300 text-slate-800"
+              }`}
           >
             <option value="all">Semua Jenis Aktivitas</option>
             <option value="pindah">Pindah Posisi</option>
@@ -250,9 +244,8 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
           <select
             value={deviceFilter}
             onChange={(e) => setDeviceFilter(e.target.value)}
-            className={`h-9 px-3 rounded-xl text-xs font-medium border focus:outline-none focus:border-[#1677FF] cursor-pointer ${
-              isDark ? "bg-[#071426] border-[#1E3A5F] text-white" : "bg-slate-50 border-slate-300 text-slate-800"
-            }`}
+            className={`h-9 px-3 rounded-xl text-xs font-medium border focus:outline-none focus:border-[#1677FF] cursor-pointer ${isDark ? "bg-[#071426] border-[#1E3A5F] text-white" : "bg-slate-50 border-slate-300 text-slate-800"
+              }`}
           >
             <option value="">Semua Perangkat</option>
             {metaDevices.map((d) => (
@@ -267,11 +260,10 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
             type="button"
             onClick={fetchMovements}
             title="Muat ulang data"
-            className={`h-9 px-3 rounded-xl text-xs font-semibold border flex items-center gap-1.5 transition-colors cursor-pointer ${
-              isDark
+            className={`h-9 px-3 rounded-xl text-xs font-semibold border flex items-center gap-1.5 transition-colors cursor-pointer ${isDark
                 ? "bg-[#071426] border-[#1E3A5F] text-[#94A3B8] hover:text-white hover:border-[#1677FF]"
                 : "bg-slate-50 border-slate-300 text-slate-600 hover:text-slate-900"
-            }`}
+              }`}
           >
             <span className="material-symbols-outlined text-[16px]">refresh</span>
             <span>Segarkan</span>
@@ -285,9 +277,8 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
 
       {/* TABLE SECTION */}
       <div
-        className={`rounded-2xl border overflow-hidden ${
-          isDark ? "bg-[#0D1F36] border-[#1E3A5F]" : "bg-white border-slate-200 shadow-sm"
-        }`}
+        className={`rounded-2xl border overflow-hidden ${isDark ? "bg-[#0D1F36] border-[#1E3A5F]" : "bg-white border-slate-200 shadow-sm"
+          }`}
       >
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
@@ -394,13 +385,12 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
                       {/* Aktivitas */}
                       <td className="py-3 px-4 text-center whitespace-nowrap">
                         <span
-                          className={`px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider inline-flex items-center gap-1 ${
-                            isPindah
+                          className={`px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider inline-flex items-center gap-1 ${isPindah
                               ? "bg-[#1677FF]/15 text-[#38BDF8] border border-[#1677FF]/30"
                               : isPasang
-                              ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
-                              : "bg-rose-500/15 text-rose-400 border border-rose-500/30"
-                          }`}
+                                ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                                : "bg-rose-500/15 text-rose-400 border border-rose-500/30"
+                            }`}
                         >
                           <span className="material-symbols-outlined text-[13px]">
                             {isPindah ? "sync_alt" : isPasang ? "add_circle" : "remove_circle"}
