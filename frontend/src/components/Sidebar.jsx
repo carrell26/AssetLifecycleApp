@@ -14,7 +14,7 @@ export default function Sidebar({ user }) {
   const isImportActive = currentPath.startsWith("/import");
   const isExportActive = currentPath.startsWith("/export");
   const isAuditActive = currentPath.startsWith("/audit");
-  const isScanActive = currentPath.startsWith("/ar");
+  const isScanActive = currentPath.startsWith("/ar") || currentPath.startsWith("/scan");
   const isKelolaUserActive = currentPath.startsWith("/auth/admin/users") || currentPath.startsWith("/auth/admin/register-karyawan");
   const isDashboardActive = (currentPath === "/" || currentPath === "") && !isModulActive && !isLokasiActive && !isPerangkatActive && !isImportActive && !isExportActive && !isMutasiActive && !isAuditActive && !isScanActive && !isKelolaUserActive;
 
@@ -27,7 +27,7 @@ export default function Sidebar({ user }) {
       { id: "perangkat", label: "Perangkat", icon: "router", href: "/device/devices", active: isPerangkatActive },
       { id: "modul", label: "Modul", icon: "memory", href: "/modules/", active: isModulActive },
       { id: "lokasi", label: "Lokasi", icon: "location_on", href: "/device/locations", active: isLokasiActive },
-      { id: "scan", label: "Scan", icon: "view_in_ar", href: "/ar/", active: isScanActive },
+      { id: "scan", label: "Scan", icon: "view_in_ar", href: "/ar/scan", active: isScanActive },
     ];
   } else if (role === "karyawan_tif") {
     // KARYAWAN TIF: Dashboard, Perangkat, Modul, Lokasi, Mutasi Modul, Import Data, Export Data, Audit Log, Scan
@@ -40,7 +40,7 @@ export default function Sidebar({ user }) {
       { id: "import", label: "Import Data", icon: "upload_file", href: "/import/", active: isImportActive },
       { id: "export", label: "Export Data", icon: "download", href: "/export/", active: isExportActive },
       { id: "audit", label: "Audit Log", icon: "history", href: "/audit/", active: isAuditActive },
-      { id: "scan", label: "Scan", icon: "view_in_ar", href: "/ar/", active: isScanActive },
+      { id: "scan", label: "Scan", icon: "view_in_ar", href: "/ar/scan", active: isScanActive },
     ];
   } else {
     // SUPER ADMIN (admin): Dashboard, Perangkat, Modul, Lokasi, Mutasi Modul, Kelola User, Import Data, Export Data, Audit Log, Scan (10 items)
@@ -54,7 +54,7 @@ export default function Sidebar({ user }) {
       { id: "import", label: "Import Data", icon: "upload_file", href: "/import/", active: isImportActive },
       { id: "export", label: "Export Data", icon: "download", href: "/export/", active: isExportActive },
       { id: "audit", label: "Audit Log", icon: "history", href: "/audit/", active: isAuditActive },
-      { id: "scan", label: "Scan", icon: "view_in_ar", href: "/ar/", active: isScanActive },
+      { id: "scan", label: "Scan", icon: "view_in_ar", href: "/ar/scan", active: isScanActive },
     ];
   }
 

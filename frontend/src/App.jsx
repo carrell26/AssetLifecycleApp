@@ -19,6 +19,7 @@ import DevicesPage from "./pages/DevicesPage";
 import ImportPage from "./pages/ImportPage";
 import ExportPage from "./pages/ExportPage";
 import AuditLogPage from "./pages/AuditLogPage";
+import ScanPage from "./pages/ScanPage";
 
 export default function App() {
   // Simple client-side routing based on pathname
@@ -40,6 +41,7 @@ export default function App() {
   const isImportPage = path.startsWith("/import");
   const isExportPage = path.startsWith("/export");
   const isAuditPage = path.startsWith("/audit");
+  const isScanPage = path.startsWith("/ar") || path.startsWith("/scan");
 
   const { isDark } = useTheme();
   const [user, setUser] = useState(null);
@@ -88,7 +90,7 @@ export default function App() {
 
   useEffect(() => {
     fetchUser();
-    if (!isModulesPage && !isMutasiPage && !isLocationsPage && !isDevicesPage && !isImportPage && !isExportPage && !isUsersPage && !isAuditPage) {
+    if (!isModulesPage && !isMutasiPage && !isLocationsPage && !isDevicesPage && !isImportPage && !isExportPage && !isUsersPage && !isAuditPage && !isScanPage) {
       fetchStats("30d");
     }
   }, [isModulesPage, isMutasiPage, isLocationsPage, isDevicesPage, isImportPage, isExportPage, isUsersPage, isAuditPage]);
@@ -130,7 +132,7 @@ export default function App() {
       if (observer) observer.disconnect();
       window.removeEventListener("resize", updateScrollbar);
     };
-  }, [path, isUsersPage, isMutasiPage, isModulesPage, isLocationsPage, isDevicesPage, isImportPage, isExportPage, isAuditPage, searchValue]);
+  }, [path, isUsersPage, isMutasiPage, isModulesPage, isLocationsPage, isDevicesPage, isImportPage, isExportPage, isAuditPage, isScanPage, searchValue]);
 
   const handlePeriodChange = (newPeriod) => {
     setPeriod(newPeriod);
@@ -160,7 +162,7 @@ export default function App() {
           onSearchChange={setSearchValue}
           onOpenLogoutModal={() => setLogoutModalOpen(true)}
           onOpenAvatarModal={() => setAvatarModalOpen(true)}
-          showSearch={!isAuditPage && !isExportPage && !isImportPage && !isUsersPage}
+          showSearch={!isAuditPage && !isExportPage && !isImportPage && !isUsersPage && !isScanPage}
         />
 
         {/* Main Content: Padding kanan terkompensasi dinamis (24px - lebar scrollbar) agar tepi kanan Card selalu rata presisi */}
@@ -239,6 +241,15 @@ export default function App() {
             /* HALAMAN AUDIT LOG & HASH CHAIN LEDGER (REDESIGN REACT)   */
             /* ======================================================== */
             <AuditLogPage
+              user={user}
+              searchValue={searchValue}
+              onSearchChange={setSearchValue}
+            />
+          ) : isScanPage ? (
+            /* ======================================================== */
+            /* HALAMAN AR SCAN & PANDUAN SLOT CHASSIS PERANGKAT         */
+            /* ======================================================== */
+            <ScanPage
               user={user}
               searchValue={searchValue}
               onSearchChange={setSearchValue}
