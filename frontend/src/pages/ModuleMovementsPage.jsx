@@ -85,7 +85,7 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 !mt-0 w-full" style={{ marginTop: 0 }}>
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-20 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 shadow-xl backdrop-blur-md transition-all">
@@ -123,7 +123,7 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
       </div>
 
       {/* SUMMARY KPI CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
         {/* KPI 1: Total Mutasi */}
         <div
           className={`rounded-2xl p-4 border relative overflow-hidden flex flex-col justify-between transition-all duration-300 ${isDark ? "bg-[#0D1F36] border-[#1E3A5F] text-[#E6EDF7]" : "bg-white border-slate-200 text-slate-900 shadow-sm"
@@ -261,8 +261,8 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
             onClick={fetchMovements}
             title="Muat ulang data"
             className={`h-9 px-3 rounded-xl text-xs font-semibold border flex items-center gap-1.5 transition-colors cursor-pointer ${isDark
-                ? "bg-[#071426] border-[#1E3A5F] text-[#94A3B8] hover:text-white hover:border-[#1677FF]"
-                : "bg-slate-50 border-slate-300 text-slate-600 hover:text-slate-900"
+              ? "bg-[#071426] border-[#1E3A5F] text-[#94A3B8] hover:text-white hover:border-[#1677FF]"
+              : "bg-slate-50 border-slate-300 text-slate-600 hover:text-slate-900"
               }`}
           >
             <span className="material-symbols-outlined text-[16px]">refresh</span>
@@ -386,10 +386,10 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
                       <td className="py-3 px-4 text-center whitespace-nowrap">
                         <span
                           className={`px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider inline-flex items-center gap-1 ${isPindah
-                              ? "bg-[#1677FF]/15 text-[#38BDF8] border border-[#1677FF]/30"
-                              : isPasang
-                                ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
-                                : "bg-rose-500/15 text-rose-400 border border-rose-500/30"
+                            ? "bg-[#1677FF]/15 text-[#38BDF8] border border-[#1677FF]/30"
+                            : isPasang
+                              ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                              : "bg-rose-500/15 text-rose-400 border border-rose-500/30"
                             }`}
                         >
                           <span className="material-symbols-outlined text-[13px]">

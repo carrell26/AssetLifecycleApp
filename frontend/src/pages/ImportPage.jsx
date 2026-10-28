@@ -348,7 +348,7 @@ export default function ImportPage({ user, searchValue = "", onSearchChange }) {
   });
 
   return (
-    <div className="space-y-6 pb-12 transition-colors duration-300">
+    <div className="space-y-6 !mt-0 w-full" style={{ marginTop: 0 }}>
       {/* Toast Notification */}
       {toast && (
         <div
@@ -490,11 +490,10 @@ export default function ImportPage({ user, searchValue = "", onSearchChange }) {
                   type="button"
                   id="device-type-select-btn"
                   onClick={() => setDeviceTypeDropdownOpen((prev) => !prev)}
-                  className={`relative w-full h-11 pl-10 pr-9 rounded-xl border text-xs font-medium flex items-center justify-between transition-all cursor-pointer outline-none ${
-                    isDark
-                      ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
-                      : "bg-white border-slate-300 text-slate-800 hover:border-blue-500"
-                  }`}
+                  className={`relative w-full h-11 pl-10 pr-9 rounded-xl border text-xs font-medium flex items-center justify-between transition-all cursor-pointer outline-none ${isDark
+                    ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
+                    : "bg-white border-slate-300 text-slate-800 hover:border-blue-500"
+                    }`}
                 >
                   <span className="material-symbols-outlined text-[18px] text-[#38BDF8] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none select-none">
                     desktop_windows
@@ -502,14 +501,13 @@ export default function ImportPage({ user, searchValue = "", onSearchChange }) {
                   <span className="truncate font-semibold">
                     {selectedDeviceTypeId
                       ? deviceTypes.find(
-                          (t) => String(t.device_type_id) === String(selectedDeviceTypeId)
-                        )?.nama_tipe || "PSS24"
+                        (t) => String(t.device_type_id) === String(selectedDeviceTypeId)
+                      )?.nama_tipe || "PSS24"
                       : "Pilih type"}
                   </span>
                   <span
-                    className={`material-symbols-outlined text-[18px] text-[#94A3B8] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none select-none transition-transform duration-200 ${
-                      deviceTypeDropdownOpen ? "rotate-180" : ""
-                    }`}
+                    className={`material-symbols-outlined text-[18px] text-[#94A3B8] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none select-none transition-transform duration-200 ${deviceTypeDropdownOpen ? "rotate-180" : ""
+                      }`}
                   >
                     expand_more
                   </span>
@@ -518,11 +516,10 @@ export default function ImportPage({ user, searchValue = "", onSearchChange }) {
                 {/* Pop-up Menu Dropdown Tipe Perangkat (Style Konsisten Export Page) */}
                 {deviceTypeDropdownOpen && (
                   <div
-                    className={`absolute left-0 right-0 top-full mt-1.5 rounded-xl border shadow-2xl z-40 backdrop-blur-md overflow-hidden ${
-                      isDark
-                        ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7]"
-                        : "bg-white border-slate-200 text-slate-800 shadow-xl"
-                    }`}
+                    className={`absolute left-0 right-0 top-full mt-1.5 rounded-xl border shadow-2xl z-40 backdrop-blur-md overflow-hidden ${isDark
+                      ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7]"
+                      : "bg-white border-slate-200 text-slate-800 shadow-xl"
+                      }`}
                   >
                     <div className="max-h-60 overflow-y-auto custom-scrollbar p-1.5">
                       <button
@@ -531,15 +528,14 @@ export default function ImportPage({ user, searchValue = "", onSearchChange }) {
                           setSelectedDeviceTypeId("");
                           setDeviceTypeDropdownOpen(false);
                         }}
-                        className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
-                          selectedDeviceTypeId === ""
-                            ? isDark
-                              ? "bg-[#1677FF] text-white font-semibold"
-                              : "bg-blue-600 text-white font-semibold"
-                            : isDark
+                        className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${selectedDeviceTypeId === ""
+                          ? isDark
+                            ? "bg-[#1677FF] text-white font-semibold"
+                            : "bg-blue-600 text-white font-semibold"
+                          : isDark
                             ? "hover:bg-[#122846] text-[#CBD5E1]"
                             : "hover:bg-slate-100 text-slate-700"
-                        }`}
+                          }`}
                       >
                         <span>Pilih type</span>
                         {selectedDeviceTypeId === "" && (
@@ -550,9 +546,8 @@ export default function ImportPage({ user, searchValue = "", onSearchChange }) {
                       </button>
 
                       <div
-                        className={`h-px my-1 ${
-                          isDark ? "bg-[#1A3358]" : "bg-slate-100"
-                        }`}
+                        className={`h-px my-1 ${isDark ? "bg-[#1A3358]" : "bg-slate-100"
+                          }`}
                       />
 
                       {deviceTypes.map((type) => {
@@ -566,15 +561,14 @@ export default function ImportPage({ user, searchValue = "", onSearchChange }) {
                               setSelectedDeviceTypeId(String(type.device_type_id));
                               setDeviceTypeDropdownOpen(false);
                             }}
-                            className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
-                              isSelected
-                                ? isDark
-                                  ? "bg-[#1677FF] text-white font-semibold"
-                                  : "bg-blue-600 text-white font-semibold"
-                                : isDark
+                            className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${isSelected
+                              ? isDark
+                                ? "bg-[#1677FF] text-white font-semibold"
+                                : "bg-blue-600 text-white font-semibold"
+                              : isDark
                                 ? "hover:bg-[#122846] text-[#CBD5E1]"
                                 : "hover:bg-slate-100 text-slate-700"
-                            }`}
+                              }`}
                           >
                             <span className="truncate pr-2">{type.nama_tipe}</span>
                             {isSelected && (

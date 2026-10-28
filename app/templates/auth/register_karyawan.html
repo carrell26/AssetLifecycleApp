@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="id" id="html-root" class="dark">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Daftarkan Karyawan TIF · Asset Lifecycle Telkom</title>
-  <meta name="description" content="Pendaftaran akun Karyawan TIF baru pada Sistem Manajemen Aset & Modul Perangkat Telkom.">
+  <meta name="description"
+    content="Pendaftaran akun Karyawan TIF baru pada Sistem Manajemen Aset & Modul Perangkat Telkom.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    rel="stylesheet">
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <script id="tailwind-config">
     tailwind.config = {
@@ -32,28 +36,82 @@
   </script>
   <style>
     @layer base {
-      html, body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-      ::-webkit-scrollbar { display: none; }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Inter', sans-serif;
+      }
+
+      ::-webkit-scrollbar {
+        display: none;
+      }
     }
-    .custom-scrollbar::-webkit-scrollbar { display: block; width: 5px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #1E3A5F; border-radius: 4px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #38BDF8; }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      display: block;
+      width: 5px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #1E3A5F;
+      border-radius: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #38BDF8;
+    }
 
     @keyframes pulse-slow {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.45; transform: scale(1.15); }
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.45;
+        transform: scale(1.15);
+      }
     }
-    .pulse-glow { animation: pulse-slow 2.4s ease-in-out infinite; }
+
+    .pulse-glow {
+      animation: pulse-slow 2.4s ease-in-out infinite;
+    }
 
     @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(14px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
-    .fade-up { animation: fadeInUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
-    .fade-up-d1 { animation-delay: 0.06s; }
-    .fade-up-d2 { animation-delay: 0.12s; }
-    .fade-up-d3 { animation-delay: 0.18s; }
+
+    .fade-up {
+      animation: fadeInUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .fade-up-d1 {
+      animation-delay: 0.06s;
+    }
+
+    .fade-up-d2 {
+      animation-delay: 0.12s;
+    }
+
+    .fade-up-d3 {
+      animation-delay: 0.18s;
+    }
 
     /* ── Select arrow: prevent any repeating ── */
     .field-select {
@@ -64,9 +122,11 @@
       background-position: right 14px center !important;
       background-size: 16px 16px !important;
     }
+
     .dark .field-select {
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394A3B8' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E") !important;
     }
+
     .light .field-select {
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748B' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E") !important;
     }
@@ -77,14 +137,22 @@
       border-color: #1E3A5F;
       color: #E6EDF7;
     }
-    .dark .field-input::placeholder { color: #4A6580; }
+
+    .dark .field-input::placeholder {
+      color: #4A6580;
+    }
+
     .dark .field-input:focus {
       border-color: #1677FF;
       box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.2);
       background: rgba(7, 20, 38, 0.95);
       outline: none;
     }
-    .dark .field-input option { background: #0D1F36; color: #E6EDF7; }
+
+    .dark .field-input option {
+      background: #0D1F36;
+      color: #E6EDF7;
+    }
 
     /* ── Light mode input styles ── */
     .light .field-input {
@@ -92,23 +160,40 @@
       border-color: #CBD5E1;
       color: #0F172A;
     }
-    .light .field-input::placeholder { color: #94A3B8; }
+
+    .light .field-input::placeholder {
+      color: #94A3B8;
+    }
+
     .light .field-input:focus {
       border-color: #1677FF;
       box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.18);
       background: #FFFFFF;
       outline: none;
     }
-    .light .field-input option { background: #FFFFFF; color: #0F172A; }
+
+    .light .field-input option {
+      background: #FFFFFF;
+      color: #0F172A;
+    }
 
     /* Strength bars */
-    .strength-bar { transition: background 0.3s ease, width 0.3s ease; }
+    .strength-bar {
+      transition: background 0.3s ease, width 0.3s ease;
+    }
 
     /* ════════════════════════════════════════════════════════════════════
        LIGHT MODE COMPONENT STYLES (MATCHING TELKOM BLUE/SLATE LIGHT THEME)
        ════════════════════════════════════════════════════════════════════ */
-    .light { background-color: #F8FAFC; color: #0F172A; }
-    .light body { background-color: #F8FAFC !important; color: #0F172A !important; }
+    .light {
+      background-color: #F8FAFC;
+      color: #0F172A;
+    }
+
+    .light body {
+      background-color: #F8FAFC !important;
+      color: #0F172A !important;
+    }
 
     /* Note: Sidebar remains strictly Dark in both Light and Dark modes */
 
@@ -118,28 +203,52 @@
       border-color: #E2E8F0 !important;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
     }
+
     .light #header-badge-icon-box {
       background-color: #EFF6FF !important;
       border-color: #BFDBFE !important;
       color: #1677FF !important;
     }
+
     .light #header-badge-icon {
       color: #1677FF !important;
     }
+
     .light #header-badge-title {
       color: #0F172A !important;
     }
+
     .light #header-divider {
       background-color: #E2E8F0 !important;
     }
 
     /* Main Container & Cards in Light Mode */
-    .light .theme-main-bg { background-color: #F8FAFC !important; }
-    .light .theme-card { background-color: #FFFFFF !important; border-color: #E2E8F0 !important; box-shadow: 0 4px 20px rgba(0,0,0,0.04) !important; }
-    .light .theme-text-heading { color: #0F172A !important; }
-    .light .theme-text-muted { color: #64748B !important; }
-    .light .theme-text-subtle { color: #94A3B8 !important; }
-    .light .theme-divider { border-color: #E2E8F0 !important; background-color: #E2E8F0 !important; }
+    .light .theme-main-bg {
+      background-color: #F8FAFC !important;
+    }
+
+    .light .theme-card {
+      background-color: #FFFFFF !important;
+      border-color: #E2E8F0 !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
+    }
+
+    .light .theme-text-heading {
+      color: #0F172A !important;
+    }
+
+    .light .theme-text-muted {
+      color: #64748B !important;
+    }
+
+    .light .theme-text-subtle {
+      color: #94A3B8 !important;
+    }
+
+    .light .theme-divider {
+      border-color: #E2E8F0 !important;
+      background-color: #E2E8F0 !important;
+    }
 
     /* Form Header Badge Icon in Light Mode */
     .light #form-icon-box {
@@ -147,24 +256,32 @@
       border-color: #BFDBFE !important;
       box-shadow: 0 4px 14px rgba(22, 119, 255, 0.12) !important;
     }
+
     .light #form-icon {
       color: #1677FF !important;
     }
+
     .light #heading-underline {
       background-color: #1677FF !important;
     }
+
     .light #form-card-header {
       border-color: #F1F5F9 !important;
     }
+
     .light #card-gradient-bar {
       display: none !important;
     }
-    .light #card-glow-1, .light #card-glow-2 {
+
+    .light #card-glow-1,
+    .light #card-glow-2 {
       display: none !important;
     }
+
     .light .form-input-icon {
       color: #94A3B8 !important;
     }
+
     .light .strength-track {
       background-color: #E2E8F0 !important;
     }
@@ -173,34 +290,42 @@
     .light #recent-header {
       border-color: #F1F5F9 !important;
     }
+
     .light #recent-icon {
       color: #1677FF !important;
     }
+
     .light #recent-title {
       color: #0F172A !important;
     }
+
     .light #recent-tag {
       background-color: #F1F5F9 !important;
       border-color: #E2E8F0 !important;
       color: #64748B !important;
     }
+
     .light .recent-list-row {
       border-color: #F1F5F9 !important;
     }
+
     .light .recent-list-row:hover {
       background-color: #F8FAFC !important;
     }
+
     .light .recent-user-avatar {
       background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%) !important;
       border-color: #BFDBFE !important;
       color: #1677FF !important;
       box-shadow: 0 2px 6px rgba(22, 119, 255, 0.1) !important;
     }
+
     .light .recent-district-badge {
       background-color: #EFF6FF !important;
       border-color: #BFDBFE !important;
       color: #1D4ED8 !important;
     }
+
     .light .recent-status-text {
       color: #059669 !important;
     }
@@ -209,825 +334,940 @@
     .light #profile-btn:hover {
       background-color: #F1F5F9 !important;
     }
+
     .light #profile-user-name {
       color: #0F172A !important;
     }
+
     .light #profile-user-role {
       color: #1677FF !important;
     }
+
     .light #header-user-avatar {
       --tw-ring-color: #1677FF !important;
       box-shadow: 0 0 0 2px #1677FF, 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
     }
+
     .dark #header-user-avatar {
       --tw-ring-color: #1677FF !important;
       box-shadow: 0 0 0 2px #1677FF, 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
     }
+
     .light #header-avatar-status {
       box-shadow: 0 0 0 2px #FFFFFF !important;
     }
+
     .dark #header-avatar-status {
       box-shadow: 0 0 0 2px #071426 !important;
     }
+
     .light #dropdown-user-avatar {
       box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.5) !important;
     }
+
     .dark #dropdown-user-avatar {
       box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.5) !important;
     }
+
     .light #profile-dropdown {
       background-color: #FFFFFF !important;
       border-color: #E2E8F0 !important;
       box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08) !important;
       color: #0F172A !important;
     }
+
     .light #profile-dropdown-user-name {
       color: #0F172A !important;
     }
+
     .light #profile-dropdown-user-email {
       color: #64748B !important;
     }
+
     .light #profile-dropdown-divider {
       border-color: #F1F5F9 !important;
     }
   </style>
 </head>
-<body id="body-root" class="dark bg-[#071426] text-[#E6EDF7] antialiased min-h-screen w-full transition-colors duration-300">
 
-<!-- ══════════════════ COMPACT SIDEBAR (240px) ══════════════════ -->
-<aside id="sidebar-root" class="theme-sidebar fixed left-0 top-0 bottom-0 w-[240px] z-50 flex flex-col justify-between border-r border-[#1A2E4C] bg-[#071426] transition-colors duration-300">
-  <div class="flex flex-col">
-    <!-- Logo Header matching Sidebar.jsx -->
-    <div id="sidebar-logo-header" class="h-[64px] px-5 border-b border-[#1A2E4C] flex flex-col justify-center bg-[#071426] transition-colors duration-300">
-      <div class="flex items-center gap-2.5">
-        <div id="logo-badge" class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white shadow-md bg-gradient-to-br from-[#1677FF] to-[#0D1F36] shrink-0 transition-colors duration-300">
-          <span class="material-symbols-outlined text-[20px]">hub</span>
-        </div>
-        <div class="flex flex-col">
-          <span id="logo-title" class="text-sm font-bold tracking-tight leading-none text-[#E6EDF7] transition-colors duration-300">
-            AssetLifecycle
-          </span>
-          <span id="logo-sub" class="text-[10px] font-medium leading-tight mt-1 text-[#38BDF8] transition-colors duration-300">
-            Telkom Infrastructure
-          </span>
+<body id="body-root"
+  class="dark bg-[#071426] text-[#E6EDF7] antialiased min-h-screen w-full transition-colors duration-300">
+
+  <!-- ══════════════════ COMPACT SIDEBAR (240px) ══════════════════ -->
+  <aside id="sidebar-root"
+    class="theme-sidebar fixed left-0 top-0 bottom-0 w-[240px] z-50 flex flex-col justify-between border-r border-[#1A2E4C] bg-[#071426] transition-colors duration-300">
+    <div class="flex flex-col">
+      <!-- Logo Header matching Sidebar.jsx -->
+      <div id="sidebar-logo-header"
+        class="h-[64px] px-5 border-b border-[#1A2E4C] flex flex-col justify-center bg-[#071426] transition-colors duration-300">
+        <div class="flex items-center gap-2.5">
+          <div id="logo-badge"
+            class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white shadow-md bg-gradient-to-br from-[#1677FF] to-[#0D1F36] shrink-0 transition-colors duration-300">
+            <span class="material-symbols-outlined text-[20px]">hub</span>
+          </div>
+          <div class="flex flex-col">
+            <span id="logo-title"
+              class="text-sm font-bold tracking-tight leading-none text-[#E6EDF7] transition-colors duration-300">
+              AssetLifecycle
+            </span>
+            <span id="logo-sub"
+              class="text-[10px] font-medium leading-tight mt-1 text-[#38BDF8] transition-colors duration-300">
+              Telkom Infrastructure
+            </span>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Navigation List (Synchronized with Sidebar.jsx) -->
-    <nav class="flex flex-col gap-1 px-3 pt-6 pb-3" id="sidebar-nav">
-      {% if current_user.role == 'teknisi' %}
+      <!-- Navigation List (Synchronized with Sidebar.jsx) -->
+      <nav class="flex flex-col gap-1 px-3 pt-6 pb-3" id="sidebar-nav">
+        {% if current_user.role == 'teknisi' %}
         <!-- TEKNISI -->
-        <a href="{{ url_for('index') }}" class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
+        <a href="{{ url_for('index') }}"
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
           <span class="material-symbols-outlined text-[19px] text-[#64748B]">dashboard</span>
           <span>Dashboard</span>
         </a>
-        <a href="{{ url_for('device.devices') }}" class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
+        <a href="{{ url_for('device.devices') }}"
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
           <span class="material-symbols-outlined text-[19px] text-[#64748B]">router</span>
           <span>Perangkat</span>
         </a>
-        <a href="{{ url_for('module_request.inventory') }}" class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
+        <a href="{{ url_for('module_request.inventory') }}"
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
           <span class="material-symbols-outlined text-[19px] text-[#64748B]">memory</span>
           <span>Modul</span>
         </a>
-        <a href="{{ url_for('device.locations') }}" class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
+        <a href="{{ url_for('device.locations') }}"
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
           <span class="material-symbols-outlined text-[19px] text-[#64748B]">location_on</span>
           <span>Lokasi</span>
         </a>
-        <a href="{{ url_for('module_request.list_requests') }}" class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
+        <a href="{{ url_for('module_request.list_requests') }}"
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
           <span class="material-symbols-outlined text-[19px] text-[#64748B]">assignment</span>
           <span>Mutasi Modul</span>
         </a>
-        <a href="{{ url_for('ar.scan') }}" class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
+        <a href="{{ url_for('ar.scan') }}"
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
           <span class="material-symbols-outlined text-[19px] text-[#64748B]">view_in_ar</span>
           <span>Scan</span>
         </a>
 
-      {% elif current_user.role == 'karyawan_tif' %}
+        {% elif current_user.role == 'karyawan_tif' %}
         <!-- KARYAWAN TIF -->
-        <a href="{{ url_for('index') }}" class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
+        <a href="{{ url_for('index') }}"
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
           <span class="material-symbols-outlined text-[19px] text-[#64748B]">dashboard</span>
           <span>Dashboard</span>
         </a>
-        <a href="{{ url_for('device.devices') }}" class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
+        <a href="{{ url_for('device.devices') }}"
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
           <span class="material-symbols-outlined text-[19px] text-[#64748B]">router</span>
           <span>Perangkat</span>
         </a>
-        <a href="{{ url_for('module_request.inventory') }}" class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
+        <a href="{{ url_for('module_request.inventory') }}"
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
           <span class="material-symbols-outlined text-[19px] text-[#64748B]">memory</span>
           <span>Modul</span>
         </a>
-        <a href="{{ url_for('device.locations') }}" class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
+        <a href="{{ url_for('device.locations') }}"
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
           <span class="material-symbols-outlined text-[19px] text-[#64748B]">location_on</span>
           <span>Lokasi</span>
         </a>
-        <a href="{{ url_for('module_request.list_requests') }}" class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
+        <a href="{{ url_for('module_request.list_requests') }}"
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
           <span class="material-symbols-outlined text-[19px] text-[#64748B]">assignment</span>
           <span>Mutasi Modul</span>
         </a>
-        <a href="{{ url_for('data_import.index') }}" class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
+        <a href="{{ url_for('data_import.index') }}"
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
           <span class="material-symbols-outlined text-[19px] text-[#64748B]">upload_file</span>
           <span>Import Data</span>
         </a>
-        <a href="{{ url_for('export.index') }}" class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
+        <a href="{{ url_for('export.index') }}"
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
           <span class="material-symbols-outlined text-[19px] text-[#64748B]">download</span>
           <span>Export Data</span>
         </a>
-        <a href="{{ url_for('audit.logs') }}" class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
+        <a href="{{ url_for('audit.logs') }}"
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
           <span class="material-symbols-outlined text-[19px] text-[#64748B]">history</span>
           <span>Audit Log</span>
         </a>
-        <a href="{{ url_for('ar.scan') }}" class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
+        <a href="{{ url_for('ar.scan') }}"
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
           <span class="material-symbols-outlined text-[19px] text-[#64748B]">view_in_ar</span>
           <span>Scan</span>
         </a>
 
-      {% else %}
+        {% else %}
         <!-- ADMIN: Full 11 items matching Sidebar.jsx -->
-        <a href="{{ url_for('index') }}" class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
+        <a href="{{ url_for('index') }}"
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
           <span class="material-symbols-outlined text-[19px] text-[#64748B]">dashboard</span>
           <span>Dashboard</span>
         </a>
-        <a href="{{ url_for('device.devices') }}" class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
+        <a href="{{ url_for('device.devices') }}"
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
           <span class="material-symbols-outlined text-[19px] text-[#64748B]">router</span>
           <span>Perangkat</span>
         </a>
-        <a href="{{ url_for('module_request.inventory') }}" class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
+        <a href="{{ url_for('module_request.inventory') }}"
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
           <span class="material-symbols-outlined text-[19px] text-[#64748B]">memory</span>
           <span>Modul</span>
         </a>
-        <a href="{{ url_for('device.locations') }}" class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
+        <a href="{{ url_for('device.locations') }}"
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
           <span class="material-symbols-outlined text-[19px] text-[#64748B]">location_on</span>
           <span>Lokasi</span>
         </a>
-        <a href="{{ url_for('module_request.list_requests') }}" class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
+        <a href="{{ url_for('module_request.list_requests') }}"
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
           <span class="material-symbols-outlined text-[19px] text-[#64748B]">assignment</span>
           <span>Mutasi Modul</span>
         </a>
-        <a href="{{ url_for('auth.manage_users') }}" class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
+        <a href="{{ url_for('auth.manage_users') }}"
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
           <span class="material-symbols-outlined text-[19px] text-[#64748B]">manage_accounts</span>
           <span>Kelola User</span>
         </a>
 
         <!-- ACTIVE ITEM: Daftarkan Karyawan -->
         <a id="nav-active-item" href="{{ url_for('auth.register_karyawan') }}" aria-current="page"
-           class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-semibold bg-[#1677FF] text-[#E6EDF7] shadow-lg shadow-[#1677FF]/25 transition-all duration-200">
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-semibold bg-[#1677FF] text-[#E6EDF7] shadow-lg shadow-[#1677FF]/25 transition-all duration-200">
           <span class="nav-active-icon material-symbols-outlined text-[19px] text-white">badge</span>
           <span>Daftarkan Karyawan</span>
         </a>
 
-        <a href="{{ url_for('data_import.index') }}" class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
+        <a href="{{ url_for('data_import.index') }}"
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
           <span class="material-symbols-outlined text-[19px] text-[#64748B]">upload_file</span>
           <span>Import Data</span>
         </a>
-        <a href="{{ url_for('export.index') }}" class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
+        <a href="{{ url_for('export.index') }}"
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
           <span class="material-symbols-outlined text-[19px] text-[#64748B]">download</span>
           <span>Export Data</span>
         </a>
-        <a href="{{ url_for('audit.logs') }}" class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
+        <a href="{{ url_for('audit.logs') }}"
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
           <span class="material-symbols-outlined text-[19px] text-[#64748B]">history</span>
           <span>Audit Log</span>
         </a>
-        <a href="{{ url_for('ar.scan') }}" class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
+        <a href="{{ url_for('ar.scan') }}"
+          class="nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200">
           <span class="material-symbols-outlined text-[19px] text-[#64748B]">view_in_ar</span>
           <span>Scan</span>
         </a>
-      {% endif %}
-    </nav>
-  </div>
-
-  <!-- Footer Info Card (Exact matching Sidebar.jsx) -->
-  <div id="sidebar-footer" class="theme-footer-card p-4 mx-3 mb-4 rounded-xl border border-[#1E3A5F] bg-[#0D1F36] text-[#94A3B8] transition-colors duration-300">
-    <div class="flex items-center gap-2 text-xs font-semibold">
-      <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0 pulse-glow"></span>
-      <span id="footer-status-title" class="text-[#E6EDF7]">Sistem Aktif</span>
-    </div>
-    <p class="text-[11px] mt-1 leading-relaxed font-mono">
-      v2.4.0 • Enterprise Edition
-    </p>
-  </div>
-</aside>
-
-<!-- ══════════════════ COMPACT TOP HEADER (Synchronized with Header.jsx, Search Bar Removed) ══════════════════ -->
-<header id="header-root" class="theme-header fixed top-0 left-[240px] right-0 h-[64px] z-40 px-6 flex items-center justify-between border-b border-[#1A2E4C] bg-[#071426] shadow-[0_2px_8px_rgba(0,0,0,0.35)] transition-colors duration-300">
-  <!-- Left Side: Clean Page Breadcrumb / Status Badge (Search Bar Removed per Request) -->
-  <div class="flex items-center gap-3">
-    <div id="header-badge-icon-box" class="w-8 h-8 rounded-lg flex items-center justify-center bg-[#1677FF]/15 border border-[#1677FF]/30 text-[#38BDF8] transition-all duration-300">
-      <span class="material-symbols-outlined text-[19px]" id="header-badge-icon">badge</span>
-    </div>
-    <div class="flex items-center gap-2 text-xs">
-      <span class="theme-text-muted text-[#64748B]">Admin</span>
-      <span class="text-[#1A2E4C] theme-divider">/</span>
-      <span class="font-semibold text-[#E6EDF7] transition-colors duration-300" id="header-badge-title">Daftarkan Karyawan TIF</span>
-    </div>
-  </div>
-
-  <!-- Right Action Items -->
-  <div class="flex items-center gap-4 relative shrink-0">
-    <!-- THEME SWITCHER BUTTON matching Header.jsx -->
-    <div class="relative">
-      <button type="button" id="theme-btn" onclick="toggleTheme()"
-        title="Beralih Mode Gelap / Terang"
-        class="relative w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 border cursor-pointer group bg-[#0D1F36] border-[#1E3A5F] text-amber-400 hover:border-amber-400/50 hover:bg-[#122846] shadow-sm hover:shadow-[0_0_12px_rgba(251,191,36,0.3)]">
-        <span class="material-symbols-outlined text-[21px] transition-transform duration-300 group-hover:rotate-45" id="theme-btn-icon">light_mode</span>
-        <!-- Pulsing theme indicator -->
-        <span id="theme-btn-dot" class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full ring-2 bg-amber-400 ring-[#071426]"></span>
-      </button>
+        {% endif %}
+      </nav>
     </div>
 
-    <!-- Divider -->
-    <div id="header-divider" class="h-5 w-px bg-[#1A2E4C] transition-colors duration-300"></div>
+    <!-- Footer Info Card (Exact matching Sidebar.jsx) -->
+    <div id="sidebar-footer"
+      class="theme-footer-card p-4 mx-3 mb-4 rounded-xl border border-[#1E3A5F] bg-[#0D1F36] text-[#94A3B8] transition-colors duration-300">
+      <div class="flex items-center gap-2 text-xs font-semibold">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0 pulse-glow"></span>
+        <span id="footer-status-title" class="text-[#E6EDF7]">Sistem Aktif</span>
+      </div>
+      <p class="text-[11px] mt-1 leading-relaxed font-mono">
+        v2.4.0 • Enterprise Edition
+      </p>
+    </div>
+  </aside>
 
-    <!-- GAMBAR 1 FIX: Real User Profile Photo & Menu matching Dashboard Header -->
-    <div class="relative" id="profile-container">
-      <button type="button" id="profileTriggerBtn" onclick="toggleProfileDropdown(event)"
-        class="flex items-center gap-2.5 p-1 rounded-full transition-colors cursor-pointer hover:bg-slate-100 dark:hover:bg-[#0D1F36]">
-        <div class="relative shrink-0">
-          <img
-            id="header-user-avatar"
-            src="{{ current_user.get_avatar_url() or 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256' }}"
-            onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256'"
-            alt="{{ current_user.name or 'Admin Asset' }}"
-            class="w-9 h-9 rounded-full object-cover ring-2 ring-[#1677FF] shadow-sm transition-all duration-300">
-          <span id="header-avatar-status" class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#071426]" title="Status Online"></span>
-        </div>
-        <div class="flex flex-col text-left justify-center min-w-0 pr-1">
-          <div class="flex items-center gap-1 leading-tight">
-            <span id="profile-user-name" class="text-xs font-semibold max-w-[130px] truncate text-slate-800 dark:text-[#E6EDF7]">{{ current_user.name or 'Admin Asset' }}</span>
-            <span class="material-symbols-outlined text-[17px] text-slate-500 dark:text-[#94A3B8] transition-transform duration-200" id="profile-chevron">expand_more</span>
-          </div>
-          <span id="profile-user-role" class="text-[11px] leading-none mt-0.5 capitalize text-blue-600 dark:text-[#38BDF8]">{{ current_user.role|replace('_', ' ') if current_user.role else 'Admin' }}</span>
-        </div>
-      </button>
+  <!-- ══════════════════ COMPACT TOP HEADER (Synchronized with Header.jsx, Search Bar Removed) ══════════════════ -->
+  <header id="header-root"
+    class="theme-header fixed top-0 left-[240px] right-0 h-[64px] z-40 px-6 flex items-center justify-between border-b border-[#1A2E4C] bg-[#071426] shadow-[0_2px_8px_rgba(0,0,0,0.35)] transition-colors duration-300">
+    <!-- Left Side: Clean Page Breadcrumb / Status Badge (Search Bar Removed per Request) -->
+    <div class="flex items-center gap-3">
+      <div id="header-badge-icon-box"
+        class="w-8 h-8 rounded-lg flex items-center justify-center bg-[#1677FF]/15 border border-[#1677FF]/30 text-[#38BDF8] transition-all duration-300">
+        <span class="material-symbols-outlined text-[19px]" id="header-badge-icon">badge</span>
+      </div>
+      <div class="flex items-center gap-2 text-xs">
+        <span class="theme-text-muted text-[#64748B]">Admin</span>
+        <span class="text-[#1A2E4C] theme-divider">/</span>
+        <span class="font-semibold text-[#E6EDF7] transition-colors duration-300" id="header-badge-title">Daftarkan
+          Karyawan TIF</span>
+      </div>
+    </div>
 
-      <!-- Standardized Profile Popover matching Dashboard reference -->
-      <div id="userProfileDropdown" class="hidden absolute right-0 top-12 mt-2 w-[340px] rounded-2xl shadow-2xl p-5 z-50 border backdrop-blur-md transition-all duration-200 bg-white/95 dark:bg-[#0D1F36]/95 border-slate-200 dark:border-[#1E3653] text-slate-800 dark:text-[#E6EDF7]">
-        <!-- Header inside dropdown with Avatar -->
-        <div class="flex items-center gap-3.5 pb-4 border-b border-slate-100 dark:border-[#1A2E4C] relative">
-          <div class="relative group">
-            <img
-              id="dropdown-user-avatar"
+    <!-- Right Action Items -->
+    <div class="flex items-center gap-4 relative shrink-0">
+      <!-- THEME SWITCHER BUTTON matching Header.jsx -->
+      <div class="relative">
+        <button type="button" id="theme-btn" onclick="toggleTheme()" title="Beralih Mode Gelap / Terang"
+          class="relative w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 border cursor-pointer group bg-[#0D1F36] border-[#1E3A5F] text-amber-400 hover:border-amber-400/50 hover:bg-[#122846] shadow-sm hover:shadow-[0_0_12px_rgba(251,191,36,0.3)]">
+          <span class="material-symbols-outlined text-[21px] transition-transform duration-300 group-hover:rotate-45"
+            id="theme-btn-icon">light_mode</span>
+          <!-- Pulsing theme indicator -->
+          <span id="theme-btn-dot"
+            class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full ring-2 bg-amber-400 ring-[#071426]"></span>
+        </button>
+      </div>
+
+      <!-- Divider -->
+      <div id="header-divider" class="h-5 w-px bg-[#1A2E4C] transition-colors duration-300"></div>
+
+      <!-- GAMBAR 1 FIX: Real User Profile Photo & Menu matching Dashboard Header -->
+      <div class="relative" id="profile-container">
+        <button type="button" id="profileTriggerBtn" onclick="toggleProfileDropdown(event)"
+          class="flex items-center gap-2.5 p-1 rounded-full transition-colors cursor-pointer hover:bg-slate-100 dark:hover:bg-[#0D1F36]">
+          <div class="relative shrink-0">
+            <img id="header-user-avatar"
               src="{{ current_user.get_avatar_url() or 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256' }}"
               onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256'"
-              alt="{{ current_user.name or 'Admin' }}"
-              class="w-12 h-12 rounded-full object-cover ring-2 shadow-md ring-[#1677FF]/40 shrink-0">
-            <button type="button" onclick="document.getElementById('registerAvatarInput').click()" title="Ubah Foto Profil (Kamera / Galeri)" class="avatar-camera-btn absolute -bottom-1 -right-1 w-6 h-6 rounded-full text-white flex items-center justify-center shadow-md border transition-transform hover:scale-110 cursor-pointer bg-[#1677FF] hover:bg-[#38BDF8] border-white dark:border-[#071426]">
-              <span class="material-symbols-outlined text-[13px]">photo_camera</span>
+              alt="{{ current_user.name or 'Admin Asset' }}"
+              class="w-9 h-9 rounded-full object-cover ring-2 ring-[#1677FF] shadow-sm transition-all duration-300">
+            <span id="header-avatar-status"
+              class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#071426]"
+              title="Status Online"></span>
+          </div>
+          <div class="flex flex-col text-left justify-center min-w-0 pr-1">
+            <div class="flex items-center gap-1 leading-tight">
+              <span id="profile-user-name"
+                class="text-xs font-semibold max-w-[130px] truncate text-slate-800 dark:text-[#E6EDF7]">{{
+                current_user.name or 'Admin Asset' }}</span>
+              <span
+                class="material-symbols-outlined text-[17px] text-slate-500 dark:text-[#94A3B8] transition-transform duration-200"
+                id="profile-chevron">expand_more</span>
+            </div>
+            <span id="profile-user-role"
+              class="text-[11px] leading-none mt-0.5 capitalize text-blue-600 dark:text-[#38BDF8]">{{
+              current_user.role|replace('_', ' ') if current_user.role else 'Admin' }}</span>
+          </div>
+        </button>
+
+        <!-- Standardized Profile Popover matching Dashboard reference -->
+        <div id="userProfileDropdown"
+          class="hidden absolute right-0 top-12 mt-2 w-[340px] rounded-2xl shadow-2xl p-5 z-50 border backdrop-blur-md transition-all duration-200 bg-white/95 dark:bg-[#0D1F36]/95 border-slate-200 dark:border-[#1E3653] text-slate-800 dark:text-[#E6EDF7]">
+          <!-- Header inside dropdown with Avatar -->
+          <div class="flex items-center gap-3.5 pb-4 border-b border-slate-100 dark:border-[#1A2E4C] relative">
+            <div class="relative group">
+              <img id="dropdown-user-avatar"
+                src="{{ current_user.get_avatar_url() or 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256' }}"
+                onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256'"
+                alt="{{ current_user.name or 'Admin' }}"
+                class="w-12 h-12 rounded-full object-cover ring-2 shadow-md ring-[#1677FF]/40 shrink-0">
+              <button type="button" onclick="document.getElementById('registerAvatarInput').click()"
+                title="Ubah Foto Profil (Kamera / Galeri)"
+                class="avatar-camera-btn absolute -bottom-1 -right-1 w-6 h-6 rounded-full text-white flex items-center justify-center shadow-md border transition-transform hover:scale-110 cursor-pointer bg-[#1677FF] hover:bg-[#38BDF8] border-white dark:border-[#071426]">
+                <span class="material-symbols-outlined text-[13px]">photo_camera</span>
+              </button>
+            </div>
+            <div class="flex flex-col min-w-0 flex-1">
+              <h4 class="text-sm font-semibold truncate text-slate-900 dark:text-[#E6EDF7]">{{ current_user.name or
+                'Admin Asset' }}</h4>
+              <p class="text-[11px] font-medium leading-tight mt-0.5 capitalize text-blue-600 dark:text-[#38BDF8]">{{
+                current_user.role|replace('_', ' ') if current_user.role else 'Admin' }}</p>
+            </div>
+          </div>
+
+          <!-- Account Information Details -->
+          <div class="py-3.5 space-y-2.5">
+            <span
+              class="text-[10px] font-semibold tracking-wide uppercase font-mono text-slate-500 dark:text-[#94A3B8]">Informasi
+              Akun</span>
+            <div
+              class="rounded-xl p-3 border space-y-2 text-xs bg-slate-50 dark:bg-[#071426] border-slate-200 dark:border-[#1A2E4C]">
+              <div class="flex items-start justify-between gap-2">
+                <span class="text-[11px] shrink-0 text-slate-500 dark:text-[#94A3B8]">District</span>
+                <span class="font-medium text-right truncate text-[11px] text-slate-800 dark:text-[#E6EDF7]">{{
+                  current_user.district or "—" }}</span>
+              </div>
+              <div
+                class="flex items-start justify-between gap-2 pt-1 border-t border-slate-200 dark:border-[#1A2E4C]/60">
+                <span class="text-[11px] shrink-0 text-slate-500 dark:text-[#94A3B8]">Email</span>
+                <span class="font-mono text-right truncate text-[11px] text-blue-600 dark:text-[#38BDF8]">{{
+                  current_user.email or 'admin@telkom.co.id' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="pt-3 border-t border-slate-100 dark:border-[#1A2E4C] flex flex-col gap-2">
+            <button type="button" onclick="document.getElementById('registerAvatarInput').click()"
+              class="btn-change-avatar rounded-xl px-4 py-2 w-full flex items-center justify-center gap-2 font-medium text-xs transition-colors cursor-pointer border bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100 dark:bg-[#1677FF]/15 dark:text-[#38BDF8] dark:border-[#1677FF]/30 dark:hover:bg-[#1677FF]/25">
+              <span class="material-symbols-outlined text-[16px]">photo_camera</span>
+              Ganti Foto Profil
             </button>
+            <input type="file" id="registerAvatarInput" accept="image/png,image/jpeg,image/webp" class="hidden"
+              onchange="uploadRegisterAvatar(this)">
+            <a href="{{ url_for('auth.logout') }}"
+              class="btn-logout text-rose-500 bg-rose-500/10 hover:bg-rose-500 hover:text-white border border-rose-500/25 rounded-xl px-4 py-2 w-full flex items-center justify-center gap-2 font-medium text-xs transition duration-200 cursor-pointer shadow-sm active:scale-[0.98]">
+              <span class="material-symbols-outlined text-[16px]">logout</span>
+              Keluar dari akun
+            </a>
           </div>
-          <div class="flex flex-col min-w-0 flex-1">
-            <h4 class="text-sm font-semibold truncate text-slate-900 dark:text-[#E6EDF7]">{{ current_user.name or 'Admin Asset' }}</h4>
-            <p class="text-[11px] font-medium leading-tight mt-0.5 capitalize text-blue-600 dark:text-[#38BDF8]">{{ current_user.role|replace('_', ' ') if current_user.role else 'Admin' }}</p>
-          </div>
-        </div>
-
-        <!-- Account Information Details -->
-        <div class="py-3.5 space-y-2.5">
-          <span class="text-[10px] font-semibold tracking-wide uppercase font-mono text-slate-500 dark:text-[#94A3B8]">Informasi Akun</span>
-          <div class="rounded-xl p-3 border space-y-2 text-xs bg-slate-50 dark:bg-[#071426] border-slate-200 dark:border-[#1A2E4C]">
-            <div class="flex items-start justify-between gap-2">
-              <span class="text-[11px] shrink-0 text-slate-500 dark:text-[#94A3B8]">District</span>
-              <span class="font-medium text-right truncate text-[11px] text-slate-800 dark:text-[#E6EDF7]">{{ current_user.district or "—" }}</span>
-            </div>
-            <div class="flex items-start justify-between gap-2 pt-1 border-t border-slate-200 dark:border-[#1A2E4C]/60">
-              <span class="text-[11px] shrink-0 text-slate-500 dark:text-[#94A3B8]">Email</span>
-              <span class="font-mono text-right truncate text-[11px] text-blue-600 dark:text-[#38BDF8]">{{ current_user.email or 'admin@telkom.co.id' }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="pt-3 border-t border-slate-100 dark:border-[#1A2E4C] flex flex-col gap-2">
-          <button type="button" onclick="document.getElementById('registerAvatarInput').click()" class="btn-change-avatar rounded-xl px-4 py-2 w-full flex items-center justify-center gap-2 font-medium text-xs transition-colors cursor-pointer border bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100 dark:bg-[#1677FF]/15 dark:text-[#38BDF8] dark:border-[#1677FF]/30 dark:hover:bg-[#1677FF]/25">
-            <span class="material-symbols-outlined text-[16px]">photo_camera</span>
-            Ganti Foto Profil
-          </button>
-          <input type="file" id="registerAvatarInput" accept="image/png,image/jpeg,image/webp" class="hidden" onchange="uploadRegisterAvatar(this)">
-          <a href="{{ url_for('auth.logout') }}" class="btn-logout text-rose-500 bg-rose-500/10 hover:bg-rose-500 hover:text-white border border-rose-500/25 rounded-xl px-4 py-2 w-full flex items-center justify-center gap-2 font-medium text-xs transition duration-200 cursor-pointer shadow-sm active:scale-[0.98]">
-            <span class="material-symbols-outlined text-[16px]">logout</span>
-            Keluar dari akun
-          </a>
         </div>
       </div>
     </div>
     </div>
-  </div>
-</header>
+  </header>
 
-<!-- ══════════════════ MAIN VIEW CONTAINER ══════════════════ -->
-<div id="main-container" class="theme-main-bg pl-[240px] pt-[64px] flex flex-col min-h-screen bg-[#071426] w-full transition-colors duration-300">
-  <main class="p-6 md:p-8 space-y-6 flex-1 w-full max-w-[860px]">
+  <!-- ══════════════════ MAIN VIEW CONTAINER ══════════════════ -->
+  <div id="main-container"
+    class="theme-main-bg pl-[240px] pt-[64px] flex flex-col min-h-screen bg-[#071426] w-full transition-colors duration-300">
+    <main class="p-6 md:p-8 space-y-6 flex-1 w-full max-w-[860px]">
 
 
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-        <div id="flash-container" class="space-y-2 fade-up">
-          {% for category, message in messages %}
-            {% if category == 'success' %}
-            <div class="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[13px] shadow-sm">
-              <span class="material-symbols-outlined text-[18px] text-emerald-400 shrink-0">check_circle</span>
-              <span class="flex-1">{{ message }}</span>
-              <button onclick="this.parentElement.remove()" class="text-emerald-400/60 hover:text-emerald-400 transition-colors shrink-0">
-                <span class="material-symbols-outlined text-[16px]">close</span>
-              </button>
-            </div>
-            {% else %}
-            <div class="flex items-center gap-3 px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-[13px] shadow-sm">
-              <span class="material-symbols-outlined text-[18px] text-rose-400 shrink-0">error</span>
-              <span class="flex-1">{{ message }}</span>
-              <button onclick="this.parentElement.remove()" class="text-rose-400/60 hover:text-rose-400 transition-colors shrink-0">
-                <span class="material-symbols-outlined text-[16px]">close</span>
-              </button>
-            </div>
-            {% endif %}
-          {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
-
-    <!-- ── FORM CARD ── -->
-    <div id="form-card" class="theme-card relative rounded-2xl border border-[#1E3A5F] bg-[#0D1F36] shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden fade-up transition-colors duration-300">
-      <!-- Ambient Glow (Dark Mode only) -->
-      <div id="card-glow-1" class="absolute -top-16 -right-16 w-56 h-56 bg-[#1677FF]/10 rounded-full blur-3xl pointer-events-none"></div>
-      <div id="card-glow-2" class="absolute -bottom-10 -left-10 w-40 h-40 bg-[#38BDF8]/8 rounded-full blur-3xl pointer-events-none"></div>
-
-      <!-- Card Header (GAMBAR 2 FIX) -->
-      <div id="form-card-header" class="relative px-7 pt-6 pb-5 border-b border-[#1A2E4C] transition-colors duration-300">
-        <div class="flex items-center gap-4">
-          <!-- GAMBAR 2 ICON BOX: adapts cleanly to dark (navy-cyan) & light (red-telkom pastel) -->
-          <div id="form-icon-box" class="w-11 h-11 rounded-xl bg-gradient-to-br from-[#1677FF]/25 to-[#0D1F36] border border-[#1677FF]/40 flex items-center justify-center shrink-0 shadow-md shadow-[#1677FF]/20 transition-all duration-300">
-            <span class="material-symbols-outlined text-[22px] text-[#38BDF8] transition-colors duration-300" id="form-icon">badge</span>
-          </div>
-          <div>
-            <h1 id="page-heading" class="theme-text-heading text-[18px] font-bold text-[#E6EDF7] leading-tight transition-colors duration-300">Daftarkan Karyawan TIF</h1>
-            <div id="heading-underline" class="w-10 h-0.5 bg-[#1677FF] rounded-full mt-1.5 mb-1.5 transition-colors duration-300"></div>
-            <p id="page-subheading" class="theme-text-muted text-[13px] text-[#94A3B8] transition-colors duration-300">Akun personil langsung aktif dan terdaftar pada database sistem.</p>
-          </div>
-        </div>
-      </div>
-      <div id="card-gradient-bar" class="w-full h-px bg-gradient-to-r from-transparent via-[#1677FF]/30 to-transparent transition-all duration-300"></div>
-
-      <!-- Form Body -->
-      <form method="POST" id="register-form" class="relative px-7 py-6 space-y-5" novalidate>
-
-        <!-- Nama Lengkap -->
-        <div class="fade-up fade-up-d1">
-          <label for="name" id="label-name" class="theme-text-muted block text-[11px] font-semibold text-[#94A3B8] mb-2 tracking-widest uppercase">
-            Nama Lengkap
-          </label>
-          <div class="relative">
-            <span class="form-input-icon absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[17px] text-[#4A6580] pointer-events-none">person</span>
-            <input type="text" id="name" name="name" required autofocus
-              placeholder="Masukkan nama lengkap karyawan"
-              class="field-input w-full pl-10 pr-4 py-3 rounded-xl border text-[13px] transition-all duration-200">
-          </div>
-        </div>
-
-        <!-- Email Perusahaan -->
-        <div class="fade-up fade-up-d1">
-          <label for="email" id="label-email" class="theme-text-muted block text-[11px] font-semibold text-[#94A3B8] mb-2 tracking-widest uppercase">
-            Email Perusahaan
-          </label>
-          <div class="relative">
-            <span class="form-input-icon absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[17px] text-[#4A6580] pointer-events-none">mail</span>
-            <input type="email" id="email" name="email" required
-              placeholder="karyawan@telkom.co.id"
-              class="field-input w-full pl-10 pr-4 py-3 rounded-xl border text-[13px] transition-all duration-200">
-          </div>
-        </div>
-
-        <!-- Password Sementara -->
-        <div class="fade-up fade-up-d2">
-          <label for="password" id="label-password" class="theme-text-muted block text-[11px] font-semibold text-[#94A3B8] mb-2 tracking-widest uppercase">
-            Password Sementara
-          </label>
-          <div class="relative">
-            <span class="form-input-icon absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[17px] text-[#4A6580] pointer-events-none">lock</span>
-            <input type="password" id="password" name="password" required
-              placeholder="Masukkan password akun baru"
-              oninput="checkPasswordStrength(this.value)"
-              class="field-input w-full pl-10 pr-12 py-3 rounded-xl border text-[13px] transition-all duration-200">
-            <button type="button" onclick="togglePassword()" id="toggle-pw-btn"
-              class="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#4A6580] hover:text-[#38BDF8] transition-colors cursor-pointer">
-              <span class="material-symbols-outlined text-[18px]" id="pw-eye-icon">visibility</span>
-            </button>
-          </div>
-          <!-- Strength Bars -->
-          <div class="mt-2.5 space-y-1.5">
-            <div class="flex gap-1.5">
-              <div class="strength-track h-1 flex-1 rounded-full bg-[#1A2E4C] overflow-hidden"><div id="bar-1" class="strength-bar h-full w-0 rounded-full"></div></div>
-              <div class="strength-track h-1 flex-1 rounded-full bg-[#1A2E4C] overflow-hidden"><div id="bar-2" class="strength-bar h-full w-0 rounded-full"></div></div>
-              <div class="strength-track h-1 flex-1 rounded-full bg-[#1A2E4C] overflow-hidden"><div id="bar-3" class="strength-bar h-full w-0 rounded-full"></div></div>
-              <div class="strength-track h-1 flex-1 rounded-full bg-[#1A2E4C] overflow-hidden"><div id="bar-4" class="strength-bar h-full w-0 rounded-full"></div></div>
-            </div>
-            <p class="theme-text-subtle text-[11px] text-[#4A6580] font-mono" id="pw-hint">Minimal 8 karakter, gunakan kombinasi huruf besar, kecil, dan angka.</p>
-          </div>
-        </div>
-
-        <!-- District Selection -->
-        <div class="fade-up fade-up-d3">
-          <label for="district" id="label-district" class="theme-text-muted block text-[11px] font-semibold text-[#94A3B8] mb-2 tracking-widest uppercase">
-            District Penugasan
-          </label>
-          <div class="relative">
-            <span class="form-input-icon absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[17px] text-[#4A6580] pointer-events-none z-10">location_on</span>
-            <select id="district" name="district" required
-              class="field-input field-select w-full pl-10 pr-10 py-3 rounded-xl border text-[13px] transition-all duration-200 cursor-pointer">
-              <option value="" disabled selected>Pilih district penugasan</option>
-              <option value="PALU1">PALU1</option>
-              <option value="PALU2">PALU2</option>
-              <option value="PALU3">PALU3</option>
-              <option value="DONGGALA">DONGGALA</option>
-              <option value="SIGI">SIGI</option>
-              <option value="PARIGI">PARIGI</option>
-              <option value="TOLITOLI">TOLITOLI</option>
-              <option value="BUOL">BUOL</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Submit Row -->
-        <div class="flex items-center justify-between pt-2 fade-up fade-up-d3">
-          <span id="success-hint" class="hidden items-center gap-1.5 text-[12px] text-[#38BDF8] font-medium">
-            <span class="material-symbols-outlined text-[15px]">check_circle</span>
-            Karyawan ditambahkan ke sistem.
-          </span>
-          <div class="flex-1"></div>
-          <button type="submit" id="submit-btn"
-            class="group relative flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#1677FF] hover:bg-blue-500 text-white text-[13px] font-semibold shadow-lg shadow-[#1677FF]/30 hover:shadow-blue-500/40 transition-all duration-200 active:scale-[0.98] cursor-pointer overflow-hidden">
-            <span class="material-symbols-outlined text-[18px] relative z-10">person_add</span>
-            <span class="relative z-10 font-semibold" id="submit-btn-text">Daftarkan Karyawan</span>
+      <div id="flash-container" class="space-y-2 fade-up">
+        {% for category, message in messages %}
+        {% if category == 'success' %}
+        <div
+          class="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[13px] shadow-sm">
+          <span class="material-symbols-outlined text-[18px] text-emerald-400 shrink-0">check_circle</span>
+          <span class="flex-1">{{ message }}</span>
+          <button onclick="this.parentElement.remove()"
+            class="text-emerald-400/60 hover:text-emerald-400 transition-colors shrink-0">
+            <span class="material-symbols-outlined text-[16px]">close</span>
           </button>
         </div>
-      </form>
-    </div>
-
-    <!-- ── GAMBAR 3 FIX: RECENTLY REGISTERED CARD ── -->
-    {% if recent_users %}
-    <div id="recent-card" class="theme-card rounded-2xl border border-[#1E3A5F] bg-[#0D1F36] shadow-[0_4px_20px_rgba(0,0,0,0.3)] overflow-hidden fade-up fade-up-d2 transition-colors duration-300">
-      <div id="recent-header" class="px-6 py-4 flex items-center justify-between border-b border-[#1A2E4C] transition-colors duration-300">
-        <div class="flex items-center gap-2.5">
-          <span class="material-symbols-outlined text-[18px] text-[#38BDF8] transition-colors duration-300" id="recent-icon">group</span>
-          <h2 class="theme-text-heading text-[13px] font-semibold text-[#E6EDF7] transition-colors duration-300" id="recent-title">Baru Didaftarkan</h2>
+        {% else %}
+        <div
+          class="flex items-center gap-3 px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-[13px] shadow-sm">
+          <span class="material-symbols-outlined text-[18px] text-rose-400 shrink-0">error</span>
+          <span class="flex-1">{{ message }}</span>
+          <button onclick="this.parentElement.remove()"
+            class="text-rose-400/60 hover:text-rose-400 transition-colors shrink-0">
+            <span class="material-symbols-outlined text-[16px]">close</span>
+          </button>
         </div>
-        <span class="text-[11px] font-mono px-2.5 py-1 rounded-full border transition-colors duration-300 bg-[#071426]/60 border-[#1A2E4C] text-[#4A6580]" id="recent-tag">Sesi Ini</span>
-      </div>
-      <div class="divide-y divide-[#1A2E4C]/50" id="recent-list">
-        {% for u in recent_users %}
-        <div class="recent-list-row flex items-center gap-4 px-6 py-3.5 hover:bg-[#122846]/50 transition-colors duration-150 group">
-          <!-- User initial badge: adapts beautifully in dark and light modes -->
-          <div class="recent-user-avatar w-9 h-9 rounded-full bg-gradient-to-br from-[#1677FF]/30 to-[#0D1F36] border border-[#1677FF]/30 flex items-center justify-center shrink-0 text-[#38BDF8] font-bold text-[13px] uppercase transition-all duration-300">
-            {{ u.name[0] if u.name else '?' }}
-          </div>
-          <div class="flex flex-col min-w-0 flex-1">
-            <span class="recent-user-name theme-text-heading text-[13px] font-semibold text-[#E6EDF7] truncate transition-colors duration-300">
-              {{ u.name }}
-            </span>
-            <span class="recent-user-email theme-text-muted text-[11px] text-[#64748B] truncate transition-colors duration-300">{{ u.email }}</span>
-          </div>
-          <div class="shrink-0 flex items-center gap-3">
-            <span class="recent-district-badge px-2.5 py-1 rounded-lg bg-[#1677FF]/10 border border-[#1677FF]/20 text-[#38BDF8] text-[11px] font-mono font-semibold tracking-wide transition-colors duration-300">
-              {{ u.district|upper if u.district else '—' }}
-            </span>
-            <span class="recent-status-text text-[11px] font-medium text-emerald-400 flex items-center gap-1 transition-colors duration-300">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-              Aktif
-            </span>
-          </div>
-        </div>
+        {% endif %}
         {% endfor %}
       </div>
-    </div>
-    {% endif %}
+      {% endif %}
+      {% endwith %}
 
-  </main>
-</div>
+      <!-- ── FORM CARD ── -->
+      <div id="form-card"
+        class="theme-card relative rounded-2xl border border-[#1E3A5F] bg-[#0D1F36] shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden fade-up transition-colors duration-300">
+        <!-- Ambient Glow (Dark Mode only) -->
+        <div id="card-glow-1"
+          class="absolute -top-16 -right-16 w-56 h-56 bg-[#1677FF]/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div id="card-glow-2"
+          class="absolute -bottom-10 -left-10 w-40 h-40 bg-[#38BDF8]/8 rounded-full blur-3xl pointer-events-none"></div>
 
-<!-- ════════════════ SCRIPTS: FULL SYNCHRONIZATION WITH DASHBOARD ════════════════ -->
-<script>
-  // ── THEME MANAGER (Synchronized with asset-app-theme & theme in localStorage) ──
-  const htmlEl = document.getElementById('html-root');
-  const bodyEl = document.getElementById('body-root');
-  const sidebarRoot = document.getElementById('sidebar-root');
-  const sidebarLogoHeader = document.getElementById('sidebar-logo-header');
-  const headerRoot = document.getElementById('header-root');
-  const sidebarFooter = document.getElementById('sidebar-footer');
-  const mainContainer = document.getElementById('main-container');
+        <!-- Card Header (GAMBAR 2 FIX) -->
+        <div id="form-card-header"
+          class="relative px-7 pt-6 pb-5 border-b border-[#1A2E4C] transition-colors duration-300">
+          <div class="flex items-center gap-4">
+            <!-- GAMBAR 2 ICON BOX: adapts cleanly to dark (navy-cyan) & light (red-telkom pastel) -->
+            <div id="form-icon-box"
+              class="w-11 h-11 rounded-xl bg-gradient-to-br from-[#1677FF]/25 to-[#0D1F36] border border-[#1677FF]/40 flex items-center justify-center shrink-0 shadow-md shadow-[#1677FF]/20 transition-all duration-300">
+              <span class="material-symbols-outlined text-[22px] text-[#38BDF8] transition-colors duration-300"
+                id="form-icon">badge</span>
+            </div>
+            <div>
+              <h1 id="page-heading"
+                class="theme-text-heading text-[18px] font-bold text-[#E6EDF7] leading-tight transition-colors duration-300">
+                Daftarkan Karyawan TIF</h1>
+              <div id="heading-underline"
+                class="w-10 h-0.5 bg-[#1677FF] rounded-full mt-1.5 mb-1.5 transition-colors duration-300"></div>
+              <p id="page-subheading"
+                class="theme-text-muted text-[13px] text-[#94A3B8] transition-colors duration-300">Akun personil
+                langsung aktif dan terdaftar pada database sistem.</p>
+            </div>
+          </div>
+        </div>
+        <div id="card-gradient-bar"
+          class="w-full h-px bg-gradient-to-r from-transparent via-[#1677FF]/30 to-transparent transition-all duration-300">
+        </div>
 
-  const themeBtn = document.getElementById('theme-btn');
-  const themeBtnIcon = document.getElementById('theme-btn-icon');
-  const themeBtnDot = document.getElementById('theme-btn-dot');
-  const logoBadge = document.getElementById('logo-badge');
-  const logoTitle = document.getElementById('logo-title');
-  const logoSub = document.getElementById('logo-sub');
-  const navActiveItem = document.getElementById('nav-active-item');
-  const submitBtn = document.getElementById('submit-btn');
-  const headerAvatar = document.getElementById('header-user-avatar');
-  const headerAvatarStatus = document.getElementById('header-avatar-status');
+        <!-- Form Body -->
+        <form method="POST" id="register-form" class="relative px-7 py-6 space-y-5" novalidate>
 
-  const headerBadgeIconBox = document.getElementById('header-badge-icon-box');
-  const headerBadgeIcon = document.getElementById('header-badge-icon');
-  const headerBadgeTitle = document.getElementById('header-badge-title');
+          <!-- Nama Lengkap -->
+          <div class="fade-up fade-up-d1">
+            <label for="name" id="label-name"
+              class="theme-text-muted block text-[11px] font-semibold text-[#94A3B8] mb-2 tracking-widest uppercase">
+              Nama Lengkap
+            </label>
+            <div class="relative">
+              <span
+                class="form-input-icon absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[17px] text-[#4A6580] pointer-events-none">person</span>
+              <input type="text" id="name" name="name" required autofocus placeholder="Masukkan nama lengkap karyawan"
+                class="field-input w-full pl-10 pr-4 py-3 rounded-xl border text-[13px] transition-all duration-200">
+            </div>
+          </div>
 
-  function applyTheme(mode) {
-    const isDark = (mode === 'dark');
+          <!-- Email Perusahaan -->
+          <div class="fade-up fade-up-d1">
+            <label for="email" id="label-email"
+              class="theme-text-muted block text-[11px] font-semibold text-[#94A3B8] mb-2 tracking-widest uppercase">
+              Email Perusahaan
+            </label>
+            <div class="relative">
+              <span
+                class="form-input-icon absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[17px] text-[#4A6580] pointer-events-none">mail</span>
+              <input type="email" id="email" name="email" required placeholder="karyawan@telkom.co.id"
+                class="field-input w-full pl-10 pr-4 py-3 rounded-xl border text-[13px] transition-all duration-200">
+            </div>
+          </div>
 
-    if (isDark) {
-      htmlEl.classList.remove('light');
-      htmlEl.classList.add('dark');
-      bodyEl.style.backgroundColor = '#071426';
-      bodyEl.style.color = '#E6EDF7';
+          <!-- Password Sementara -->
+          <div class="fade-up fade-up-d2">
+            <label for="password" id="label-password"
+              class="theme-text-muted block text-[11px] font-semibold text-[#94A3B8] mb-2 tracking-widest uppercase">
+              Password Sementara
+            </label>
+            <div class="relative">
+              <span
+                class="form-input-icon absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[17px] text-[#4A6580] pointer-events-none">lock</span>
+              <input type="password" id="password" name="password" required placeholder="Masukkan password akun baru"
+                oninput="checkPasswordStrength(this.value)"
+                class="field-input w-full pl-10 pr-12 py-3 rounded-xl border text-[13px] transition-all duration-200">
+              <button type="button" onclick="togglePassword()" id="toggle-pw-btn"
+                class="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#4A6580] hover:text-[#38BDF8] transition-colors cursor-pointer">
+                <span class="material-symbols-outlined text-[18px]" id="pw-eye-icon">visibility</span>
+              </button>
+            </div>
+            <!-- Strength Bars -->
+            <div class="mt-2.5 space-y-1.5">
+              <div class="flex gap-1.5">
+                <div class="strength-track h-1 flex-1 rounded-full bg-[#1A2E4C] overflow-hidden">
+                  <div id="bar-1" class="strength-bar h-full w-0 rounded-full"></div>
+                </div>
+                <div class="strength-track h-1 flex-1 rounded-full bg-[#1A2E4C] overflow-hidden">
+                  <div id="bar-2" class="strength-bar h-full w-0 rounded-full"></div>
+                </div>
+                <div class="strength-track h-1 flex-1 rounded-full bg-[#1A2E4C] overflow-hidden">
+                  <div id="bar-3" class="strength-bar h-full w-0 rounded-full"></div>
+                </div>
+                <div class="strength-track h-1 flex-1 rounded-full bg-[#1A2E4C] overflow-hidden">
+                  <div id="bar-4" class="strength-bar h-full w-0 rounded-full"></div>
+                </div>
+              </div>
+              <p class="theme-text-subtle text-[11px] text-[#4A6580] font-mono" id="pw-hint">Minimal 8 karakter, gunakan
+                kombinasi huruf besar, kecil, dan angka.</p>
+            </div>
+          </div>
 
-      // Sidebar & Header Backgrounds (Strict inline override for bulletproof themes)
-      if (sidebarRoot) {
-        sidebarRoot.style.backgroundColor = '#071426';
-        sidebarRoot.style.borderColor = '#1A2E4C';
-      }
-      if (sidebarLogoHeader) {
-        sidebarLogoHeader.style.backgroundColor = '#071426';
-        sidebarLogoHeader.style.borderColor = '#1A2E4C';
-      }
-      if (headerRoot) {
-        headerRoot.style.backgroundColor = '#071426';
-        headerRoot.style.borderColor = '#1A2E4C';
-        headerRoot.style.boxShadow = '0 2px 8px rgba(0,0,0,0.35)';
-      }
-      if (sidebarFooter) {
-        sidebarFooter.style.backgroundColor = '#0D1F36';
-        sidebarFooter.style.borderColor = '#1E3A5F';
-        sidebarFooter.style.color = '#94A3B8';
-      }
-      if (mainContainer) {
-        mainContainer.style.backgroundColor = '#071426';
-      }
+          <!-- District Selection -->
+          <div class="fade-up fade-up-d3">
+            <label for="district" id="label-district"
+              class="theme-text-muted block text-[11px] font-semibold text-[#94A3B8] mb-2 tracking-widest uppercase">
+              District Penugasan
+            </label>
+            <div class="relative">
+              <span
+                class="form-input-icon absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[17px] text-[#4A6580] pointer-events-none z-10">location_on</span>
+              <select id="district" name="district" required
+                class="field-input field-select w-full pl-10 pr-10 py-3 rounded-xl border text-[13px] transition-all duration-200 cursor-pointer">
+                <option value="" disabled selected>Pilih district penugasan</option>
+                <option value="PALU1">PALU1</option>
+                <option value="PALU2">PALU2</option>
+                <option value="PALU3">PALU3</option>
+                <option value="DONGGALA">DONGGALA</option>
+                <option value="SIGI">SIGI</option>
+                <option value="PARIGI">PARIGI</option>
+                <option value="TOLITOLI">TOLITOLI</option>
+                <option value="BUOL">BUOL</option>
+              </select>
+            </div>
+          </div>
 
-      // Header Status Badge (Left)
-      if (headerBadgeIconBox) {
-        headerBadgeIconBox.className = "w-8 h-8 rounded-lg flex items-center justify-center bg-[#1677FF]/15 border border-[#1677FF]/30 text-[#38BDF8] transition-all duration-300";
-      }
-      if (headerBadgeIcon) headerBadgeIcon.className = "material-symbols-outlined text-[19px] text-[#38BDF8]";
-      if (headerBadgeTitle) headerBadgeTitle.className = "font-semibold text-[#E6EDF7] transition-colors duration-300";
+          <!-- Submit Row -->
+          <div class="flex items-center justify-between pt-2 fade-up fade-up-d3">
+            <span id="success-hint" class="hidden items-center gap-1.5 text-[12px] text-[#38BDF8] font-medium">
+              <span class="material-symbols-outlined text-[15px]">check_circle</span>
+              Karyawan ditambahkan ke sistem.
+            </span>
+            <div class="flex-1"></div>
+            <button type="submit" id="submit-btn"
+              class="group relative flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#1677FF] hover:bg-blue-500 text-white text-[13px] font-semibold shadow-lg shadow-[#1677FF]/30 hover:shadow-blue-500/40 transition-all duration-200 active:scale-[0.98] cursor-pointer overflow-hidden">
+              <span class="material-symbols-outlined text-[18px] relative z-10">person_add</span>
+              <span class="relative z-10 font-semibold" id="submit-btn-text">Daftarkan Karyawan</span>
+            </button>
+          </div>
+        </form>
+      </div>
 
-      // Theme toggle button
-      if (themeBtn) {
-        themeBtn.className = "relative w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 border cursor-pointer group bg-[#0D1F36] border-[#1E3A5F] text-amber-400 hover:border-amber-400/50 hover:bg-[#122846] shadow-sm hover:shadow-[0_0_12px_rgba(251,191,36,0.3)]";
-      }
-      if (themeBtnIcon) themeBtnIcon.textContent = 'light_mode';
-      if (themeBtnDot) themeBtnDot.className = "absolute top-1.5 right-1.5 w-2 h-2 rounded-full ring-2 bg-amber-400 ring-[#071426]";
+      <!-- ── GAMBAR 3 FIX: RECENTLY REGISTERED CARD ── -->
+      {% if recent_users %}
+      <div id="recent-card"
+        class="theme-card rounded-2xl border border-[#1E3A5F] bg-[#0D1F36] shadow-[0_4px_20px_rgba(0,0,0,0.3)] overflow-hidden fade-up fade-up-d2 transition-colors duration-300">
+        <div id="recent-header"
+          class="px-6 py-4 flex items-center justify-between border-b border-[#1A2E4C] transition-colors duration-300">
+          <div class="flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-[18px] text-[#38BDF8] transition-colors duration-300"
+              id="recent-icon">group</span>
+            <h2 class="theme-text-heading text-[13px] font-semibold text-[#E6EDF7] transition-colors duration-300"
+              id="recent-title">Baru Didaftarkan</h2>
+          </div>
+          <span
+            class="text-[11px] font-mono px-2.5 py-1 rounded-full border transition-colors duration-300 bg-[#071426]/60 border-[#1A2E4C] text-[#4A6580]"
+            id="recent-tag">Sesi Ini</span>
+        </div>
+        <div class="divide-y divide-[#1A2E4C]/50" id="recent-list">
+          {% for u in recent_users %}
+          <div
+            class="recent-list-row flex items-center gap-4 px-6 py-3.5 hover:bg-[#122846]/50 transition-colors duration-150 group">
+            <!-- User initial badge: adapts beautifully in dark and light modes -->
+            <div
+              class="recent-user-avatar w-9 h-9 rounded-full bg-gradient-to-br from-[#1677FF]/30 to-[#0D1F36] border border-[#1677FF]/30 flex items-center justify-center shrink-0 text-[#38BDF8] font-bold text-[13px] uppercase transition-all duration-300">
+              {{ u.name[0] if u.name else '?' }}
+            </div>
+            <div class="flex flex-col min-w-0 flex-1">
+              <span
+                class="recent-user-name theme-text-heading text-[13px] font-semibold text-[#E6EDF7] truncate transition-colors duration-300">
+                {{ u.name }}
+              </span>
+              <span
+                class="recent-user-email theme-text-muted text-[11px] text-[#64748B] truncate transition-colors duration-300">{{
+                u.email }}</span>
+            </div>
+            <div class="shrink-0 flex items-center gap-3">
+              <span
+                class="recent-district-badge px-2.5 py-1 rounded-lg bg-[#1677FF]/10 border border-[#1677FF]/20 text-[#38BDF8] text-[11px] font-mono font-semibold tracking-wide transition-colors duration-300">
+                {{ u.district|upper if u.district else '—' }}
+              </span>
+              <span
+                class="recent-status-text text-[11px] font-medium text-emerald-400 flex items-center gap-1 transition-colors duration-300">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                Aktif
+              </span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
 
-      // Sidebar Logo
-      if (logoBadge) logoBadge.className = "w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white shadow-md bg-gradient-to-br from-[#1677FF] to-[#0D1F36] shrink-0 transition-colors duration-300";
-      if (logoTitle) logoTitle.className = "text-sm font-bold tracking-tight leading-none text-[#E6EDF7] transition-colors duration-300";
-      if (logoSub) logoSub.className = "text-[10px] font-medium leading-tight mt-1 text-[#38BDF8] transition-colors duration-300";
+    </main>
+  </div>
 
-      // Active Nav Item
-      if (navActiveItem) {
-        navActiveItem.className = "nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-semibold bg-[#1677FF] text-[#E6EDF7] shadow-lg shadow-[#1677FF]/25 transition-all duration-200";
-        const icon = navActiveItem.querySelector('.material-symbols-outlined');
-        if (icon) icon.className = "material-symbols-outlined text-[19px] text-white";
-      }
+  <!-- ════════════════ SCRIPTS: FULL SYNCHRONIZATION WITH DASHBOARD ════════════════ -->
+  <script>
+    // ── THEME MANAGER (Synchronized with asset-app-theme & theme in localStorage) ──
+    const htmlEl = document.getElementById('html-root');
+    const bodyEl = document.getElementById('body-root');
+    const sidebarRoot = document.getElementById('sidebar-root');
+    const sidebarLogoHeader = document.getElementById('sidebar-logo-header');
+    const headerRoot = document.getElementById('header-root');
+    const sidebarFooter = document.getElementById('sidebar-footer');
+    const mainContainer = document.getElementById('main-container');
 
-      // Inactive Nav Links
-      document.querySelectorAll('.nav-link').forEach(link => {
-        if (link.id !== 'nav-active-item') {
-          link.className = "nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200";
-          const icon = link.querySelector('.material-symbols-outlined');
-          if (icon) icon.className = "material-symbols-outlined text-[19px] text-[#64748B]";
+    const themeBtn = document.getElementById('theme-btn');
+    const themeBtnIcon = document.getElementById('theme-btn-icon');
+    const themeBtnDot = document.getElementById('theme-btn-dot');
+    const logoBadge = document.getElementById('logo-badge');
+    const logoTitle = document.getElementById('logo-title');
+    const logoSub = document.getElementById('logo-sub');
+    const navActiveItem = document.getElementById('nav-active-item');
+    const submitBtn = document.getElementById('submit-btn');
+    const headerAvatar = document.getElementById('header-user-avatar');
+    const headerAvatarStatus = document.getElementById('header-avatar-status');
+
+    const headerBadgeIconBox = document.getElementById('header-badge-icon-box');
+    const headerBadgeIcon = document.getElementById('header-badge-icon');
+    const headerBadgeTitle = document.getElementById('header-badge-title');
+
+    function applyTheme(mode) {
+      const isDark = (mode === 'dark');
+
+      if (isDark) {
+        htmlEl.classList.remove('light');
+        htmlEl.classList.add('dark');
+        bodyEl.style.backgroundColor = '#071426';
+        bodyEl.style.color = '#E6EDF7';
+
+        // Sidebar & Header Backgrounds (Strict inline override for bulletproof themes)
+        if (sidebarRoot) {
+          sidebarRoot.style.backgroundColor = '#071426';
+          sidebarRoot.style.borderColor = '#1A2E4C';
         }
-      });
-
-      // Submit Button
-      if (submitBtn) {
-        submitBtn.className = "group relative flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#1677FF] hover:bg-blue-500 text-white text-[13px] font-semibold shadow-lg shadow-[#1677FF]/30 hover:shadow-blue-500/40 transition-all duration-200 active:scale-[0.98] cursor-pointer overflow-hidden";
-      }
-
-      // User Avatar Ring
-      if (headerAvatar) {
-        headerAvatar.className = "w-9 h-9 rounded-full object-cover ring-2 ring-[#1677FF] shadow-sm transition-all duration-300";
-      }
-      if (headerAvatarStatus) {
-        headerAvatarStatus.className = "absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#10B981] ring-2 ring-[#071426]";
-      }
-
-    } else {
-      // ── LIGHT MODE (Telkom Clean Light Theme, Sidebar strictly Dark) ──
-      htmlEl.classList.remove('dark');
-      htmlEl.classList.add('light');
-      bodyEl.style.backgroundColor = '#F8FAFC';
-      bodyEl.style.color = '#0F172A';
-
-      // Sidebar: strictly Dark in both Dark and Light modes
-      if (sidebarRoot) {
-        sidebarRoot.style.backgroundColor = '#071426';
-        sidebarRoot.style.borderColor = '#1A2E4C';
-      }
-      if (sidebarLogoHeader) {
-        sidebarLogoHeader.style.backgroundColor = '#071426';
-        sidebarLogoHeader.style.borderColor = '#1A2E4C';
-      }
-      if (headerRoot) {
-        headerRoot.style.backgroundColor = '#FFFFFF';
-        headerRoot.style.borderColor = '#E2E8F0';
-        headerRoot.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
-      }
-      if (sidebarFooter) {
-        sidebarFooter.style.backgroundColor = '#0D1F36';
-        sidebarFooter.style.borderColor = '#1E3A5F';
-        sidebarFooter.style.color = '#94A3B8';
-      }
-      if (mainContainer) {
-        mainContainer.style.backgroundColor = '#F8FAFC';
-      }
-
-      // Header Status Badge (Left) - Clean Blue Style
-      if (headerBadgeIconBox) {
-        headerBadgeIconBox.className = "w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 border border-blue-200 text-[#1677FF] transition-all duration-300";
-      }
-      if (headerBadgeIcon) headerBadgeIcon.className = "material-symbols-outlined text-[19px] text-[#1677FF]";
-      if (headerBadgeTitle) headerBadgeTitle.className = "font-semibold text-slate-900 transition-colors duration-300";
-
-      // Theme toggle button
-      if (themeBtn) {
-        themeBtn.className = "relative w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 border cursor-pointer group bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200 hover:text-amber-500 shadow-sm hover:shadow-[0_0_12px_rgba(245,158,11,0.2)]";
-      }
-      if (themeBtnIcon) themeBtnIcon.textContent = 'dark_mode';
-      if (themeBtnDot) themeBtnDot.className = "absolute top-1.5 right-1.5 w-2 h-2 rounded-full ring-2 bg-amber-400 ring-white";
-
-      // Sidebar Logo (Remains Dark Theme)
-      if (logoBadge) logoBadge.className = "w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white shadow-md bg-gradient-to-br from-[#1677FF] to-[#0D1F36] shrink-0 transition-colors duration-300";
-      if (logoTitle) logoTitle.className = "text-sm font-bold tracking-tight leading-none text-[#E6EDF7] transition-colors duration-300";
-      if (logoSub) logoSub.className = "text-[10px] font-medium leading-tight mt-1 text-[#38BDF8] transition-colors duration-300";
-
-      // Active Nav Item (Remains Dark Theme)
-      if (navActiveItem) {
-        navActiveItem.className = "nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-semibold bg-[#1677FF] text-[#E6EDF7] shadow-lg shadow-[#1677FF]/25 transition-all duration-200";
-        const icon = navActiveItem.querySelector('.material-symbols-outlined');
-        if (icon) icon.className = "material-symbols-outlined text-[19px] text-white";
-      }
-
-      // Inactive Nav Links (Remains Dark Theme)
-      document.querySelectorAll('.nav-link').forEach(link => {
-        if (link.id !== 'nav-active-item') {
-          link.className = "nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200";
-          const icon = link.querySelector('.material-symbols-outlined');
-          if (icon) icon.className = "material-symbols-outlined text-[19px] text-[#64748B]";
+        if (sidebarLogoHeader) {
+          sidebarLogoHeader.style.backgroundColor = '#071426';
+          sidebarLogoHeader.style.borderColor = '#1A2E4C';
         }
-      });
+        if (headerRoot) {
+          headerRoot.style.backgroundColor = '#071426';
+          headerRoot.style.borderColor = '#1A2E4C';
+          headerRoot.style.boxShadow = '0 2px 8px rgba(0,0,0,0.35)';
+        }
+        if (sidebarFooter) {
+          sidebarFooter.style.backgroundColor = '#0D1F36';
+          sidebarFooter.style.borderColor = '#1E3A5F';
+          sidebarFooter.style.color = '#94A3B8';
+        }
+        if (mainContainer) {
+          mainContainer.style.backgroundColor = '#071426';
+        }
 
-      // Submit Button (Blue Palette)
-      if (submitBtn) {
-        submitBtn.className = "group relative flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#1677FF] hover:bg-blue-600 text-white text-[13px] font-semibold shadow-lg shadow-[#1677FF]/30 hover:shadow-blue-600/40 transition-all duration-200 active:scale-[0.98] cursor-pointer overflow-hidden";
-      }
+        // Header Status Badge (Left)
+        if (headerBadgeIconBox) {
+          headerBadgeIconBox.className = "w-8 h-8 rounded-lg flex items-center justify-center bg-[#1677FF]/15 border border-[#1677FF]/30 text-[#38BDF8] transition-all duration-300";
+        }
+        if (headerBadgeIcon) headerBadgeIcon.className = "material-symbols-outlined text-[19px] text-[#38BDF8]";
+        if (headerBadgeTitle) headerBadgeTitle.className = "font-semibold text-[#E6EDF7] transition-colors duration-300";
 
-      // User Avatar Ring (Blue)
-      if (headerAvatar) {
-        headerAvatar.className = "w-9 h-9 rounded-full object-cover ring-2 ring-[#1677FF] shadow-sm transition-all duration-300";
-      }
-      if (headerAvatarStatus) {
-        headerAvatarStatus.className = "absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white";
-      }
-    }
+        // Theme toggle button
+        if (themeBtn) {
+          themeBtn.className = "relative w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 border cursor-pointer group bg-[#0D1F36] border-[#1E3A5F] text-amber-400 hover:border-amber-400/50 hover:bg-[#122846] shadow-sm hover:shadow-[0_0_12px_rgba(251,191,36,0.3)]";
+        }
+        if (themeBtnIcon) themeBtnIcon.textContent = 'light_mode';
+        if (themeBtnDot) themeBtnDot.className = "absolute top-1.5 right-1.5 w-2 h-2 rounded-full ring-2 bg-amber-400 ring-[#071426]";
 
-    // Persist to both keys for full compatibility with React dashboard
-    localStorage.setItem('asset-app-theme', mode);
-    localStorage.setItem('theme', mode);
-  }
+        // Sidebar Logo
+        if (logoBadge) logoBadge.className = "w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white shadow-md bg-gradient-to-br from-[#1677FF] to-[#0D1F36] shrink-0 transition-colors duration-300";
+        if (logoTitle) logoTitle.className = "text-sm font-bold tracking-tight leading-none text-[#E6EDF7] transition-colors duration-300";
+        if (logoSub) logoSub.className = "text-[10px] font-medium leading-tight mt-1 text-[#38BDF8] transition-colors duration-300";
 
-  function toggleTheme() {
-    const current = localStorage.getItem('asset-app-theme') || localStorage.getItem('theme') || 'dark';
-    applyTheme(current === 'dark' ? 'light' : 'dark');
-  }
+        // Active Nav Item
+        if (navActiveItem) {
+          navActiveItem.className = "nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-semibold bg-[#1677FF] text-[#E6EDF7] shadow-lg shadow-[#1677FF]/25 transition-all duration-200";
+          const icon = navActiveItem.querySelector('.material-symbols-outlined');
+          if (icon) icon.className = "material-symbols-outlined text-[19px] text-white";
+        }
 
-  // Initialize theme on load
-  (function initTheme() {
-    const saved = localStorage.getItem('asset-app-theme') || localStorage.getItem('theme') || 'dark';
-    applyTheme(saved);
-  })();
+        // Inactive Nav Links
+        document.querySelectorAll('.nav-link').forEach(link => {
+          if (link.id !== 'nav-active-item') {
+            link.className = "nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200";
+            const icon = link.querySelector('.material-symbols-outlined');
+            if (icon) icon.className = "material-symbols-outlined text-[19px] text-[#64748B]";
+          }
+        });
 
-  // ── PROFILE DROPDOWN ───────────────────────────────────────
-  function toggleProfileDropdown(event) {
-    if (event) event.stopPropagation();
-    const dropdown = document.getElementById('userProfileDropdown') || document.getElementById('profile-dropdown');
-    const chevron = document.getElementById('profile-chevron');
-    if (!dropdown) return;
+        // Submit Button
+        if (submitBtn) {
+          submitBtn.className = "group relative flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#1677FF] hover:bg-blue-500 text-white text-[13px] font-semibold shadow-lg shadow-[#1677FF]/30 hover:shadow-blue-500/40 transition-all duration-200 active:scale-[0.98] cursor-pointer overflow-hidden";
+        }
 
-    const isHidden = dropdown.classList.contains('hidden');
-    if (isHidden) {
-      dropdown.classList.remove('hidden');
-      requestAnimationFrame(() => {
-        dropdown.classList.remove('opacity-0', 'scale-95');
-      });
-      if (chevron) chevron.classList.add('rotate-180');
-    } else {
-      dropdown.classList.add('opacity-0', 'scale-95');
-      setTimeout(() => dropdown.classList.add('hidden'), 150);
-      if (chevron) chevron.classList.remove('rotate-180');
-    }
-  }
+        // User Avatar Ring
+        if (headerAvatar) {
+          headerAvatar.className = "w-9 h-9 rounded-full object-cover ring-2 ring-[#1677FF] shadow-sm transition-all duration-300";
+        }
+        if (headerAvatarStatus) {
+          headerAvatarStatus.className = "absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#10B981] ring-2 ring-[#071426]";
+        }
 
-  document.addEventListener('click', function(e) {
-    const container = document.getElementById('profile-container');
-    const dropdown = document.getElementById('userProfileDropdown') || document.getElementById('profile-dropdown');
-    const chevron = document.getElementById('profile-chevron');
-    if (container && !container.contains(e.target) && dropdown && !dropdown.classList.contains('hidden')) {
-      dropdown.classList.add('opacity-0', 'scale-95');
-      setTimeout(() => dropdown.classList.add('hidden'), 150);
-      if (chevron) chevron.classList.remove('rotate-180');
-    }
-  });
-
-  function uploadRegisterAvatar(input) {
-    if (!input.files || !input.files[0]) return;
-    const formData = new FormData();
-    formData.append('avatar', input.files[0]);
-    fetch('/api/me/avatar', {
-      method: 'POST',
-      body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success && data.avatar_url) {
-        window.location.reload();
       } else {
-        alert(data.error || 'Gagal mengunggah foto profil');
+        // ── LIGHT MODE (Telkom Clean Light Theme, Sidebar strictly Dark) ──
+        htmlEl.classList.remove('dark');
+        htmlEl.classList.add('light');
+        bodyEl.style.backgroundColor = '#F8FAFC';
+        bodyEl.style.color = '#0F172A';
+
+        // Sidebar: strictly Dark in both Dark and Light modes
+        if (sidebarRoot) {
+          sidebarRoot.style.backgroundColor = '#071426';
+          sidebarRoot.style.borderColor = '#1A2E4C';
+        }
+        if (sidebarLogoHeader) {
+          sidebarLogoHeader.style.backgroundColor = '#071426';
+          sidebarLogoHeader.style.borderColor = '#1A2E4C';
+        }
+        if (headerRoot) {
+          headerRoot.style.backgroundColor = '#FFFFFF';
+          headerRoot.style.borderColor = '#E2E8F0';
+          headerRoot.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
+        }
+        if (sidebarFooter) {
+          sidebarFooter.style.backgroundColor = '#0D1F36';
+          sidebarFooter.style.borderColor = '#1E3A5F';
+          sidebarFooter.style.color = '#94A3B8';
+        }
+        if (mainContainer) {
+          mainContainer.style.backgroundColor = '#F8FAFC';
+        }
+
+        // Header Status Badge (Left) - Clean Blue Style
+        if (headerBadgeIconBox) {
+          headerBadgeIconBox.className = "w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 border border-blue-200 text-[#1677FF] transition-all duration-300";
+        }
+        if (headerBadgeIcon) headerBadgeIcon.className = "material-symbols-outlined text-[19px] text-[#1677FF]";
+        if (headerBadgeTitle) headerBadgeTitle.className = "font-semibold text-slate-900 transition-colors duration-300";
+
+        // Theme toggle button
+        if (themeBtn) {
+          themeBtn.className = "relative w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 border cursor-pointer group bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200 hover:text-amber-500 shadow-sm hover:shadow-[0_0_12px_rgba(245,158,11,0.2)]";
+        }
+        if (themeBtnIcon) themeBtnIcon.textContent = 'dark_mode';
+        if (themeBtnDot) themeBtnDot.className = "absolute top-1.5 right-1.5 w-2 h-2 rounded-full ring-2 bg-amber-400 ring-white";
+
+        // Sidebar Logo (Remains Dark Theme)
+        if (logoBadge) logoBadge.className = "w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white shadow-md bg-gradient-to-br from-[#1677FF] to-[#0D1F36] shrink-0 transition-colors duration-300";
+        if (logoTitle) logoTitle.className = "text-sm font-bold tracking-tight leading-none text-[#E6EDF7] transition-colors duration-300";
+        if (logoSub) logoSub.className = "text-[10px] font-medium leading-tight mt-1 text-[#38BDF8] transition-colors duration-300";
+
+        // Active Nav Item (Remains Dark Theme)
+        if (navActiveItem) {
+          navActiveItem.className = "nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-semibold bg-[#1677FF] text-[#E6EDF7] shadow-lg shadow-[#1677FF]/25 transition-all duration-200";
+          const icon = navActiveItem.querySelector('.material-symbols-outlined');
+          if (icon) icon.className = "material-symbols-outlined text-[19px] text-white";
+        }
+
+        // Inactive Nav Links (Remains Dark Theme)
+        document.querySelectorAll('.nav-link').forEach(link => {
+          if (link.id !== 'nav-active-item') {
+            link.className = "nav-link flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#94A3B8] hover:text-[#E6EDF7] hover:bg-[#0D1F36] transition-all duration-200";
+            const icon = link.querySelector('.material-symbols-outlined');
+            if (icon) icon.className = "material-symbols-outlined text-[19px] text-[#64748B]";
+          }
+        });
+
+        // Submit Button (Blue Palette)
+        if (submitBtn) {
+          submitBtn.className = "group relative flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#1677FF] hover:bg-blue-600 text-white text-[13px] font-semibold shadow-lg shadow-[#1677FF]/30 hover:shadow-blue-600/40 transition-all duration-200 active:scale-[0.98] cursor-pointer overflow-hidden";
+        }
+
+        // User Avatar Ring (Blue)
+        if (headerAvatar) {
+          headerAvatar.className = "w-9 h-9 rounded-full object-cover ring-2 ring-[#1677FF] shadow-sm transition-all duration-300";
+        }
+        if (headerAvatarStatus) {
+          headerAvatarStatus.className = "absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white";
+        }
       }
-    })
-    .catch(err => {
-      console.error(err);
-      alert('Terjadi kesalahan saat mengunggah foto profil');
-    });
-  }
 
-  // ── PASSWORD VISIBILITY TOGGLE ─────────────────────────────
-  function togglePassword() {
-    const pw = document.getElementById('password');
-    const eye = document.getElementById('pw-eye-icon');
-    if (!pw || !eye) return;
-    pw.type = pw.type === 'password' ? 'text' : 'password';
-    eye.textContent = pw.type === 'password' ? 'visibility' : 'visibility_off';
-  }
+      // Persist to both keys for full compatibility with React dashboard
+      localStorage.setItem('asset-app-theme', mode);
+      localStorage.setItem('theme', mode);
+    }
 
-  // ── PASSWORD STRENGTH CHECKER ──────────────────────────────
-  function checkPasswordStrength(val) {
-    const bars = ['bar-1','bar-2','bar-3','bar-4'].map(id => document.getElementById(id));
-    const hint = document.getElementById('pw-hint');
-    if (!bars[0] || !hint) return;
+    function toggleTheme() {
+      const current = localStorage.getItem('asset-app-theme') || localStorage.getItem('theme') || 'dark';
+      applyTheme(current === 'dark' ? 'light' : 'dark');
+    }
 
-    let score = 0;
-    if (val.length >= 8) score++;
-    if (/[A-Z]/.test(val)) score++;
-    if (/[0-9]/.test(val)) score++;
-    if (/[^A-Za-z0-9]/.test(val)) score++;
+    // Initialize theme on load
+    (function initTheme() {
+      const saved = localStorage.getItem('asset-app-theme') || localStorage.getItem('theme') || 'dark';
+      applyTheme(saved);
+    })();
 
-    const colors = { 1:'#EF4444', 2:'#F59E0B', 3:'#38BDF8', 4:'#10B981' };
-    const labels = { 0:'', 1:'Sangat lemah', 2:'Cukup kuat', 3:'Kuat', 4:'Sangat kuat' };
-    const hintColors = { 1:'text-red-400', 2:'text-amber-400', 3:'text-[#38BDF8]', 4:'text-emerald-400' };
+    // ── PROFILE DROPDOWN ───────────────────────────────────────
+    function toggleProfileDropdown(event) {
+      if (event) event.stopPropagation();
+      const dropdown = document.getElementById('userProfileDropdown') || document.getElementById('profile-dropdown');
+      const chevron = document.getElementById('profile-chevron');
+      if (!dropdown) return;
 
-    bars.forEach((b, i) => {
-      if (b) {
-        b.style.width = i < score ? '100%' : '0%';
-        b.style.background = i < score ? (colors[score] || '#EF4444') : 'transparent';
+      const isHidden = dropdown.classList.contains('hidden');
+      if (isHidden) {
+        dropdown.classList.remove('hidden');
+        requestAnimationFrame(() => {
+          dropdown.classList.remove('opacity-0', 'scale-95');
+        });
+        if (chevron) chevron.classList.add('rotate-180');
+      } else {
+        dropdown.classList.add('opacity-0', 'scale-95');
+        setTimeout(() => dropdown.classList.add('hidden'), 150);
+        if (chevron) chevron.classList.remove('rotate-180');
+      }
+    }
+
+    document.addEventListener('click', function (e) {
+      const container = document.getElementById('profile-container');
+      const dropdown = document.getElementById('userProfileDropdown') || document.getElementById('profile-dropdown');
+      const chevron = document.getElementById('profile-chevron');
+      if (container && !container.contains(e.target) && dropdown && !dropdown.classList.contains('hidden')) {
+        dropdown.classList.add('opacity-0', 'scale-95');
+        setTimeout(() => dropdown.classList.add('hidden'), 150);
+        if (chevron) chevron.classList.remove('rotate-180');
       }
     });
 
-    if (!val) {
-      hint.textContent = 'Minimal 8 karakter, gunakan kombinasi huruf besar, kecil, dan angka.';
-      hint.className = 'theme-text-subtle text-[11px] text-[#4A6580] font-mono';
-    } else {
-      hint.textContent = labels[score] || 'Terlalu pendek';
-      hint.className = `text-[11px] font-mono font-semibold ${hintColors[score] || 'text-red-400'}`;
+    function uploadRegisterAvatar(input) {
+      if (!input.files || !input.files[0]) return;
+      const formData = new FormData();
+      formData.append('avatar', input.files[0]);
+      fetch('/api/me/avatar', {
+        method: 'POST',
+        body: formData
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.avatar_url) {
+            window.location.reload();
+          } else {
+            alert(data.error || 'Gagal mengunggah foto profil');
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          alert('Terjadi kesalahan saat mengunggah foto profil');
+        });
     }
-  }
 
-  // ── FLASH AUTO DISMISS ─────────────────────────────────────
-  (function() {
-    const fc = document.getElementById('flash-container');
-    if (!fc) return;
-    if (fc.querySelector('.bg-emerald-500\\/10')) {
-      const sh = document.getElementById('success-hint');
-      if (sh) { sh.classList.remove('hidden'); sh.classList.add('flex'); }
+    // ── PASSWORD VISIBILITY TOGGLE ─────────────────────────────
+    function togglePassword() {
+      const pw = document.getElementById('password');
+      const eye = document.getElementById('pw-eye-icon');
+      if (!pw || !eye) return;
+      pw.type = pw.type === 'password' ? 'text' : 'password';
+      eye.textContent = pw.type === 'password' ? 'visibility' : 'visibility_off';
     }
-    setTimeout(() => { fc.style.transition = 'opacity 0.4s'; fc.style.opacity = '0'; }, 4000);
-    setTimeout(() => { fc.remove(); }, 4500);
-  })();
 
-  // ── SUBMIT LOADING ANIMATION ──────────────────────────────
-  document.getElementById('register-form').addEventListener('submit', function() {
-    const btn = document.getElementById('submit-btn');
-    const isDark = htmlEl.classList.contains('dark');
-    const bgGradient = isDark
-      ? 'from-[#1677FF] to-[#38BDF8]'
-      : 'from-[#EE2E24] to-[#C51A12]';
+    // ── PASSWORD STRENGTH CHECKER ──────────────────────────────
+    function checkPasswordStrength(val) {
+      const bars = ['bar-1', 'bar-2', 'bar-3', 'bar-4'].map(id => document.getElementById(id));
+      const hint = document.getElementById('pw-hint');
+      if (!bars[0] || !hint) return;
 
-    btn.innerHTML = `
+      let score = 0;
+      if (val.length >= 8) score++;
+      if (/[A-Z]/.test(val)) score++;
+      if (/[0-9]/.test(val)) score++;
+      if (/[^A-Za-z0-9]/.test(val)) score++;
+
+      const colors = { 1: '#EF4444', 2: '#F59E0B', 3: '#38BDF8', 4: '#10B981' };
+      const labels = { 0: '', 1: 'Sangat lemah', 2: 'Cukup kuat', 3: 'Kuat', 4: 'Sangat kuat' };
+      const hintColors = { 1: 'text-red-400', 2: 'text-amber-400', 3: 'text-[#38BDF8]', 4: 'text-emerald-400' };
+
+      bars.forEach((b, i) => {
+        if (b) {
+          b.style.width = i < score ? '100%' : '0%';
+          b.style.background = i < score ? (colors[score] || '#EF4444') : 'transparent';
+        }
+      });
+
+      if (!val) {
+        hint.textContent = 'Minimal 8 karakter, gunakan kombinasi huruf besar, kecil, dan angka.';
+        hint.className = 'theme-text-subtle text-[11px] text-[#4A6580] font-mono';
+      } else {
+        hint.textContent = labels[score] || 'Terlalu pendek';
+        hint.className = `text-[11px] font-mono font-semibold ${hintColors[score] || 'text-red-400'}`;
+      }
+    }
+
+    // ── FLASH AUTO DISMISS ─────────────────────────────────────
+    (function () {
+      const fc = document.getElementById('flash-container');
+      if (!fc) return;
+      if (fc.querySelector('.bg-emerald-500\\/10')) {
+        const sh = document.getElementById('success-hint');
+        if (sh) { sh.classList.remove('hidden'); sh.classList.add('flex'); }
+      }
+      setTimeout(() => { fc.style.transition = 'opacity 0.4s'; fc.style.opacity = '0'; }, 4000);
+      setTimeout(() => { fc.remove(); }, 4500);
+    })();
+
+    // ── SUBMIT LOADING ANIMATION ──────────────────────────────
+    document.getElementById('register-form').addEventListener('submit', function () {
+      const btn = document.getElementById('submit-btn');
+      const isDark = htmlEl.classList.contains('dark');
+      const bgGradient = isDark
+        ? 'from-[#1677FF] to-[#38BDF8]'
+        : 'from-[#EE2E24] to-[#C51A12]';
+
+      btn.innerHTML = `
       <div class="absolute inset-0 bg-gradient-to-r ${bgGradient} rounded-xl"></div>
       <span class="material-symbols-outlined text-[18px] relative z-10 animate-spin">progress_activity</span>
       <span class="relative z-10 font-semibold">Mendaftarkan...</span>`;
-    btn.disabled = true;
-    btn.classList.add('opacity-85', 'cursor-not-allowed');
-  });
-</script>
+      btn.disabled = true;
+      btn.classList.add('opacity-85', 'cursor-not-allowed');
+    });
+  </script>
 
 </body>
+
 </html>

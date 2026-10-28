@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTheme } from "./context/ThemeContext";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
@@ -93,6 +93,45 @@ export default function App() {
     }
   }, [isModulesPage, isMutasiPage, isLocationsPage, isDevicesPage, isImportPage, isExportPage, isUsersPage, isAuditPage]);
 
+  const mainRef = useRef(null);
+  const [scrollbarWidth, setScrollbarWidth] = useState(0);
+
+  // Monitor dynamic scrollbar width agar tepi kanan Card selalu 100% rata presisi dengan halaman lain
+  useEffect(() => {
+    const updateScrollbar = () => {
+      if (mainRef.current) {
+        const el = mainRef.current;
+        // offsetWidth mencakup scrollbar, clientWidth tidak mencakup scrollbar
+        // Selisihnya adalah lebar scrollbar presisi (0px jika tidak ada scrollbar, 14px-17px jika aktif)
+        const sbWidth = Math.max(0, el.offsetWidth - el.clientWidth);
+        setScrollbarWidth(sbWidth);
+      }
+    };
+
+    updateScrollbar();
+    const timer1 = setTimeout(updateScrollbar, 50);
+    const timer2 = setTimeout(updateScrollbar, 200);
+
+    let observer = null;
+    if (typeof ResizeObserver !== "undefined" && mainRef.current) {
+      observer = new ResizeObserver(() => {
+        updateScrollbar();
+      });
+      observer.observe(mainRef.current);
+      if (mainRef.current.firstElementChild) {
+        observer.observe(mainRef.current.firstElementChild);
+      }
+    }
+
+    window.addEventListener("resize", updateScrollbar);
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      if (observer) observer.disconnect();
+      window.removeEventListener("resize", updateScrollbar);
+    };
+  }, [path, isUsersPage, isMutasiPage, isModulesPage, isLocationsPage, isDevicesPage, isImportPage, isExportPage, isAuditPage, searchValue]);
+
   const handlePeriodChange = (newPeriod) => {
     setPeriod(newPeriod);
     fetchStats(newPeriod);
@@ -121,11 +160,17 @@ export default function App() {
           onSearchChange={setSearchValue}
           onOpenLogoutModal={() => setLogoutModalOpen(true)}
           onOpenAvatarModal={() => setAvatarModalOpen(true)}
-          showSearch={!isAuditPage && !isExportPage && !isImportPage}
+          showSearch={!isAuditPage && !isExportPage && !isImportPage && !isUsersPage}
         />
 
-        {/* Main Content: Only this area scrolls */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-5 custom-scrollbar">
+        {/* Main Content: Padding kanan terkompensasi dinamis (24px - lebar scrollbar) agar tepi kanan Card selalu rata presisi */}
+        <main
+          ref={mainRef}
+          className="flex-1 overflow-y-auto overflow-x-hidden p-6 custom-scrollbar w-full"
+          style={{
+            paddingRight: `${Math.max(0, 24 - scrollbarWidth)}px`,
+          }}
+        >
           {isUsersPage ? (
             /* ======================================================== */
             /* HALAMAN KELOLA USER (INTEGRASI DAFTARKAN KARYAWAN)        */
@@ -202,13 +247,13 @@ export default function App() {
             /* ======================================================== */
             /* HALAMAN DASHBOARD UTAMA                                  */
             /* ======================================================== */
-            <>
+            <div className="space-y-6 !mt-0 w-full" style={{ marginTop: 0 }}>
               {/* Welcome Banner */}
               <HeroBanner userName={user?.name} userRole={user?.role} />
 
               {/* Dashboard Utama (KPI, Distribusi Perangkat, Kondisi Modul, Tren, Aktivitas Sistem) */}
               <KpiCards kpi={stats?.kpi} />
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
                 <DeviceDistributionChart data={stats?.device_distribution} />
                 <ModuleConditionChart data={stats?.module_conditions} />
               </div>
@@ -218,7 +263,7 @@ export default function App() {
                 onPeriodChange={handlePeriodChange}
               />
               <RecentActivities activities={stats?.recent_activities} />
-            </>
+            </div>
           )}
         </main>
       </div>

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useTheme } from "../context/ThemeContext";
 import TablePagination from "../components/TablePagination";
+import ModalPortal from "../components/ModalPortal";
+import kelolaUserBanner from "../assets/kelola_user_banner.svg";
 
 const DISTRICT_OPTIONS = [
   "PALU1",
@@ -71,8 +73,10 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
   const [districtFilter, setDistrictFilter] = useState("all");
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
   const [districtDropdownOpen, setDistrictDropdownOpen] = useState(false);
+  const [regDistrictDropdownOpen, setRegDistrictDropdownOpen] = useState(false);
   const roleDropdownRef = useRef(null);
   const districtDropdownRef = useRef(null);
+  const regDistrictDropdownRef = useRef(null);
 
   // Close dropdowns when clicked outside
   useEffect(() => {
@@ -88,6 +92,12 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
         !districtDropdownRef.current.contains(e.target)
       ) {
         setDistrictDropdownOpen(false);
+      }
+      if (
+        regDistrictDropdownRef.current &&
+        !regDistrictDropdownRef.current.contains(e.target)
+      ) {
+        setRegDistrictDropdownOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -240,12 +250,17 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
     if (!sortConfig.key || !sortConfig.direction) return filteredUsers;
     const { key, direction } = sortConfig;
     return [...filteredUsers].sort((a, b) => {
-      const valA = a[key] || "";
-      const valB = b[key] || "";
+      let valA = a[key] || "";
+      let valB = b[key] || "";
       if (key === "created_at") {
         const timeA = new Date(valA).getTime() || 0;
         const timeB = new Date(valB).getTime() || 0;
         return direction === "asc" ? timeA - timeB : timeB - timeA;
+      }
+      if (key === "role") {
+        const roleLabels = { admin: "Super Admin", karyawan_tif: "Karyawan TIF", teknisi: "Teknisi" };
+        valA = roleLabels[a.role] || a.role || "";
+        valB = roleLabels[b.role] || b.role || "";
       }
       const cmp = String(valA).localeCompare(String(valB), "id", { sensitivity: "base" });
       return direction === "asc" ? cmp : -cmp;
@@ -456,95 +471,107 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
   const pwScore = getPasswordStrength(regPassword);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6 !mt-0 w-full" style={{ marginTop: 0 }}>
       {/* ── TOAST NOTIFICATION ── */}
       {successToast && (
         <div
-          className={`fixed top-20 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl backdrop-blur-md animate-bounce-short ${
-            isDark
-              ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
-              : "bg-emerald-50 border-emerald-300 text-emerald-800"
-          }`}
+          className={`fixed top-20 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl backdrop-blur-md animate-bounce-short ${isDark
+            ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
+            : "bg-emerald-50 border-emerald-300 text-emerald-800"
+            }`}
         >
           <span className="material-symbols-outlined text-[20px] text-emerald-500">check_circle</span>
           <span className="text-sm font-medium">{successToast}</span>
           <button
             onClick={() => setSuccessToast("")}
-            className={`ml-2 cursor-pointer transition-colors ${
-              isDark ? "text-emerald-400 hover:text-emerald-200" : "text-emerald-600 hover:text-emerald-900"
-            }`}
+            className={`ml-2 cursor-pointer transition-colors ${isDark ? "text-emerald-400 hover:text-emerald-200" : "text-emerald-600 hover:text-emerald-900"
+              }`}
           >
             <span className="material-symbols-outlined text-[16px]">close</span>
           </button>
         </div>
       )}
 
-      {/* ── HEADER CARD PERSIS DENGAN REFERENSI (ADAPTIF DARK/LIGHT) ── */}
+      {/* ── HEADER HERO BANNER KELOLA USER (STRICTLY LOCKED TO 120px MATCHING DASHBOARD) ── */}
       <div
-        className={`p-5 sm:p-6 rounded-2xl border transition-colors duration-300 flex flex-col md:flex-row md:items-center justify-between gap-4 ${
-          isDark
-            ? "bg-[#061427] border-[#0d2746] shadow-[0_8px_32px_rgba(0,0,0,0.35)]"
-            : "bg-white border-slate-200 shadow-sm"
-        }`}
+        className={`relative overflow-hidden rounded-2xl border px-5 sm:px-6 h-[120px] min-h-[120px] max-h-[120px] flex items-center justify-between transition-all duration-300 shadow-sm !mt-0 ${isDark
+          ? "border-[#1E3A5F] bg-[#0A182B] shadow-2xl"
+          : "border-slate-200 bg-white shadow-sm"
+          }`}
+        style={{ marginTop: 0, height: "120px", minHeight: "120px", maxHeight: "120px" }}
       >
-        <div className="flex items-center gap-4">
-          {/* Ikon Box Biru Solid Squircle */}
-          <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-[#1677FF] flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/25 text-white">
-            <span className="material-symbols-outlined text-[28px] sm:text-[32px]">
-              group
-            </span>
+        {/* Glow ambient background circles */}
+        <div className="absolute -top-24 -left-24 w-72 h-72 bg-blue-500/10 dark:bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-cyan-500/10 dark:bg-cyan-600/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-5 w-full">
+          <div className="flex items-center gap-3.5 sm:gap-4 shrink-0">
+            {/* Ikon Box Mengikuti Style Halaman Audit Log */}
+            <div
+              className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0 border ${isDark
+                ? "bg-gradient-to-br from-[#1677FF]/40 to-[#0A2540] border-[#38BDF8]/40 shadow-[0_0_24px_rgba(22,119,255,0.45)] text-[#38BDF8]"
+                : "bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 shadow-sm text-blue-600"
+                }`}
+            >
+              <span className="material-symbols-outlined text-[26px] sm:text-[30px]">
+                manage_accounts
+              </span>
+            </div>
+
+            <div>
+              <h1
+                className={`text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2 !m-0 ${isDark ? "text-white" : "text-slate-900"
+                  }`}
+              >
+                Kelola User
+              </h1>
+              <p
+                className={`text-xs font-normal mt-0.5 leading-relaxed !m-0 whitespace-nowrap ${isDark ? "text-[#94A3B8]" : "text-slate-500"
+                  }`}
+              >
+                Pusat kendali akun pengguna, otorisasi role, dan pendaftaran personil TIF.
+              </p>
+            </div>
           </div>
 
-          <div>
-            <h1
-              className={`text-xl sm:text-2xl font-bold tracking-tight ${
-                isDark ? "text-white" : "text-slate-900"
-              }`}
-            >
-              Kelola User
-            </h1>
-            <p
-              className={`text-xs sm:text-[13px] mt-1 ${
-                isDark ? "text-[#7a94b3]" : "text-slate-500"
-              }`}
-            >
-              Pusat kendali akun pengguna, otorisasi role, dan pendaftaran personil Telkom.
-            </p>
+          {/* Tengah: Ilustrasi Vector SVG Banner Kelola User Berukuran Besar & Rapi di Dalam Box 120px */}
+          <div className="hidden md:flex items-center justify-center flex-1 px-2 select-none pointer-events-none h-full overflow-hidden">
+            <img
+              src={kelolaUserBanner}
+              alt="Kelola User Vector Illustration"
+              className="h-[108px] lg:h-[114px] w-auto max-h-[114px] object-contain drop-shadow-[0_8px_20px_rgba(22,119,255,0.25)] dark:drop-shadow-[0_0_28px_rgba(56,189,248,0.5)] transition-all duration-300 pointer-events-none select-none"
+            />
           </div>
-        </div>
 
-        {/* Primary Action Button: Daftarkan User */}
-        <div>
-          {viewMode === "register" ? (
-            <button
-              type="button"
-              onClick={() => {
-                setViewMode("list");
-                setRegError("");
-              }}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${
-                isDark
-                  ? "bg-[#08182f] border-[#142e52] text-[#94A3B8] hover:text-white hover:border-[#1677FF]"
-                  : "bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200"
-              }`}
-            >
-              <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-              <span>Kembali ke Daftar Akun</span>
-            </button>
-          ) : (
-            <button
-              type="button"
-              id="btn-daftarkan-user"
-              onClick={() => {
-                setViewMode("register");
-                setRegError("");
-              }}
-              className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-[#1677FF] hover:bg-blue-600 active:scale-95 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-[#1677FF]/25 transition-all cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-[20px]">person_add</span>
-              <span>Daftarkan User</span>
-            </button>
-          )}
+          {/* Primary Action Button: Daftarkan User / Kembali */}
+          <div className="shrink-0 w-full sm:w-auto flex justify-end">
+            {viewMode === "register" ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setViewMode("list");
+                  setRegError("");
+                }}
+                className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl bg-[#1677FF] hover:bg-blue-600 active:scale-95 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-[#1677FF]/25 hover:shadow-[#1677FF]/40 transition-all duration-150 cursor-pointer !m-0"
+              >
+                <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+                <span>Kembali ke Daftar Akun</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                id="btn-daftarkan-user"
+                onClick={() => {
+                  setViewMode("register");
+                  setRegError("");
+                }}
+                className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl bg-[#1677FF] hover:bg-blue-600 active:scale-95 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-[#1677FF]/25 hover:shadow-[#1677FF]/40 transition-all duration-150 cursor-pointer !m-0"
+              >
+                <span className="material-symbols-outlined text-[20px]">person_add</span>
+                <span>Daftarkan User</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -553,31 +580,27 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
           ======================================================== */}
       {viewMode === "register" && (
         <div
-          className={`rounded-2xl border transition-all duration-300 overflow-hidden shadow-2xl ${
-            isDark ? "bg-[#061427] border-[#0d2746]" : "bg-white border-slate-200"
-          }`}
+          className={`rounded-2xl border transition-all duration-300 overflow-hidden shadow-2xl ${isDark ? "bg-[#061427] border-[#0d2746]" : "bg-white border-slate-200"
+            }`}
         >
           {/* Header Form */}
           <div
-            className={`px-7 py-5 border-b flex items-center justify-between ${
-              isDark ? "border-[#0f2747] bg-[#040e1c]/60" : "border-slate-100 bg-slate-50"
-            }`}
+            className={`px-7 py-5 border-b flex items-center justify-between ${isDark ? "border-[#0f2747] bg-[#040e1c]/60" : "border-slate-100 bg-slate-50"
+              }`}
           >
             <div className="flex items-center gap-3">
               <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                  isDark
-                    ? "bg-[#1677FF]/20 border border-[#1677FF]/40 text-[#38BDF8]"
-                    : "bg-blue-100 text-[#1677FF]"
-                }`}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isDark
+                  ? "bg-[#1677FF]/20 border border-[#1677FF]/40 text-[#38BDF8]"
+                  : "bg-blue-100 text-[#1677FF]"
+                  }`}
               >
                 <span className="material-symbols-outlined text-[22px]">badge</span>
               </div>
               <div>
                 <h2
-                  className={`text-base font-bold ${
-                    isDark ? "text-white" : "text-slate-900"
-                  }`}
+                  className={`text-base font-bold ${isDark ? "text-white" : "text-slate-900"
+                    }`}
                 >
                   Formulir Pendaftaran Pengguna Baru
                 </h2>
@@ -589,9 +612,8 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
             <button
               type="button"
               onClick={() => setViewMode("list")}
-              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                isDark ? "text-[#64748B] hover:text-white hover:bg-[#08182f]" : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
-              }`}
+              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${isDark ? "text-[#64748B] hover:text-white hover:bg-[#08182f]" : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                }`}
             >
               <span className="material-symbols-outlined text-[20px]">close</span>
             </button>
@@ -601,11 +623,10 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
           <form onSubmit={handleRegisterSubmit} className="p-7 space-y-6">
             {regError && (
               <div
-                className={`p-3.5 rounded-xl border text-xs flex items-center gap-2.5 ${
-                  isDark
-                    ? "bg-rose-500/15 border-rose-500/30 text-rose-300"
-                    : "bg-rose-50 border-rose-200 text-rose-700"
-                }`}
+                className={`p-3.5 rounded-xl border text-xs flex items-center gap-2.5 ${isDark
+                  ? "bg-rose-500/15 border-rose-500/30 text-rose-300"
+                  : "bg-rose-50 border-rose-200 text-rose-700"
+                  }`}
               >
                 <span className="material-symbols-outlined text-[20px]">error</span>
                 <span>{regError}</span>
@@ -615,9 +636,8 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
             {/* 1. Pilih Role */}
             <div>
               <label
-                className={`block text-[11px] font-bold uppercase tracking-wider mb-2.5 ${
-                  isDark ? "text-[#7a94b3]" : "text-slate-600"
-                }`}
+                className={`block text-[11px] font-bold uppercase tracking-wider mb-2.5 ${isDark ? "text-[#7a94b3]" : "text-slate-600"
+                  }`}
               >
                 Pilih Role Akun *
               </label>
@@ -625,24 +645,22 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                 {/* Opsi Karyawan TIF */}
                 <div
                   onClick={() => setRegRole("karyawan_tif")}
-                  className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-start gap-3 ${
-                    regRole === "karyawan_tif"
-                      ? isDark
-                        ? "bg-[#1f143d] border-[#7c3aed] text-white ring-1 ring-[#7c3aed]"
-                        : "bg-purple-50 border-purple-500 text-purple-900 ring-1 ring-purple-500"
-                      : isDark
+                  className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-start gap-3 ${regRole === "karyawan_tif"
+                    ? isDark
+                      ? "bg-[#1f143d] border-[#7c3aed] text-white ring-1 ring-[#7c3aed]"
+                      : "bg-purple-50 border-purple-500 text-purple-900 ring-1 ring-purple-500"
+                    : isDark
                       ? "bg-[#051122] border-[#0f2848] text-[#8fa0b5] hover:border-[#1677FF]/50"
                       : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
-                  }`}
+                    }`}
                 >
                   <div
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-                      regRole === "karyawan_tif"
-                        ? "bg-[#7c3aed] text-white"
-                        : isDark
+                    className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${regRole === "karyawan_tif"
+                      ? "bg-[#7c3aed] text-white"
+                      : isDark
                         ? "bg-[#08182f] text-slate-400"
                         : "bg-slate-100 text-slate-600"
-                    }`}
+                      }`}
                   >
                     <span className="material-symbols-outlined text-[20px]">person</span>
                   </div>
@@ -664,24 +682,22 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                 {/* Opsi Teknisi */}
                 <div
                   onClick={() => setRegRole("teknisi")}
-                  className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-start gap-3 ${
-                    regRole === "teknisi"
-                      ? isDark
-                        ? "bg-[#072440] border-[#0ea5e9] text-white ring-1 ring-[#0ea5e9]"
-                        : "bg-sky-50 border-sky-500 text-sky-900 ring-1 ring-sky-500"
-                      : isDark
+                  className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-start gap-3 ${regRole === "teknisi"
+                    ? isDark
+                      ? "bg-[#072440] border-[#0ea5e9] text-white ring-1 ring-[#0ea5e9]"
+                      : "bg-sky-50 border-sky-500 text-sky-900 ring-1 ring-sky-500"
+                    : isDark
                       ? "bg-[#051122] border-[#0f2848] text-[#8fa0b5] hover:border-[#1677FF]/50"
                       : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
-                  }`}
+                    }`}
                 >
                   <div
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-                      regRole === "teknisi"
-                        ? "bg-[#0ea5e9] text-white"
-                        : isDark
+                    className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${regRole === "teknisi"
+                      ? "bg-[#0ea5e9] text-white"
+                      : isDark
                         ? "bg-[#08182f] text-slate-400"
                         : "bg-slate-100 text-slate-600"
-                    }`}
+                      }`}
                   >
                     <span className="material-symbols-outlined text-[20px]">build</span>
                   </div>
@@ -707,9 +723,8 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
               <div>
                 <label
                   htmlFor="reg-name"
-                  className={`block text-[11px] font-bold uppercase tracking-wider mb-2 ${
-                    isDark ? "text-[#7a94b3]" : "text-slate-600"
-                  }`}
+                  className={`block text-[11px] font-bold uppercase tracking-wider mb-2 ${isDark ? "text-[#7a94b3]" : "text-slate-600"
+                    }`}
                 >
                   Nama Lengkap *
                 </label>
@@ -723,12 +738,11 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                     required
                     value={regName}
                     onChange={(e) => setRegName(e.target.value)}
-                    placeholder="Contoh: Budi Santoso"
-                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs sm:text-sm transition-all outline-none ${
-                      isDark
-                        ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
-                        : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500 focus:bg-white"
-                    }`}
+                    placeholder="Masukkan nama"
+                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs sm:text-sm transition-all outline-none ${isDark
+                      ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
+                      : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500 focus:bg-white"
+                      }`}
                   />
                 </div>
               </div>
@@ -736,11 +750,10 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
               <div>
                 <label
                   htmlFor="reg-email"
-                  className={`block text-[11px] font-bold uppercase tracking-wider mb-2 ${
-                    isDark ? "text-[#7a94b3]" : "text-slate-600"
-                  }`}
+                  className={`block text-[11px] font-bold uppercase tracking-wider mb-2 ${isDark ? "text-[#7a94b3]" : "text-slate-600"
+                    }`}
                 >
-                  Email / Akun *
+                  Email *
                 </label>
                 <div className="relative">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px] text-slate-400 pointer-events-none">
@@ -752,54 +765,106 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                     required
                     value={regEmail}
                     onChange={(e) => setRegEmail(e.target.value)}
-                    placeholder="nama@telkom.co.id"
-                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs sm:text-sm transition-all outline-none ${
-                      isDark
-                        ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
-                        : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500 focus:bg-white"
-                    }`}
+                    placeholder="Masukkan email"
+                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs sm:text-sm transition-all outline-none ${isDark
+                      ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
+                      : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500 focus:bg-white"
+                      }`}
                   />
                 </div>
               </div>
             </div>
 
-            {/* 3. District Penugasan */}
+            {/* 3. District (Style Popup Menu Konsisten dengan Halaman Export) */}
             <div>
               <label
-                htmlFor="reg-district"
-                className={`block text-[11px] font-bold uppercase tracking-wider mb-2 ${
-                  isDark ? "text-[#7a94b3]" : "text-slate-600"
-                }`}
+                htmlFor="reg-district-btn"
+                className={`block text-[11px] font-bold uppercase tracking-wider mb-2 ${isDark ? "text-[#7a94b3]" : "text-slate-600"
+                  }`}
               >
-                District Penugasan *
+                District *
               </label>
-              <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px] text-slate-400 pointer-events-none">
-                  location_on
-                </span>
+              <div className="relative" ref={regDistrictDropdownRef}>
+                <button
+                  type="button"
+                  id="reg-district-btn"
+                  onClick={() => setRegDistrictDropdownOpen((prev) => !prev)}
+                  className={`relative w-full h-11 pl-10 pr-9 rounded-xl border text-xs sm:text-sm font-medium flex items-center justify-between transition-all cursor-pointer outline-none ${isDark
+                    ? "bg-[#051122] border-[#0f2848] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#071933]"
+                    : "bg-slate-50 border-slate-300 text-slate-800 hover:border-blue-500 focus:bg-white"
+                    }`}
+                >
+                  <span className="material-symbols-outlined text-[18px] text-[#38BDF8] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none select-none">
+                    location_on
+                  </span>
+                  <span className={`truncate font-semibold ${!regDistrict ? (isDark ? "text-slate-400" : "text-slate-500") : ""}`}>
+                    {regDistrict || "Pilih District"}
+                  </span>
+                  <span
+                    className={`material-symbols-outlined text-[18px] text-[#94A3B8] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none select-none transition-transform duration-200 ${regDistrictDropdownOpen ? "rotate-180" : ""
+                      }`}
+                  >
+                    expand_more
+                  </span>
+                </button>
+
+                {/* Pop-up Menu Dropdown District (Style Konsisten Export Page) */}
+                {regDistrictDropdownOpen && (
+                  <div
+                    className={`absolute left-0 right-0 top-full mt-1.5 rounded-xl border shadow-2xl z-40 backdrop-blur-md overflow-hidden ${isDark
+                      ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7]"
+                      : "bg-white border-slate-200 text-slate-800 shadow-xl"
+                      }`}
+                  >
+                    <div className="max-h-60 overflow-y-auto custom-scrollbar p-1.5">
+                      {districtOptions.map((d) => {
+                        const isSelected = regDistrict === d;
+                        return (
+                          <button
+                            key={d}
+                            type="button"
+                            onClick={() => {
+                              setRegDistrict(d);
+                              setRegDistrictDropdownOpen(false);
+                            }}
+                            className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${isSelected
+                              ? isDark
+                                ? "bg-[#1677FF] text-white font-semibold"
+                                : "bg-blue-600 text-white font-semibold"
+                              : isDark
+                                ? "hover:bg-[#122846] text-[#CBD5E1]"
+                                : "hover:bg-slate-100 text-slate-700"
+                              }`}
+                          >
+                            <span className="truncate pr-2">{d}</span>
+                            {isSelected && (
+                              <span className="material-symbols-outlined text-[16px] shrink-0">
+                                check
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Hidden Native Select untuk Kompatibilitas Form & Testing */}
                 <select
                   id="reg-district"
-                  required
+                  name="district"
                   value={regDistrict}
                   onChange={(e) => setRegDistrict(e.target.value)}
-                  className={`w-full pl-10 pr-10 py-2.5 rounded-xl border text-xs sm:text-sm transition-all outline-none cursor-pointer appearance-none ${
-                    isDark
-                      ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
-                      : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500"
-                  }`}
+                  required
+                  className="sr-only"
+                  tabIndex={-1}
+                  aria-hidden="true"
                 >
-                  <option value="" disabled>
-                    Pilih District Penugasan
-                  </option>
+                  <option value="" disabled>Pilih District</option>
                   {districtOptions.map((d) => (
-                    <option key={d} value={d}>
-                      {d}
-                    </option>
+                    <option key={d} value={d}>{d}</option>
                   ))}
                 </select>
-                <span className="absolute right-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px] text-slate-400 pointer-events-none">
-                  expand_more
-                </span>
               </div>
             </div>
 
@@ -808,9 +873,8 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
               <div>
                 <label
                   htmlFor="reg-password"
-                  className={`block text-[11px] font-bold uppercase tracking-wider mb-2 ${
-                    isDark ? "text-[#7a94b3]" : "text-slate-600"
-                  }`}
+                  className={`block text-[11px] font-bold uppercase tracking-wider mb-2 ${isDark ? "text-[#7a94b3]" : "text-slate-600"
+                    }`}
                 >
                   Password Awal *
                 </label>
@@ -825,11 +889,10 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                     value={regPassword}
                     onChange={(e) => setRegPassword(e.target.value)}
                     placeholder="Minimal 8 karakter"
-                    className={`w-full pl-10 pr-10 py-2.5 rounded-xl border text-xs sm:text-sm transition-all outline-none ${
-                      isDark
-                        ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
-                        : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500"
-                    }`}
+                    className={`w-full pl-10 pr-10 py-2.5 rounded-xl border text-xs sm:text-sm transition-all outline-none [&::-ms-reveal]:hidden [&::-ms-clear]:hidden ${isDark
+                      ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
+                      : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500"
+                      }`}
                   />
                   <button
                     type="button"
@@ -847,15 +910,14 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                   {[1, 2, 3, 4].map((step) => (
                     <div
                       key={step}
-                      className={`h-1 flex-1 rounded-full transition-colors ${
-                        pwScore >= step
-                          ? pwScore <= 2
-                            ? "bg-amber-400"
-                            : "bg-emerald-500"
-                          : isDark
+                      className={`h-1 flex-1 rounded-full transition-colors ${pwScore >= step
+                        ? pwScore <= 2
+                          ? "bg-amber-400"
+                          : "bg-emerald-500"
+                        : isDark
                           ? "bg-[#0f2848]"
                           : "bg-slate-200"
-                      }`}
+                        }`}
                     />
                   ))}
                 </div>
@@ -864,9 +926,8 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
               <div>
                 <label
                   htmlFor="reg-confirm-password"
-                  className={`block text-[11px] font-bold uppercase tracking-wider mb-2 ${
-                    isDark ? "text-[#7a94b3]" : "text-slate-600"
-                  }`}
+                  className={`block text-[11px] font-bold uppercase tracking-wider mb-2 ${isDark ? "text-[#7a94b3]" : "text-slate-600"
+                    }`}
                 >
                   Konfirmasi Password *
                 </label>
@@ -881,11 +942,10 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                     value={regConfirmPassword}
                     onChange={(e) => setRegConfirmPassword(e.target.value)}
                     placeholder="Ketik ulang password awal"
-                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs sm:text-sm transition-all outline-none ${
-                      isDark
-                        ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
-                        : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500"
-                    }`}
+                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs sm:text-sm transition-all outline-none [&::-ms-reveal]:hidden [&::-ms-clear]:hidden ${isDark
+                      ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
+                      : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500"
+                      }`}
                   />
                 </div>
               </div>
@@ -893,20 +953,18 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
 
             {/* Tombol Aksi Form */}
             <div
-              className={`pt-5 border-t flex items-center justify-end gap-3 ${
-                isDark ? "border-[#0f2747]" : "border-slate-100"
-              }`}
+              className={`pt-5 border-t flex items-center justify-end gap-3 ${isDark ? "border-[#0f2747]" : "border-slate-100"
+                }`}
             >
               <button
                 type="button"
                 onClick={() => setViewMode("list")}
-                className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${
-                  isDark
-                    ? "bg-[#051122] border-[#0f2848] text-[#8fa0b5] hover:text-white"
-                    : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
-                }`}
+                className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${isDark
+                  ? "bg-[#051122] border-[#0f2848] text-[#8fa0b5] hover:text-white"
+                  : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
+                  }`}
               >
-                Batal / Kembali
+                Batal
               </button>
               <button
                 type="submit"
@@ -916,7 +974,7 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                 <span className="material-symbols-outlined text-[18px]">
                   {regSubmitting ? "sync" : "person_add"}
                 </span>
-                <span>{regSubmitting ? "Menyimpan Akun..." : "Daftarkan User Sekarang"}</span>
+                <span>{regSubmitting ? "Menyimpan Akun..." : "Daftarkan User"}</span>
               </button>
             </div>
           </form>
@@ -928,18 +986,16 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
           ======================================================== */}
       {viewMode === "list" && (
         <div
-          className={`rounded-2xl border transition-colors duration-300 ${
-            isDark ? "bg-[#061427] border-[#0d2746] shadow-xl" : "bg-white border-slate-200 shadow-sm"
-          }`}
+          className={`rounded-2xl border transition-colors duration-300 ${isDark ? "bg-[#061427] border-[#0d2746] shadow-xl" : "bg-white border-slate-200 shadow-sm"
+            }`}
         >
           {/* Bar Filter & Search */}
           <div className="p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
             {/* Search Input dengan ikon search dan tombol clear 'X' */}
             <div className="relative w-full md:max-w-md lg:max-w-lg">
               <span
-                className={`absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px] pointer-events-none ${
-                  isDark ? "text-[#4d6686]" : "text-slate-400"
-                }`}
+                className={`absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px] pointer-events-none ${isDark ? "text-[#4d6686]" : "text-slate-400"
+                  }`}
               >
                 search
               </span>
@@ -948,20 +1004,18 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                 value={localSearch}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder="Cari nama, email, role, district, atau status..."
-                className={`w-full h-11 pl-10 pr-9 rounded-xl border text-xs sm:text-sm outline-none transition-all ${
-                  isDark
-                    ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] placeholder-[#4d6686] focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF]"
-                    : "bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:bg-white"
-                }`}
+                className={`w-full h-11 pl-10 pr-9 rounded-xl border text-xs sm:text-sm outline-none transition-all ${isDark
+                  ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] placeholder-[#4d6686] focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF]"
+                  : "bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:bg-white"
+                  }`}
               />
               {localSearch && (
                 <button
                   type="button"
                   onClick={handleClearSearch}
                   title="Hapus pencarian"
-                  className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors cursor-pointer ${
-                    isDark ? "text-[#4d6686] hover:text-white" : "text-slate-400 hover:text-slate-700"
-                  }`}
+                  className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors cursor-pointer ${isDark ? "text-[#4d6686] hover:text-white" : "text-slate-400 hover:text-slate-700"
+                    }`}
                 >
                   <span className="material-symbols-outlined text-[16px]">close</span>
                 </button>
@@ -978,11 +1032,10 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                     setRoleDropdownOpen(!roleDropdownOpen);
                     setDistrictDropdownOpen(false);
                   }}
-                  className={`relative w-full h-11 px-4 rounded-xl border flex items-center justify-between text-xs font-medium transition-all cursor-pointer ${
-                    isDark
-                      ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
-                      : "bg-slate-50 border-slate-300 text-slate-800 hover:border-blue-500"
-                  }`}
+                  className={`relative w-full h-11 px-4 rounded-xl border flex items-center justify-between text-xs font-medium transition-all cursor-pointer ${isDark
+                    ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
+                    : "bg-slate-50 border-slate-300 text-slate-800 hover:border-blue-500"
+                    }`}
                 >
                   <div className="flex items-center gap-2 truncate pr-2">
                     <span className="material-symbols-outlined text-[18px] text-[#38BDF8] shrink-0">
@@ -993,9 +1046,8 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                     </span>
                   </div>
                   <span
-                    className={`material-symbols-outlined text-[18px] text-[#94A3B8] transition-transform duration-200 shrink-0 ${
-                      roleDropdownOpen ? "rotate-180" : ""
-                    }`}
+                    className={`material-symbols-outlined text-[18px] text-[#94A3B8] transition-transform duration-200 shrink-0 ${roleDropdownOpen ? "rotate-180" : ""
+                      }`}
                   >
                     expand_more
                   </span>
@@ -1004,11 +1056,10 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                 {/* Menu Dropdown Role */}
                 {roleDropdownOpen && (
                   <div
-                    className={`absolute left-0 top-12 mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-30 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-md ${
-                      isDark
-                        ? "bg-[#0A182B]/95 border-[#1E3A5F] text-[#E6EDF7]"
-                        : "bg-white border-slate-200 text-slate-800 shadow-xl"
-                    }`}
+                    className={`absolute left-0 top-12 mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-30 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-md ${isDark
+                      ? "bg-[#0A182B]/95 border-[#1E3A5F] text-[#E6EDF7]"
+                      : "bg-white border-slate-200 text-slate-800 shadow-xl"
+                      }`}
                   >
                     <button
                       type="button"
@@ -1016,15 +1067,14 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                         setRoleFilter("all");
                         setRoleDropdownOpen(false);
                       }}
-                      className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
-                        roleFilter === "all"
-                          ? isDark
-                            ? "bg-[#1677FF] text-white"
-                            : "bg-blue-600 text-white"
-                          : isDark
+                      className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${roleFilter === "all"
+                        ? isDark
+                          ? "bg-[#1677FF] text-white"
+                          : "bg-blue-600 text-white"
+                        : isDark
                           ? "hover:bg-[#122846] text-[#CBD5E1]"
                           : "hover:bg-slate-100 text-slate-700"
-                      }`}
+                        }`}
                     >
                       <span>Semua Role</span>
                       {roleFilter === "all" && (
@@ -1046,15 +1096,14 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                             setRoleFilter(opt.value);
                             setRoleDropdownOpen(false);
                           }}
-                          className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
-                            isSelected
-                              ? isDark
-                                ? "bg-[#1677FF] text-white"
-                                : "bg-blue-600 text-white"
-                              : isDark
+                          className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${isSelected
+                            ? isDark
+                              ? "bg-[#1677FF] text-white"
+                              : "bg-blue-600 text-white"
+                            : isDark
                               ? "hover:bg-[#122846] text-[#CBD5E1]"
                               : "hover:bg-slate-100 text-slate-700"
-                          }`}
+                            }`}
                         >
                           <span className="truncate pr-2">{opt.label}</span>
                           {isSelected && (
@@ -1077,11 +1126,10 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                     setDistrictDropdownOpen(!districtDropdownOpen);
                     setRoleDropdownOpen(false);
                   }}
-                  className={`relative w-full h-11 px-4 rounded-xl border flex items-center justify-between text-xs font-medium transition-all cursor-pointer ${
-                    isDark
-                      ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
-                      : "bg-slate-50 border-slate-300 text-slate-800 hover:border-blue-500"
-                  }`}
+                  className={`relative w-full h-11 px-4 rounded-xl border flex items-center justify-between text-xs font-medium transition-all cursor-pointer ${isDark
+                    ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
+                    : "bg-slate-50 border-slate-300 text-slate-800 hover:border-blue-500"
+                    }`}
                 >
                   <div className="flex items-center gap-2 truncate pr-2">
                     <span className="material-symbols-outlined text-[18px] text-[#38BDF8] shrink-0">
@@ -1092,9 +1140,8 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                     </span>
                   </div>
                   <span
-                    className={`material-symbols-outlined text-[18px] text-[#94A3B8] transition-transform duration-200 shrink-0 ${
-                      districtDropdownOpen ? "rotate-180" : ""
-                    }`}
+                    className={`material-symbols-outlined text-[18px] text-[#94A3B8] transition-transform duration-200 shrink-0 ${districtDropdownOpen ? "rotate-180" : ""
+                      }`}
                   >
                     expand_more
                   </span>
@@ -1103,11 +1150,10 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                 {/* Menu Dropdown District */}
                 {districtDropdownOpen && (
                   <div
-                    className={`absolute left-0 top-12 mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-30 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-md ${
-                      isDark
-                        ? "bg-[#0A182B]/95 border-[#1E3A5F] text-[#E6EDF7]"
-                        : "bg-white border-slate-200 text-slate-800 shadow-xl"
-                    }`}
+                    className={`absolute left-0 top-12 mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-30 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-md ${isDark
+                      ? "bg-[#0A182B]/95 border-[#1E3A5F] text-[#E6EDF7]"
+                      : "bg-white border-slate-200 text-slate-800 shadow-xl"
+                      }`}
                   >
                     <button
                       type="button"
@@ -1115,15 +1161,14 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                         setDistrictFilter("all");
                         setDistrictDropdownOpen(false);
                       }}
-                      className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
-                        districtFilter === "all"
-                          ? isDark
-                            ? "bg-[#1677FF] text-white"
-                            : "bg-blue-600 text-white"
-                          : isDark
+                      className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${districtFilter === "all"
+                        ? isDark
+                          ? "bg-[#1677FF] text-white"
+                          : "bg-blue-600 text-white"
+                        : isDark
                           ? "hover:bg-[#122846] text-[#CBD5E1]"
                           : "hover:bg-slate-100 text-slate-700"
-                      }`}
+                        }`}
                     >
                       <span>Semua District</span>
                       {districtFilter === "all" && (
@@ -1145,15 +1190,14 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                             setDistrictFilter(d);
                             setDistrictDropdownOpen(false);
                           }}
-                          className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
-                            isSelected
-                              ? isDark
-                                ? "bg-[#1677FF] text-white"
-                                : "bg-blue-600 text-white"
-                              : isDark
+                          className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${isSelected
+                            ? isDark
+                              ? "bg-[#1677FF] text-white"
+                              : "bg-blue-600 text-white"
+                            : isDark
                               ? "hover:bg-[#122846] text-[#CBD5E1]"
                               : "hover:bg-slate-100 text-slate-700"
-                          }`}
+                            }`}
                         >
                           <span className="truncate pr-2">{d}</span>
                           {isSelected && (
@@ -1172,25 +1216,22 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
 
           {/* Loading or Error */}
           {loading ? (
-            <div className={`p-16 text-center text-xs flex flex-col items-center justify-center gap-2 ${
-              isDark ? "text-slate-400" : "text-slate-500"
-            }`}>
+            <div className={`p-16 text-center text-xs flex flex-col items-center justify-center gap-2 ${isDark ? "text-slate-400" : "text-slate-500"
+              }`}>
               <span className="material-symbols-outlined text-[32px] animate-spin text-[#1677FF]">
                 sync
               </span>
               <span>Memuat data pengguna...</span>
             </div>
           ) : errorMsg ? (
-            <div className={`p-10 text-center text-xs flex flex-col items-center justify-center gap-2 ${
-              isDark ? "text-rose-400" : "text-rose-600"
-            }`}>
+            <div className={`p-10 text-center text-xs flex flex-col items-center justify-center gap-2 ${isDark ? "text-rose-400" : "text-rose-600"
+              }`}>
               <span className="material-symbols-outlined text-[32px]">gpp_bad</span>
               <span>{errorMsg}</span>
             </div>
           ) : sortedUsers.length === 0 ? (
-            <div className={`p-16 text-center text-xs flex flex-col items-center justify-center gap-2 ${
-              isDark ? "text-slate-400" : "text-slate-500"
-            }`}>
+            <div className={`p-16 text-center text-xs flex flex-col items-center justify-center gap-2 ${isDark ? "text-slate-400" : "text-slate-500"
+              }`}>
               <span className="material-symbols-outlined text-[36px] text-slate-400">
                 group_off
               </span>
@@ -1202,20 +1243,18 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr
-                    className={`border-t border-b text-[11px] font-bold uppercase tracking-wider ${
-                      isDark
-                        ? "border-[#0f2747] bg-[#061427] text-[#5b7699]"
-                        : "border-slate-200 bg-slate-50 text-slate-600"
-                    }`}
+                    className={`border-t border-b text-[11px] font-bold uppercase tracking-wider ${isDark
+                      ? "border-[#0f2747] bg-[#061427] text-[#5b7699]"
+                      : "border-slate-200 bg-slate-50 text-slate-600"
+                      }`}
                   >
                     {/* 1. NAMA & IDENTITAS (Tetap rata kiri) */}
                     <th className="py-3 px-5 text-left">
                       <button
                         type="button"
                         onClick={() => handleSort("name")}
-                        className={`flex items-center gap-1.5 uppercase font-bold text-[11px] tracking-wider transition-colors cursor-pointer ${
-                          isDark ? "hover:text-white" : "hover:text-slate-900"
-                        }`}
+                        className={`flex items-center gap-1.5 uppercase font-bold text-[11px] tracking-wider transition-colors cursor-pointer ${isDark ? "hover:text-white" : "hover:text-slate-900"
+                          }`}
                       >
                         <span>NAMA & IDENTITAS</span>
                         <span className="material-symbols-outlined text-[14px]">
@@ -1230,7 +1269,21 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
 
                     {/* 2. ROLE */}
                     <th className="py-3 px-4 text-left">
-                      <span className="block text-left">ROLE</span>
+                      <button
+                        type="button"
+                        onClick={() => handleSort("role")}
+                        className={`inline-flex items-center justify-start gap-1.5 uppercase font-bold text-[11px] tracking-wider transition-colors cursor-pointer ${isDark ? "hover:text-white" : "hover:text-slate-900"
+                          }`}
+                      >
+                        <span>ROLE</span>
+                        <span className="material-symbols-outlined text-[14px]">
+                          {sortConfig.key === "role"
+                            ? sortConfig.direction === "asc"
+                              ? "arrow_upward"
+                              : "arrow_downward"
+                            : "unfold_more"}
+                        </span>
+                      </button>
                     </th>
 
                     {/* 3. DISTRICT */}
@@ -1238,9 +1291,8 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                       <button
                         type="button"
                         onClick={() => handleSort("district")}
-                        className={`inline-flex items-center justify-start gap-1.5 uppercase font-bold text-[11px] tracking-wider transition-colors cursor-pointer ${
-                          isDark ? "hover:text-white" : "hover:text-slate-900"
-                        }`}
+                        className={`inline-flex items-center justify-start gap-1.5 uppercase font-bold text-[11px] tracking-wider transition-colors cursor-pointer ${isDark ? "hover:text-white" : "hover:text-slate-900"
+                          }`}
                       >
                         <span>DISTRICT</span>
                         <span className="material-symbols-outlined text-[14px]">
@@ -1258,9 +1310,8 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                       <button
                         type="button"
                         onClick={() => handleSort("status")}
-                        className={`inline-flex items-center justify-center gap-1.5 uppercase font-bold text-[11px] tracking-wider transition-colors mx-auto cursor-pointer ${
-                          isDark ? "hover:text-white" : "hover:text-slate-900"
-                        }`}
+                        className={`inline-flex items-center justify-center gap-1.5 uppercase font-bold text-[11px] tracking-wider transition-colors mx-auto cursor-pointer ${isDark ? "hover:text-white" : "hover:text-slate-900"
+                          }`}
                       >
                         <span>STATUS</span>
                         <span className="material-symbols-outlined text-[14px]">
@@ -1278,9 +1329,8 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                       <button
                         type="button"
                         onClick={() => handleSort("created_at")}
-                        className={`inline-flex items-center justify-center gap-1.5 uppercase font-bold text-[11px] tracking-wider transition-colors mx-auto cursor-pointer ${
-                          isDark ? "hover:text-white" : "hover:text-slate-900"
-                        }`}
+                        className={`inline-flex items-center justify-center gap-1.5 uppercase font-bold text-[11px] tracking-wider transition-colors mx-auto cursor-pointer ${isDark ? "hover:text-white" : "hover:text-slate-900"
+                          }`}
                       >
                         <span>DIBUAT PADA</span>
                         <span className="material-symbols-outlined text-[14px]">
@@ -1301,9 +1351,8 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                 </thead>
 
                 <tbody
-                  className={`divide-y text-xs ${
-                    isDark ? "divide-[#0d213b]" : "divide-slate-200"
-                  }`}
+                  className={`divide-y text-xs ${isDark ? "divide-[#0d213b]" : "divide-slate-200"
+                    }`}
                 >
                   {paginatedUsers.map((u) => {
                     const isSelf = currentUser && currentUser.id === u.user_id;
@@ -1313,9 +1362,8 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                     return (
                       <tr
                         key={u.user_id}
-                        className={`transition-colors ${
-                          isDark ? "hover:bg-[#0b213d]/60" : "hover:bg-slate-50/80 even:bg-slate-50/30"
-                        }`}
+                        className={`transition-colors ${isDark ? "hover:bg-[#0b213d]/60" : "hover:bg-slate-50/80 even:bg-slate-50/30"
+                          }`}
                       >
                         {/* 1. Nama & Identitas (Rata Kiri) */}
                         <td className="py-3.5 px-5">
@@ -1328,28 +1376,25 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                             <div className="min-w-0">
                               <div className="flex items-center gap-1.5">
                                 <span
-                                  className={`font-semibold text-[13px] truncate max-w-[190px] sm:max-w-[240px] ${
-                                    isDark ? "text-white" : "text-slate-900"
-                                  }`}
+                                  className={`font-semibold text-[13px] truncate max-w-[190px] sm:max-w-[240px] ${isDark ? "text-white" : "text-slate-900"
+                                    }`}
                                 >
                                   {u.name}
                                 </span>
                                 {isSelf && (
                                   <span
-                                    className={`px-1.5 py-0.2 rounded text-[10px] font-bold ${
-                                      isDark
-                                        ? "bg-[#1677FF]/20 text-[#38BDF8]"
-                                        : "bg-blue-100 text-blue-700"
-                                    }`}
+                                    className={`px-1.5 py-0.2 rounded text-[10px] font-bold ${isDark
+                                      ? "bg-[#1677FF]/20 text-[#38BDF8]"
+                                      : "bg-blue-100 text-blue-700"
+                                      }`}
                                   >
                                     Anda
                                   </span>
                                 )}
                               </div>
                               <span
-                                className={`text-[11px] block truncate max-w-[190px] sm:max-w-[240px] mt-0.5 ${
-                                  isDark ? "text-[#5d799b]" : "text-slate-500"
-                                }`}
+                                className={`text-[11px] block truncate max-w-[190px] sm:max-w-[240px] mt-0.5 ${isDark ? "text-[#5d799b]" : "text-slate-500"
+                                  }`}
                               >
                                 {u.email}
                               </span>
@@ -1362,11 +1407,10 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                           <div className="flex items-center justify-start">
                             {u.role === "admin" && (
                               <span
-                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
-                                  isDark
-                                    ? "bg-[#2d153d] border-[#7e22ce] text-[#F472B6]"
-                                    : "bg-purple-50 border-purple-200 text-purple-700"
-                                }`}
+                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${isDark
+                                  ? "bg-[#2d153d] border-[#7e22ce] text-[#F472B6]"
+                                  : "bg-purple-50 border-purple-200 text-purple-700"
+                                  }`}
                               >
                                 <span className="material-symbols-outlined text-[14px]">shield_person</span>
                                 <span>Super Admin</span>
@@ -1374,11 +1418,10 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                             )}
                             {u.role === "karyawan_tif" && (
                               <span
-                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
-                                  isDark
-                                    ? "bg-[#1f143d] border-[#5521b5] text-[#C084FC]"
-                                    : "bg-indigo-50 border-indigo-200 text-indigo-700"
-                                }`}
+                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${isDark
+                                  ? "bg-[#1f143d] border-[#5521b5] text-[#C084FC]"
+                                  : "bg-indigo-50 border-indigo-200 text-indigo-700"
+                                  }`}
                               >
                                 <span className="material-symbols-outlined text-[14px]">person</span>
                                 <span>Karyawan TIF</span>
@@ -1386,11 +1429,10 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                             )}
                             {u.role === "teknisi" && (
                               <span
-                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
-                                  isDark
-                                    ? "bg-[#072440] border-[#0d538e] text-[#38BDF8]"
-                                    : "bg-sky-50 border-sky-200 text-sky-700"
-                                }`}
+                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${isDark
+                                  ? "bg-[#072440] border-[#0d538e] text-[#38BDF8]"
+                                  : "bg-sky-50 border-sky-200 text-sky-700"
+                                  }`}
                               >
                                 <span className="material-symbols-outlined text-[14px]">build</span>
                                 <span>Teknisi</span>
@@ -1403,16 +1445,14 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                         <td className="py-3.5 px-4 whitespace-nowrap text-left">
                           <div className="inline-flex items-center justify-start gap-1.5">
                             <span
-                              className={`material-symbols-outlined text-[16px] ${
-                                isDark ? "text-[#4c678a]" : "text-slate-400"
-                              }`}
+                              className={`material-symbols-outlined text-[16px] ${isDark ? "text-[#4c678a]" : "text-slate-400"
+                                }`}
                             >
                               location_on
                             </span>
                             <span
-                              className={`text-xs font-medium uppercase ${
-                                isDark ? "text-[#829bb8]" : "text-slate-700"
-                              }`}
+                              className={`text-xs font-medium uppercase ${isDark ? "text-[#829bb8]" : "text-slate-700"
+                                }`}
                             >
                               {u.district || "-"}
                             </span>
@@ -1424,11 +1464,10 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                           <div className="flex items-center justify-center">
                             {u.status === "aktif" && (
                               <span
-                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${
-                                  isDark
-                                    ? "bg-[#062420] border-[#0d544b] text-[#10B981]"
-                                    : "bg-emerald-50 border-emerald-200 text-emerald-700"
-                                }`}
+                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${isDark
+                                  ? "bg-[#062420] border-[#0d544b] text-[#10B981]"
+                                  : "bg-emerald-50 border-emerald-200 text-emerald-700"
+                                  }`}
                               >
                                 <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] shadow-[0_0_8px_#10B981]"></span>
                                 <span>Aktif</span>
@@ -1436,11 +1475,10 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                             )}
                             {u.status === "pending" && (
                               <span
-                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${
-                                  isDark
-                                    ? "bg-[#2b1f0e] border-[#6b4713] text-[#F59E0B]"
-                                    : "bg-amber-50 border-amber-200 text-amber-700"
-                                }`}
+                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${isDark
+                                  ? "bg-[#2b1f0e] border-[#6b4713] text-[#F59E0B]"
+                                  : "bg-amber-50 border-amber-200 text-amber-700"
+                                  }`}
                               >
                                 <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B] shadow-[0_0_8px_#F59E0B] animate-pulse"></span>
                                 <span>Pending</span>
@@ -1448,11 +1486,10 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                             )}
                             {u.status === "nonaktif" && (
                               <span
-                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${
-                                  isDark
-                                    ? "bg-[#2c1017] border-[#6d1b28] text-[#EF4444]"
-                                    : "bg-rose-50 border-rose-200 text-rose-700"
-                                }`}
+                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${isDark
+                                  ? "bg-[#2c1017] border-[#6d1b28] text-[#EF4444]"
+                                  : "bg-rose-50 border-rose-200 text-rose-700"
+                                  }`}
                               >
                                 <span className="w-1.5 h-1.5 rounded-full bg-[#EF4444] shadow-[0_0_8px_#EF4444]"></span>
                                 <span>Nonaktif</span>
@@ -1464,9 +1501,8 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                         {/* 5. Dibuat Pada (DITENGAHKAN) */}
                         <td className="py-3.5 px-4 whitespace-nowrap text-center">
                           <span
-                            className={`text-xs font-mono ${
-                              isDark ? "text-[#6d88a9]" : "text-slate-600"
-                            }`}
+                            className={`text-xs font-mono ${isDark ? "text-[#6d88a9]" : "text-slate-600"
+                              }`}
                           >
                             {formatDateTime(u.created_at)}
                           </span>
@@ -1493,11 +1529,10 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                               type="button"
                               onClick={() => setDetailUser(u)}
                               title="Lihat Detail Akun"
-                              className={`w-7 h-7 min-w-[28px] min-h-[28px] max-w-[28px] max-h-[28px] p-0 shrink-0 rounded-lg flex items-center justify-center border transition-all cursor-pointer shadow-sm hover:scale-105 active:scale-95 ${
-                                isDark
-                                  ? "bg-[#07383E] hover:bg-[#0A4E57] text-[#00E5FF] border-[#0A545E]"
-                                  : "bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border-cyan-200"
-                              }`}
+                              className={`w-7 h-7 min-w-[28px] min-h-[28px] max-w-[28px] max-h-[28px] p-0 shrink-0 rounded-lg flex items-center justify-center border transition-all cursor-pointer shadow-sm hover:scale-105 active:scale-95 ${isDark
+                                ? "bg-[#07383E] hover:bg-[#0A4E57] text-[#00E5FF] border-[#0A545E]"
+                                : "bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border-cyan-200"
+                                }`}
                             >
                               <span className="material-symbols-outlined text-[15px] leading-none select-none flex items-center justify-center pointer-events-none">
                                 visibility
@@ -1509,11 +1544,10 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                               type="button"
                               onClick={() => openEditModal(u)}
                               title="Edit Pengguna"
-                              className={`w-7 h-7 min-w-[28px] min-h-[28px] max-w-[28px] max-h-[28px] p-0 shrink-0 rounded-lg flex items-center justify-center border transition-all cursor-pointer shadow-sm hover:scale-105 active:scale-95 ${
-                                isDark
-                                  ? "bg-[#3D2C0D] hover:bg-[#523B11] text-[#FBBF24] border-[#5E4413]"
-                                  : "bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200"
-                              }`}
+                              className={`w-7 h-7 min-w-[28px] min-h-[28px] max-w-[28px] max-h-[28px] p-0 shrink-0 rounded-lg flex items-center justify-center border transition-all cursor-pointer shadow-sm hover:scale-105 active:scale-95 ${isDark
+                                ? "bg-[#3D2C0D] hover:bg-[#523B11] text-[#FBBF24] border-[#5E4413]"
+                                : "bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200"
+                                }`}
                             >
                               <span className="material-symbols-outlined text-[15px] leading-none select-none flex items-center justify-center pointer-events-none">
                                 edit
@@ -1530,11 +1564,10 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                                 setResetError("");
                               }}
                               title="Reset Password Akun"
-                              className={`w-7 h-7 min-w-[28px] min-h-[28px] max-w-[28px] max-h-[28px] p-0 shrink-0 rounded-lg flex items-center justify-center border transition-all cursor-pointer shadow-sm hover:scale-105 active:scale-95 ${
-                                isDark
-                                  ? "bg-[#241A4C] hover:bg-[#34266D] text-[#A78BFA] border-[#3B2C78]"
-                                  : "bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200"
-                              }`}
+                              className={`w-7 h-7 min-w-[28px] min-h-[28px] max-w-[28px] max-h-[28px] p-0 shrink-0 rounded-lg flex items-center justify-center border transition-all cursor-pointer shadow-sm hover:scale-105 active:scale-95 ${isDark
+                                ? "bg-[#241A4C] hover:bg-[#34266D] text-[#A78BFA] border-[#3B2C78]"
+                                : "bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200"
+                                }`}
                             >
                               <span className="material-symbols-outlined text-[15px] leading-none select-none flex items-center justify-center pointer-events-none">
                                 key
@@ -1550,11 +1583,10 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                                   setDeleteError("");
                                 }}
                                 title="Hapus Akun Pengguna"
-                                className={`w-7 h-7 min-w-[28px] min-h-[28px] max-w-[28px] max-h-[28px] p-0 shrink-0 rounded-lg flex items-center justify-center border transition-all cursor-pointer shadow-sm hover:scale-105 active:scale-95 ${
-                                  isDark
-                                    ? "bg-[#3C1318] hover:bg-[#541B22] text-[#F43F5E] border-[#5C1D25]"
-                                    : "bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200"
-                                }`}
+                                className={`w-7 h-7 min-w-[28px] min-h-[28px] max-w-[28px] max-h-[28px] p-0 shrink-0 rounded-lg flex items-center justify-center border transition-all cursor-pointer shadow-sm hover:scale-105 active:scale-95 ${isDark
+                                  ? "bg-[#3C1318] hover:bg-[#541B22] text-[#F43F5E] border-[#5C1D25]"
+                                  : "bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200"
+                                  }`}
                               >
                                 <span className="material-symbols-outlined text-[15px] leading-none select-none flex items-center justify-center pointer-events-none">
                                   delete
@@ -1565,11 +1597,10 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                                 type="button"
                                 disabled
                                 title="Tidak dapat menghapus akun Anda sendiri"
-                                className={`w-7 h-7 min-w-[28px] min-h-[28px] max-w-[28px] max-h-[28px] p-0 shrink-0 rounded-lg flex items-center justify-center border cursor-not-allowed opacity-30 ${
-                                  isDark
-                                    ? "bg-slate-800/40 border-slate-700 text-slate-500"
-                                    : "bg-slate-100 border-slate-200 text-slate-400"
-                                }`}
+                                className={`w-7 h-7 min-w-[28px] min-h-[28px] max-w-[28px] max-h-[28px] p-0 shrink-0 rounded-lg flex items-center justify-center border cursor-not-allowed opacity-30 ${isDark
+                                  ? "bg-slate-800/40 border-slate-700 text-slate-500"
+                                  : "bg-slate-100 border-slate-200 text-slate-400"
+                                  }`}
                               >
                                 <span className="material-symbols-outlined text-[15px] leading-none select-none flex items-center justify-center pointer-events-none">
                                   delete
@@ -1609,572 +1640,538 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
           MODAL 1: DETAIL PENGGUNA (ADAPTIF DARK & LIGHT MODE)
           ======================================================== */}
       {detailUser && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-          onClick={() => setDetailUser(null)}
-        >
+        <ModalPortal>
           <div
-            className={`w-full max-w-md rounded-2xl border p-6 shadow-2xl transition-all ${
-              isDark
-                ? "bg-[#061427] border-[#0d2746] text-[#E6EDF7]"
-                : "bg-white border-slate-200 text-slate-900"
-            }`}
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+            onClick={() => setDetailUser(null)}
           >
             <div
-              className={`flex items-center justify-between pb-4 border-b ${
-                isDark ? "border-[#0f2747]" : "border-slate-100"
-              }`}
+              className={`w-full max-w-md rounded-2xl border p-6 shadow-2xl transition-all ${isDark
+                ? "bg-[#061427] border-[#0d2746] text-[#E6EDF7]"
+                : "bg-white border-slate-200 text-slate-900"
+                }`}
+              onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center gap-3">
-                <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                    isDark
+              <div
+                className={`flex items-center justify-between pb-4 border-b ${isDark ? "border-[#0f2747]" : "border-slate-100"
+                  }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${isDark
                       ? "bg-[#1677FF]/20 border border-[#1677FF]/40 text-[#38BDF8]"
                       : "bg-blue-50 border border-blue-200 text-blue-600"
-                  }`}
+                      }`}
+                  >
+                    <span className="material-symbols-outlined text-[20px]">account_circle</span>
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold">Detail Akun Pengguna</h3>
+                    <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                      Informasi profil dan penugasan personil
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setDetailUser(null)}
+                  className={`cursor-pointer transition-colors ${isDark ? "text-slate-400 hover:text-white" : "text-slate-400 hover:text-slate-700"
+                    }`}
                 >
-                  <span className="material-symbols-outlined text-[20px]">account_circle</span>
-                </div>
-                <div>
-                  <h3 className="text-base font-bold">Detail Akun Pengguna</h3>
-                  <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                    Informasi profil dan penugasan personil
-                  </p>
-                </div>
+                  <span className="material-symbols-outlined text-[20px]">close</span>
+                </button>
               </div>
-              <button
-                onClick={() => setDetailUser(null)}
-                className={`cursor-pointer transition-colors ${
-                  isDark ? "text-slate-400 hover:text-white" : "text-slate-400 hover:text-slate-700"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[20px]">close</span>
-              </button>
-            </div>
 
-            <div className="py-5 space-y-3.5 text-xs">
-              <div
-                className={`flex justify-between py-1.5 border-b ${
-                  isDark ? "border-slate-800/40" : "border-slate-100"
-                }`}
-              >
-                <span className={isDark ? "text-slate-400" : "text-slate-500"}>ID Pengguna</span>
-                <span className="font-mono font-semibold">#{detailUser.user_id}</span>
-              </div>
-              <div
-                className={`flex justify-between py-1.5 border-b ${
-                  isDark ? "border-slate-800/40" : "border-slate-100"
-                }`}
-              >
-                <span className={isDark ? "text-slate-400" : "text-slate-500"}>Nama Lengkap</span>
-                <span className="font-semibold">{detailUser.name}</span>
-              </div>
-              <div
-                className={`flex justify-between py-1.5 border-b ${
-                  isDark ? "border-slate-800/40" : "border-slate-100"
-                }`}
-              >
-                <span className={isDark ? "text-slate-400" : "text-slate-500"}>Email Akun</span>
-                <span className="font-mono font-semibold">{detailUser.email}</span>
-              </div>
-              <div
-                className={`flex justify-between py-1.5 border-b ${
-                  isDark ? "border-slate-800/40" : "border-slate-100"
-                }`}
-              >
-                <span className={isDark ? "text-slate-400" : "text-slate-500"}>Role Otorisasi</span>
-                <span className="font-semibold capitalize">{detailUser.role}</span>
-              </div>
-              <div
-                className={`flex justify-between py-1.5 border-b ${
-                  isDark ? "border-slate-800/40" : "border-slate-100"
-                }`}
-              >
-                <span className={isDark ? "text-slate-400" : "text-slate-500"}>District Penugasan</span>
-                <span className="font-semibold">{detailUser.district || "-"}</span>
-              </div>
-              <div
-                className={`flex justify-between py-1.5 border-b ${
-                  isDark ? "border-slate-800/40" : "border-slate-100"
-                }`}
-              >
-                <span className={isDark ? "text-slate-400" : "text-slate-500"}>Status Akun</span>
-                <span className="font-semibold capitalize">{detailUser.status}</span>
-              </div>
-              <div
-                className={`flex justify-between py-1.5 border-b ${
-                  isDark ? "border-slate-800/40" : "border-slate-100"
-                }`}
-              >
-                <span className={isDark ? "text-slate-400" : "text-slate-500"}>Tanggal Didaftarkan</span>
-                <span className="font-mono">{formatDateTime(detailUser.created_at)}</span>
-              </div>
-              <div
-                className={`p-3 rounded-xl border text-[11px] leading-relaxed flex items-center gap-2.5 ${
-                  isDark
+              <div className="py-5 space-y-3.5 text-xs">
+                <div
+                  className={`flex justify-between py-1.5 border-b ${isDark ? "border-slate-800/40" : "border-slate-100"
+                    }`}
+                >
+                  <span className={isDark ? "text-slate-400" : "text-slate-500"}>ID Pengguna</span>
+                  <span className="font-mono font-semibold">#{detailUser.user_id}</span>
+                </div>
+                <div
+                  className={`flex justify-between py-1.5 border-b ${isDark ? "border-slate-800/40" : "border-slate-100"
+                    }`}
+                >
+                  <span className={isDark ? "text-slate-400" : "text-slate-500"}>Nama Lengkap</span>
+                  <span className="font-semibold">{detailUser.name}</span>
+                </div>
+                <div
+                  className={`flex justify-between py-1.5 border-b ${isDark ? "border-slate-800/40" : "border-slate-100"
+                    }`}
+                >
+                  <span className={isDark ? "text-slate-400" : "text-slate-500"}>Email Akun</span>
+                  <span className="font-mono font-semibold">{detailUser.email}</span>
+                </div>
+                <div
+                  className={`flex justify-between py-1.5 border-b ${isDark ? "border-slate-800/40" : "border-slate-100"
+                    }`}
+                >
+                  <span className={isDark ? "text-slate-400" : "text-slate-500"}>Role Otorisasi</span>
+                  <span className="font-semibold capitalize">{detailUser.role}</span>
+                </div>
+                <div
+                  className={`flex justify-between py-1.5 border-b ${isDark ? "border-slate-800/40" : "border-slate-100"
+                    }`}
+                >
+                  <span className={isDark ? "text-slate-400" : "text-slate-500"}>District Penugasan</span>
+                  <span className="font-semibold">{detailUser.district || "-"}</span>
+                </div>
+                <div
+                  className={`flex justify-between py-1.5 border-b ${isDark ? "border-slate-800/40" : "border-slate-100"
+                    }`}
+                >
+                  <span className={isDark ? "text-slate-400" : "text-slate-500"}>Status Akun</span>
+                  <span className="font-semibold capitalize">{detailUser.status}</span>
+                </div>
+                <div
+                  className={`flex justify-between py-1.5 border-b ${isDark ? "border-slate-800/40" : "border-slate-100"
+                    }`}
+                >
+                  <span className={isDark ? "text-slate-400" : "text-slate-500"}>Tanggal Didaftarkan</span>
+                  <span className="font-mono">{formatDateTime(detailUser.created_at)}</span>
+                </div>
+                <div
+                  className={`p-3 rounded-xl border text-[11px] leading-relaxed flex items-center gap-2.5 ${isDark
                     ? "bg-blue-500/10 border-blue-500/20 text-blue-300"
                     : "bg-blue-50 border-blue-200 text-blue-700"
-                }`}
+                    }`}
+                >
+                  <span className="material-symbols-outlined text-[18px] text-[#1677FF]">shield_locked</span>
+                  <span>Password dienkripsi secara aman dan tidak dapat dilihat oleh siapa pun demi privasi akun.</span>
+                </div>
+              </div>
+
+              <div
+                className={`pt-3 border-t flex justify-end ${isDark ? "border-[#0f2747]" : "border-slate-100"
+                  }`}
               >
-                <span className="material-symbols-outlined text-[18px] text-[#1677FF]">shield_locked</span>
-                <span>Password dienkripsi secara aman dan tidak dapat dilihat oleh siapa pun demi privasi akun.</span>
+                <button
+                  type="button"
+                  onClick={() => setDetailUser(null)}
+                  className="px-5 py-2 rounded-xl bg-[#1677FF] text-white text-xs font-semibold hover:bg-blue-600 cursor-pointer shadow-sm"
+                >
+                  Tutup
+                </button>
               </div>
             </div>
-
-            <div
-              className={`pt-3 border-t flex justify-end ${
-                isDark ? "border-[#0f2747]" : "border-slate-100"
-              }`}
-            >
-              <button
-                type="button"
-                onClick={() => setDetailUser(null)}
-                className="px-5 py-2 rounded-xl bg-[#1677FF] text-white text-xs font-semibold hover:bg-blue-600 cursor-pointer shadow-sm"
-              >
-                Tutup
-              </button>
-            </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
 
       {/* ========================================================
           MODAL 2: EDIT PENGGUNA (ADAPTIF DARK & LIGHT MODE)
           ======================================================== */}
       {editUser && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-          onClick={() => setEditUser(null)}
-        >
+        <ModalPortal>
           <div
-            className={`w-full max-w-lg rounded-2xl border p-6 shadow-2xl transition-all ${
-              isDark
-                ? "bg-[#061427] border-[#0d2746] text-[#E6EDF7]"
-                : "bg-white border-slate-200 text-slate-900"
-            }`}
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+            onClick={() => setEditUser(null)}
           >
             <div
-              className={`flex items-center justify-between pb-4 border-b ${
-                isDark ? "border-[#0f2747]" : "border-slate-100"
-              }`}
+              className={`w-full max-w-lg rounded-2xl border p-6 shadow-2xl transition-all ${isDark
+                ? "bg-[#061427] border-[#0d2746] text-[#E6EDF7]"
+                : "bg-white border-slate-200 text-slate-900"
+                }`}
+              onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center gap-3">
-                <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                    isDark
+              <div
+                className={`flex items-center justify-between pb-4 border-b ${isDark ? "border-[#0f2747]" : "border-slate-100"
+                  }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${isDark
                       ? "bg-[#1677FF]/20 border border-[#1677FF]/40 text-[#38BDF8]"
                       : "bg-blue-50 border border-blue-200 text-blue-600"
-                  }`}
+                      }`}
+                  >
+                    <span className="material-symbols-outlined text-[20px]">manage_accounts</span>
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold">Edit Akun Pengguna</h3>
+                    <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                      Ubah informasi akun #{editUser.user_id}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setEditUser(null)}
+                  className={`cursor-pointer transition-colors ${isDark ? "text-slate-400 hover:text-white" : "text-slate-400 hover:text-slate-700"
+                    }`}
                 >
-                  <span className="material-symbols-outlined text-[20px]">manage_accounts</span>
-                </div>
-                <div>
-                  <h3 className="text-base font-bold">Edit Akun Pengguna</h3>
-                  <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                    Ubah informasi akun #{editUser.user_id}
-                  </p>
-                </div>
+                  <span className="material-symbols-outlined text-[20px]">close</span>
+                </button>
               </div>
-              <button
-                onClick={() => setEditUser(null)}
-                className={`cursor-pointer transition-colors ${
-                  isDark ? "text-slate-400 hover:text-white" : "text-slate-400 hover:text-slate-700"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[20px]">close</span>
-              </button>
-            </div>
 
-            {editError && (
-              <div
-                className={`mt-4 p-3 rounded-xl border text-xs flex items-center gap-2 ${
-                  isDark
+              {editError && (
+                <div
+                  className={`mt-4 p-3 rounded-xl border text-xs flex items-center gap-2 ${isDark
                     ? "bg-rose-500/15 border-rose-500/30 text-rose-300"
                     : "bg-rose-50 border-rose-200 text-rose-700"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[18px]">error</span>
-                <span>{editError}</span>
-              </div>
-            )}
+                    }`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">error</span>
+                  <span>{editError}</span>
+                </div>
+              )}
 
-            <form onSubmit={handleEditSubmit} className="py-5 space-y-4 text-xs">
-              <div>
-                <label className={`block font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
-                  Nama Lengkap *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editForm.name}
-                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                  className={`w-full px-3.5 py-2.5 rounded-xl border outline-none text-xs sm:text-sm ${
-                    isDark
-                      ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
-                      : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500 focus:bg-white"
-                  }`}
-                />
-              </div>
-
-              <div>
-                <label className={`block font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
-                  Email Akun *
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={editForm.email}
-                  onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                  className={`w-full px-3.5 py-2.5 rounded-xl border outline-none text-xs sm:text-sm ${
-                    isDark
-                      ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
-                      : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500 focus:bg-white"
-                  }`}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+              <form onSubmit={handleEditSubmit} className="py-5 space-y-4 text-xs">
                 <div>
                   <label className={`block font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
-                    Role Otorisasi *
+                    Nama Lengkap *
                   </label>
-                  <select
-                    value={editForm.role}
-                    disabled={currentUser && currentUser.id === editUser.user_id}
-                    onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl border outline-none text-xs sm:text-sm cursor-pointer ${
-                      isDark
-                        ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
-                        : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500"
-                    }`}
-                  >
-                    <option value="admin">Super Admin</option>
-                    <option value="karyawan_tif">Karyawan TIF</option>
-                    <option value="teknisi">Teknisi</option>
-                  </select>
+                  <input
+                    type="text"
+                    required
+                    value={editForm.name}
+                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                    className={`w-full px-3.5 py-2.5 rounded-xl border outline-none text-xs sm:text-sm ${isDark
+                      ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
+                      : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500 focus:bg-white"
+                      }`}
+                  />
                 </div>
 
                 <div>
                   <label className={`block font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
-                    Status Akun *
+                    Email Akun *
                   </label>
-                  <select
-                    value={editForm.status}
-                    disabled={currentUser && currentUser.id === editUser.user_id}
-                    onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl border outline-none text-xs sm:text-sm cursor-pointer ${
-                      isDark
+                  <input
+                    type="email"
+                    required
+                    value={editForm.email}
+                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                    className={`w-full px-3.5 py-2.5 rounded-xl border outline-none text-xs sm:text-sm ${isDark
+                      ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
+                      : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500 focus:bg-white"
+                      }`}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={`block font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                      Role Otorisasi *
+                    </label>
+                    <select
+                      value={editForm.role}
+                      disabled={currentUser && currentUser.id === editUser.user_id}
+                      onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                      className={`w-full px-3.5 py-2.5 rounded-xl border outline-none text-xs sm:text-sm cursor-pointer ${isDark
                         ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
                         : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500"
-                    }`}
-                  >
-                    <option value="aktif">Aktif</option>
-                    <option value="pending">Pending</option>
-                    <option value="nonaktif">Nonaktif</option>
-                  </select>
-                </div>
-              </div>
+                        }`}
+                    >
+                      <option value="admin">Super Admin</option>
+                      <option value="karyawan_tif">Karyawan TIF</option>
+                      <option value="teknisi">Teknisi</option>
+                    </select>
+                  </div>
 
-              <div>
-                <label className={`block font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
-                  District Penugasan *
-                </label>
-                <select
-                  value={editForm.district}
-                  onChange={(e) => setEditForm({ ...editForm, district: e.target.value })}
-                  className={`w-full px-3.5 py-2.5 rounded-xl border outline-none text-xs sm:text-sm cursor-pointer ${
-                    isDark
+                  <div>
+                    <label className={`block font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                      Status Akun *
+                    </label>
+                    <select
+                      value={editForm.status}
+                      disabled={currentUser && currentUser.id === editUser.user_id}
+                      onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                      className={`w-full px-3.5 py-2.5 rounded-xl border outline-none text-xs sm:text-sm cursor-pointer ${isDark
+                        ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
+                        : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500"
+                        }`}
+                    >
+                      <option value="aktif">Aktif</option>
+                      <option value="pending">Pending</option>
+                      <option value="nonaktif">Nonaktif</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className={`block font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                    District Penugasan *
+                  </label>
+                  <select
+                    value={editForm.district}
+                    onChange={(e) => setEditForm({ ...editForm, district: e.target.value })}
+                    className={`w-full px-3.5 py-2.5 rounded-xl border outline-none text-xs sm:text-sm cursor-pointer ${isDark
                       ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
                       : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500"
-                  }`}
-                >
-                  <option value="" disabled>
-                    Pilih District
-                  </option>
-                  {districtOptions.map((d) => (
-                    <option key={d} value={d}>
-                      {d}
+                      }`}
+                  >
+                    <option value="" disabled>
+                      Pilih District
                     </option>
-                  ))}
-                </select>
-              </div>
+                    {districtOptions.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div
-                className={`pt-4 border-t flex justify-end gap-2.5 ${
-                  isDark ? "border-[#0f2747]" : "border-slate-100"
-                }`}
-              >
-                <button
-                  type="button"
-                  onClick={() => setEditUser(null)}
-                  className={`px-4 py-2 rounded-xl border cursor-pointer ${
-                    isDark
+                <div
+                  className={`pt-4 border-t flex justify-end gap-2.5 ${isDark ? "border-[#0f2747]" : "border-slate-100"
+                    }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setEditUser(null)}
+                    className={`px-4 py-2 rounded-xl border cursor-pointer ${isDark
                       ? "border-slate-600 text-slate-400 hover:text-white"
                       : "border-slate-300 text-slate-700 hover:bg-slate-100"
-                  }`}
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={editSubmitting}
-                  className="px-5 py-2 rounded-xl bg-[#1677FF] text-white font-semibold hover:bg-blue-600 disabled:opacity-50 cursor-pointer shadow-sm"
-                >
-                  {editSubmitting ? "Menyimpan..." : "Simpan Perubahan"}
-                </button>
-              </div>
-            </form>
+                      }`}
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={editSubmitting}
+                    className="px-5 py-2 rounded-xl bg-[#1677FF] text-white font-semibold hover:bg-blue-600 disabled:opacity-50 cursor-pointer shadow-sm"
+                  >
+                    {editSubmitting ? "Menyimpan..." : "Simpan Perubahan"}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
 
       {/* ========================================================
           MODAL 3: RESET PASSWORD (ADAPTIF DARK & LIGHT MODE)
           ======================================================== */}
       {resetUser && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-          onClick={() => setResetUser(null)}
-        >
+        <ModalPortal>
           <div
-            className={`w-full max-w-md rounded-2xl border p-6 shadow-2xl transition-all ${
-              isDark
-                ? "bg-[#061427] border-[#0d2746] text-[#E6EDF7]"
-                : "bg-white border-slate-200 text-slate-900"
-            }`}
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+            onClick={() => setResetUser(null)}
           >
             <div
-              className={`flex items-center justify-between pb-4 border-b ${
-                isDark ? "border-[#0f2747]" : "border-slate-100"
-              }`}
+              className={`w-full max-w-md rounded-2xl border p-6 shadow-2xl transition-all ${isDark
+                ? "bg-[#061427] border-[#0d2746] text-[#E6EDF7]"
+                : "bg-white border-slate-200 text-slate-900"
+                }`}
+              onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center gap-3">
-                <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                    isDark
+              <div
+                className={`flex items-center justify-between pb-4 border-b ${isDark ? "border-[#0f2747]" : "border-slate-100"
+                  }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${isDark
                       ? "bg-[#6366F1]/20 border border-[#6366F1]/40 text-[#A78BFA]"
                       : "bg-purple-50 border border-purple-200 text-purple-700"
-                  }`}
+                      }`}
+                  >
+                    <span className="material-symbols-outlined text-[20px]">key</span>
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold">Reset Password Pengguna</h3>
+                    <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                      Tetapkan password baru untuk {resetUser.name}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setResetUser(null)}
+                  className={`cursor-pointer transition-colors ${isDark ? "text-slate-400 hover:text-white" : "text-slate-400 hover:text-slate-700"
+                    }`}
                 >
-                  <span className="material-symbols-outlined text-[20px]">key</span>
-                </div>
-                <div>
-                  <h3 className="text-base font-bold">Reset Password Pengguna</h3>
-                  <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                    Tetapkan password baru untuk {resetUser.name}
-                  </p>
-                </div>
+                  <span className="material-symbols-outlined text-[20px]">close</span>
+                </button>
               </div>
-              <button
-                onClick={() => setResetUser(null)}
-                className={`cursor-pointer transition-colors ${
-                  isDark ? "text-slate-400 hover:text-white" : "text-slate-400 hover:text-slate-700"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[20px]">close</span>
-              </button>
-            </div>
 
-            {resetError && (
-              <div
-                className={`mt-4 p-3 rounded-xl border text-xs flex items-center gap-2 ${
-                  isDark
+              {resetError && (
+                <div
+                  className={`mt-4 p-3 rounded-xl border text-xs flex items-center gap-2 ${isDark
                     ? "bg-rose-500/15 border-rose-500/30 text-rose-300"
                     : "bg-rose-50 border-rose-200 text-rose-700"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[18px]">error</span>
-                <span>{resetError}</span>
-              </div>
-            )}
+                    }`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">error</span>
+                  <span>{resetError}</span>
+                </div>
+              )}
 
-            <form onSubmit={handleResetPasswordSubmit} className="py-5 space-y-4 text-xs">
-              <div
-                className={`p-3 rounded-xl border text-[11px] leading-relaxed ${
-                  isDark
+              <form onSubmit={handleResetPasswordSubmit} className="py-5 space-y-4 text-xs">
+                <div
+                  className={`p-3 rounded-xl border text-[11px] leading-relaxed ${isDark
                     ? "bg-indigo-500/10 border-indigo-500/20 text-indigo-300"
                     : "bg-purple-50 border-purple-200 text-purple-700"
-                }`}
-              >
-                Password lama pengguna tidak dapat dilihat dan langsung digantikan dengan password baru
-                yang di-hash sebelum disimpan.
-              </div>
+                    }`}
+                >
+                  Password lama pengguna tidak dapat dilihat dan langsung digantikan dengan password baru
+                  yang di-hash sebelum disimpan.
+                </div>
 
-              <div>
-                <label className={`block font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
-                  Password Baru *
-                </label>
-                <div className="relative">
+                <div>
+                  <label className={`block font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                    Password Baru *
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showNewPassword ? "text" : "password"}
+                      required
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Minimal 8 karakter"
+                      className={`w-full px-3.5 py-2.5 rounded-xl border outline-none pr-10 text-xs sm:text-sm ${isDark
+                        ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
+                        : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500 focus:bg-white"
+                        }`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">
+                        {showNewPassword ? "visibility" : "visibility_off"}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className={`block font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                    Konfirmasi Password Baru *
+                  </label>
                   <input
                     type={showNewPassword ? "text" : "password"}
                     required
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Minimal 8 karakter"
-                    className={`w-full px-3.5 py-2.5 rounded-xl border outline-none pr-10 text-xs sm:text-sm ${
-                      isDark
-                        ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
-                        : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500 focus:bg-white"
-                    }`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">
-                      {showNewPassword ? "visibility" : "visibility_off"}
-                    </span>
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className={`block font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
-                  Konfirmasi Password Baru *
-                </label>
-                <input
-                  type={showNewPassword ? "text" : "password"}
-                  required
-                  value={confirmNewPassword}
-                  onChange={(e) => setConfirmNewPassword(e.target.value)}
-                  placeholder="Ketik ulang password baru"
-                  className={`w-full px-3.5 py-2.5 rounded-xl border outline-none text-xs sm:text-sm ${
-                    isDark
+                    value={confirmNewPassword}
+                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                    placeholder="Ketik ulang password baru"
+                    className={`w-full px-3.5 py-2.5 rounded-xl border outline-none text-xs sm:text-sm ${isDark
                       ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
                       : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500 focus:bg-white"
-                  }`}
-                />
-              </div>
+                      }`}
+                  />
+                </div>
 
-              <div
-                className={`pt-4 border-t flex justify-end gap-2.5 ${
-                  isDark ? "border-[#0f2747]" : "border-slate-100"
-                }`}
-              >
-                <button
-                  type="button"
-                  onClick={() => setResetUser(null)}
-                  className={`px-4 py-2 rounded-xl border cursor-pointer ${
-                    isDark
+                <div
+                  className={`pt-4 border-t flex justify-end gap-2.5 ${isDark ? "border-[#0f2747]" : "border-slate-100"
+                    }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setResetUser(null)}
+                    className={`px-4 py-2 rounded-xl border cursor-pointer ${isDark
                       ? "border-slate-600 text-slate-400 hover:text-white"
                       : "border-slate-300 text-slate-700 hover:bg-slate-100"
-                  }`}
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={resetSubmitting}
-                  className="px-5 py-2 rounded-xl bg-[#6366F1] text-white font-bold hover:bg-indigo-600 disabled:opacity-50 cursor-pointer shadow-sm"
-                >
-                  {resetSubmitting ? "Mereset..." : "Reset Password"}
-                </button>
-              </div>
-            </form>
+                      }`}
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={resetSubmitting}
+                    className="px-5 py-2 rounded-xl bg-[#6366F1] text-white font-bold hover:bg-indigo-600 disabled:opacity-50 cursor-pointer shadow-sm"
+                  >
+                    {resetSubmitting ? "Mereset..." : "Reset Password"}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
 
       {/* ========================================================
           MODAL 4: HAPUS PENGGUNA (ADAPTIF DARK & LIGHT MODE)
           ======================================================== */}
       {deleteUser && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-          onClick={() => setDeleteUser(null)}
-        >
+        <ModalPortal>
           <div
-            className={`w-full max-w-md rounded-2xl border p-6 shadow-2xl transition-all ${
-              isDark
-                ? "bg-[#061427] border-[#0d2746] text-[#E6EDF7]"
-                : "bg-white border-slate-200 text-slate-900"
-            }`}
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+            onClick={() => setDeleteUser(null)}
           >
             <div
-              className={`flex items-center gap-3 pb-4 border-b ${
-                isDark ? "border-[#0f2747]" : "border-slate-100"
-              }`}
+              className={`w-full max-w-md rounded-2xl border p-6 shadow-2xl transition-all ${isDark
+                ? "bg-[#061427] border-[#0d2746] text-[#E6EDF7]"
+                : "bg-white border-slate-200 text-slate-900"
+                }`}
+              onClick={(e) => e.stopPropagation()}
             >
               <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                  isDark
+                className={`flex items-center gap-3 pb-4 border-b ${isDark ? "border-[#0f2747]" : "border-slate-100"
+                  }`}
+              >
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center ${isDark
                     ? "bg-rose-500/20 border border-rose-500/40 text-rose-400"
                     : "bg-rose-50 border border-rose-200 text-rose-600"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[20px]">warning</span>
+                    }`}
+                >
+                  <span className="material-symbols-outlined text-[20px]">warning</span>
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-rose-600 dark:text-rose-400">Konfirmasi Hapus Pengguna</h3>
+                  <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                    Tindakan ini tidak dapat dibatalkan
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-base font-bold text-rose-600 dark:text-rose-400">Konfirmasi Hapus Pengguna</h3>
-                <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                  Tindakan ini tidak dapat dibatalkan
-                </p>
-              </div>
-            </div>
 
-            {deleteError && (
-              <div
-                className={`mt-4 p-3 rounded-xl border text-xs flex items-center gap-2 ${
-                  isDark
+              {deleteError && (
+                <div
+                  className={`mt-4 p-3 rounded-xl border text-xs flex items-center gap-2 ${isDark
                     ? "bg-rose-500/15 border-rose-500/30 text-rose-300"
                     : "bg-rose-50 border-rose-200 text-rose-700"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[18px]">error</span>
-                <span>{deleteError}</span>
-              </div>
-            )}
+                    }`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">error</span>
+                  <span>{deleteError}</span>
+                </div>
+              )}
 
-            <div className="py-5 text-xs space-y-3 leading-relaxed">
-              <p>
-                Apakah Anda yakin ingin menghapus akun pengguna <strong>{deleteUser.name}</strong> (
-                {deleteUser.email})?
-              </p>
-              <div
-                className={`p-3 rounded-xl border text-[11px] ${
-                  isDark
+              <div className="py-5 text-xs space-y-3 leading-relaxed">
+                <p>
+                  Apakah Anda yakin ingin menghapus akun pengguna <strong>{deleteUser.name}</strong> (
+                  {deleteUser.email})?
+                </p>
+                <div
+                  className={`p-3 rounded-xl border text-[11px] ${isDark
                     ? "bg-[#051122] border-[#0f2848] text-slate-400"
                     : "bg-slate-50 border-slate-200 text-slate-600"
-                }`}
-              >
-                💡 <strong>Catatan Integritas:</strong> Sistem akan memeriksa apakah pengguna memiliki
-                riwayat transaksi modul, mutasi, atau audit log. Jika ada, penghapusan permanen akan
-                dicegah agar riwayat audit sistem tetap utuh.
+                    }`}
+                >
+                  💡 <strong>Catatan Integritas:</strong> Sistem akan memeriksa apakah pengguna memiliki
+                  riwayat transaksi modul, mutasi, atau audit log. Jika ada, penghapusan permanen akan
+                  dicegah agar riwayat audit sistem tetap utuh.
+                </div>
               </div>
-            </div>
 
-            <div
-              className={`pt-4 border-t flex justify-end gap-2.5 text-xs ${
-                isDark ? "border-[#0f2747]" : "border-slate-100"
-              }`}
-            >
-              <button
-                type="button"
-                onClick={() => setDeleteUser(null)}
-                className={`px-4 py-2 rounded-xl border cursor-pointer ${
-                  isDark
+              <div
+                className={`pt-4 border-t flex justify-end gap-2.5 text-xs ${isDark ? "border-[#0f2747]" : "border-slate-100"
+                  }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => setDeleteUser(null)}
+                  className={`px-4 py-2 rounded-xl border cursor-pointer ${isDark
                     ? "border-slate-600 text-slate-400 hover:text-white"
                     : "border-slate-300 text-slate-700 hover:bg-slate-100"
-                }`}
-              >
-                Batal
-              </button>
-              <button
-                type="button"
-                disabled={deleteSubmitting}
-                onClick={handleDeleteSubmit}
-                className="px-5 py-2 rounded-xl bg-rose-600 text-white font-semibold hover:bg-rose-700 disabled:opacity-50 cursor-pointer shadow-sm"
-              >
-                {deleteSubmitting ? "Memeriksa & Menghapus..." : "Ya, Hapus Pengguna"}
-              </button>
+                    }`}
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  disabled={deleteSubmitting}
+                  onClick={handleDeleteSubmit}
+                  className="px-5 py-2 rounded-xl bg-rose-600 text-white font-semibold hover:bg-rose-700 disabled:opacity-50 cursor-pointer shadow-sm"
+                >
+                  {deleteSubmitting ? "Memeriksa & Menghapus..." : "Ya, Hapus Pengguna"}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
     </div>
   );

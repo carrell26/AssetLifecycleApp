@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 export default function TablePagination({
   page = 1,
@@ -8,6 +8,18 @@ export default function TablePagination({
   onPerPageChange,
   isDark = true,
 }) {
+  const [perPageOpen, setPerPageOpen] = useState(false);
+  const perPageRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (perPageRef.current && !perPageRef.current.contains(event.target)) {
+        setPerPageOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
   const totalPages = Math.max(1, Math.ceil(totalCount / perPage));
   const safePage = Math.min(Math.max(1, page), totalPages);
 
@@ -62,23 +74,75 @@ export default function TablePagination({
 
         <span className={`mx-2 ${isDark ? "text-[#1E3A5F]" : "text-slate-300"}`}>|</span>
 
-        <label className="flex items-center gap-1.5">
-          <span>Per halaman:</span>
-          <select
-            value={perPage}
-            onChange={(e) => onPerPageChange(Number(e.target.value))}
-            className={`rounded-md px-2 py-1 text-xs focus:outline-none cursor-pointer border ${
-              isDark
-                ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] focus:border-[#1677FF]"
-                : "bg-white border-slate-300 text-slate-800 focus:border-blue-500"
-            }`}
-          >
-            <option value={10}>10</option>
-            <option value={15}>15</option>
-            <option value={25}>25</option>
-            <option value={50}>50</option>
-          </select>
-        </label>
+        {/* Custom Pill Dropdown: Baris per halaman (Box Card Style - Matching Audit Log) */}
+        <div className="flex items-center gap-2">
+          <span>Baris per halaman:</span>
+          <div className="relative" ref={perPageRef}>
+            <button
+              type="button"
+              onClick={() => setPerPageOpen(!perPageOpen)}
+              className={`h-8 px-3 rounded-xl border flex items-center gap-1.5 text-xs font-semibold transition-all cursor-pointer shadow-sm ${
+                isDark
+                  ? "border-[#1E3A5F] bg-[#071426] text-[#E6EDF7] hover:border-[#1677FF]"
+                  : "border-slate-300 bg-slate-50 text-slate-800 hover:border-blue-500"
+              }`}
+            >
+              <span>{perPage}</span>
+              <span
+                className={`material-symbols-outlined text-[16px] transition-transform duration-200 ${
+                  perPageOpen ? "rotate-180" : ""
+                } ${isDark ? "text-[#94A3B8]" : "text-slate-400"}`}
+              >
+                expand_more
+              </span>
+            </button>
+
+            {/* Box Card Dropdown Menu for Rows per Page */}
+            {perPageOpen && (
+              <div
+                className={`absolute left-0 bottom-full mb-1.5 w-24 rounded-xl border shadow-2xl p-1 z-40 overflow-hidden backdrop-blur-md ${
+                  isDark
+                    ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7]"
+                    : "border-slate-200 bg-white text-slate-800 shadow-xl"
+                }`}
+                style={{
+                  backgroundColor: isDark ? "#0A182B" : "#FFFFFF",
+                  borderColor: isDark ? "#1E3A5F" : "#E2E8F0",
+                }}
+              >
+                {[10, 15, 25, 50, 100].map((num) => {
+                  const isSelected = perPage === num;
+                  return (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => {
+                        onPerPageChange(num);
+                        setPerPageOpen(false);
+                      }}
+                      className={`w-full px-3 py-1.5 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
+                        isSelected
+                          ? isDark
+                            ? "bg-[#1677FF] text-white font-semibold"
+                            : "bg-blue-600 text-white font-semibold"
+                          : isDark
+                          ? "hover:bg-[#122846] text-[#CBD5E1]"
+                          : "hover:bg-slate-100 text-slate-700"
+                      }`}
+                    >
+                      <span>{num}</span>
+                      {isSelected && (
+                        <span className="material-symbols-outlined text-[15px] shrink-0">
+                          check
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Pagination page controls */}
