@@ -180,28 +180,38 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
       } else if (data.found && !data.installed) {
         showToast(data.message, "info");
       } else {
-        setCameraStatus(`QR Terbaca: "${decodedText}". Format tidak dikenali sebagai perangkat Telkom.`);
+        // Perbaikan bug: gunakan variabel `sn` bukan `decodedText` yang tidak ada di scope ini
+        setCameraStatus(`QR Terbaca: "${sn}". Format tidak dikenali sebagai perangkat Telkom.`);
       }
     } catch (e) {
-      setCameraStatus(`QR Terbaca: "${decodedText}". Format tidak dikenali.`);
+      setCameraStatus(`QR Terbaca: "${sn}". Format tidak dikenali.`);
     }
   };
 
   // Unggah foto QR dari file/galeri
+  // Menggunakan Html5Qrcode.scanFileV2 (static method) agar tidak bergantung pada DOM element
+  // dan bisa bekerja baik saat kamera aktif maupun tidak aktif
   const handleFileUpload = async (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
 
     try {
       setCameraStatus("Menganalisis file gambar QR...");
-      if (!scannerRef.current) {
-        scannerRef.current = new Html5Qrcode("ar-qr-reader");
-      }
-      const decodedText = await scannerRef.current.scanFile(file, true);
-      onQrCodeSuccess(decodedText);
+
+      // Gunakan static method scanFileV2 — tidak memerlukan elemen DOM aktif
+      // Ini bekerja terlepas dari apakah kamera scanner sedang berjalan atau tidak
+      const result = await Html5Qrcode.scanFileV2(file, /* showImage= */ false);
+      await onQrCodeSuccess(result.decodedText);
     } catch (err) {
-      showToast("Tidak dapat mendeteksi QR code dari gambar tersebut.", "error");
-      setCameraStatus("Gagal membaca QR dari file gambar.");
+      // Bedakan jenis error untuk pesan yang lebih informatif
+      const errMsg = err && err.message ? err.message : String(err);
+      if (errMsg.toLowerCase().includes("no qr code") || errMsg.toLowerCase().includes("not found")) {
+        showToast("QR Code tidak ditemukan di gambar ini. Pastikan gambar cukup jelas dan berisi QR code.", "error");
+        setCameraStatus("QR Code tidak terdeteksi di file gambar. Coba foto dengan pencahayaan lebih baik.");
+      } else {
+        showToast("Tidak dapat membaca file gambar. Format file harus JPG/PNG dan tidak boleh rusak.", "error");
+        setCameraStatus("Gagal membaca file gambar QR.");
+      }
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
@@ -347,28 +357,41 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
       {/* HERO BANNER BERGAYA CYBER AR & TELKOM INFRASTRUCTURE     */}
       {/* ======================================================== */}
       <div
-        className={`relative rounded-2xl overflow-hidden shadow-lg border min-h-[120px] flex items-center justify-between transition-colors duration-300 ${
-          isDark ? "border-[#1E3A5F] bg-[#071426]" : "border-slate-200 bg-white"
+        className={`relative overflow-hidden rounded-2xl border px-5 sm:px-6 h-[120px] min-h-[120px] max-h-[120px] flex items-center justify-between transition-all duration-300 shadow-sm !mt-0 ${
+          isDark
+            ? "border-[#1E3A5F] bg-[#0A182B] shadow-2xl"
+            : "border-slate-200 bg-white shadow-sm"
         }`}
+        style={{ marginTop: 0, height: "120px", minHeight: "120px", maxHeight: "120px" }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/20 via-sky-600/10 to-transparent pointer-events-none"></div>
+        {/* Glow ambient background circles */}
+        <div className="absolute -top-24 -left-24 w-72 h-72 bg-blue-500/10 dark:bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-cyan-500/10 dark:bg-cyan-600/10 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Ambient Neon Glow */}
-        <div
-          className={`absolute -top-12 -right-12 w-64 h-64 rounded-full blur-3xl pointer-events-none ${
-            isDark ? "bg-[#1677FF]/20" : "bg-[#1677FF]/15"
-          }`}
-        ></div>
-
-        <div className="relative z-10 px-6 py-5 flex-1 flex flex-col justify-center">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white shadow-md bg-gradient-to-br from-[#1677FF] to-[#00E5FF]">
-              <span className="material-symbols-outlined text-[22px]">view_in_ar</span>
+        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-5 w-full h-full">
+          {/* Kiri: Icon Box + Teks */}
+          <div className="flex items-center gap-3.5 sm:gap-4 shrink-0">
+            {/* Icon Box — ukuran dan style identik dengan halaman Kelola User & Audit Log */}
+            <div
+              className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0 border ${
+                isDark
+                  ? "bg-gradient-to-br from-[#1677FF]/40 to-[#0A2540] border-[#38BDF8]/40 shadow-[0_0_24px_rgba(22,119,255,0.45)] text-[#38BDF8]"
+                  : "bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 shadow-sm text-blue-600"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[26px] sm:text-[30px]">
+                view_in_ar
+              </span>
             </div>
+
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className={`text-xl font-bold tracking-tight ${isDark ? "text-[#E6EDF7]" : "text-slate-900"}`}>
-                  AR Scan & Panduan Slot Perangkat
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1
+                  className={`text-xl sm:text-2xl font-bold tracking-tight !m-0 ${
+                    isDark ? "text-white" : "text-slate-900"
+                  }`}
+                >
+                  AR Scan Perangkat
                 </h1>
                 <span
                   className={`px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase border ${
@@ -380,25 +403,60 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                   FR-12 Phase 2
                 </span>
               </div>
-              <p className={`text-xs mt-1 ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
-                Digital Twin & Augmented Guide: Pindai QR code rak, inspeksi sub-rack perangkat, dan temukan slot kosong secara instan.
+              <p
+                className={`text-xs font-normal mt-0.5 leading-relaxed !m-0 ${
+                  isDark ? "text-[#94A3B8]" : "text-slate-500"
+                }`}
+              >
+                Digital Twin & Augmented Guide: pindai QR rak, inspeksi slot kosong secara instan.
               </p>
             </div>
           </div>
-        </div>
 
-        {/* Quick Stats Telemetry */}
-        <div className="hidden lg:flex items-center gap-4 px-6 border-l border-[#1A2E4C]/40">
-          <div className="flex items-center gap-2 text-xs">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#10B981]"></span>
-            <span className={isDark ? "text-[#CBD5E1]" : "text-slate-700"}>AR Telemetry Aktif</span>
+          {/* Tengah: Icon besar AR sebagai ilustrasi banner — mengikuti pola halaman lain */}
+          <div className="hidden md:flex items-center justify-center flex-1 px-2 select-none pointer-events-none h-full overflow-hidden">
+            <div
+              className={`relative flex items-center justify-center h-[108px] lg:h-[114px] w-auto`}
+              style={{ filter: isDark ? "drop-shadow(0 0 28px rgba(0,229,255,0.45))" : "drop-shadow(0 8px 20px rgba(22,119,255,0.2))" }}
+            >
+              {/* Cincin dekorasi luar */}
+              <div
+                className={`absolute w-[90px] h-[90px] rounded-full border-2 ${
+                  isDark ? "border-[#00E5FF]/20" : "border-blue-200/60"
+                } animate-spin`}
+                style={{ animationDuration: "12s" }}
+              />
+              <div
+                className={`absolute w-[68px] h-[68px] rounded-full border ${
+                  isDark ? "border-[#1677FF]/40" : "border-blue-300/50"
+                } animate-spin`}
+                style={{ animationDuration: "8s", animationDirection: "reverse" }}
+              />
+              {/* Icon AR utama */}
+              <span
+                className={`material-symbols-outlined ${
+                  isDark ? "text-[#38BDF8]" : "text-blue-500"
+                }`}
+                style={{ fontSize: "52px" }}
+              >
+                view_in_ar
+              </span>
+            </div>
           </div>
-          <div
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold border ${
-              isDark ? "bg-[#0D1F36] border-[#1E3A5F] text-[#38BDF8]" : "bg-slate-100 border-slate-200 text-slate-800"
-            }`}
-          >
-            {devicesList.length} Perangkat Terdaftar
+
+          {/* Kanan: Status telemetry */}
+          <div className="hidden lg:flex shrink-0 items-center gap-3">
+            <div className="flex items-center gap-2 text-xs">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#10B981] animate-pulse" />
+              <span className={isDark ? "text-[#CBD5E1]" : "text-slate-700"}>AR Telemetry Aktif</span>
+            </div>
+            <div
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border ${
+                isDark ? "bg-[#0D1F36] border-[#1E3A5F] text-[#38BDF8]" : "bg-slate-100 border-slate-200 text-slate-800"
+              }`}
+            >
+              {devicesList.length} Perangkat
+            </div>
           </div>
         </div>
       </div>
