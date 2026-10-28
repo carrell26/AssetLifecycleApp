@@ -59,8 +59,15 @@
     }
 
     @keyframes modalFadeIn {
-        from { opacity: 0; transform: translateY(12px) scale(0.98); }
-        to { opacity: 1; transform: translateY(0) scale(1); }
+        from {
+            opacity: 0;
+            transform: translateY(12px) scale(0.98);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
     }
 
     .ar-modal__header {
@@ -318,9 +325,18 @@
         border-radius: 50%;
     }
 
-    .legend-dot--empty { background: #2c6e49; }
-    .legend-dot--occupied { background: #c0392b; }
-    .legend-dot--highlight { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
+    .legend-dot--empty {
+        background: #2c6e49;
+    }
+
+    .legend-dot--occupied {
+        background: #c0392b;
+    }
+
+    .legend-dot--highlight {
+        background: #f59e0b;
+        box-shadow: 0 0 6px #f59e0b;
+    }
 
     .slot-grid {
         display: grid;
@@ -371,9 +387,17 @@
     }
 
     @keyframes slotPulse {
-        0% { box-shadow: 0 0 8px rgba(245, 158, 11, 0.6); }
-        50% { box-shadow: 0 0 22px rgba(245, 158, 11, 0.95); }
-        100% { box-shadow: 0 0 8px rgba(245, 158, 11, 0.6); }
+        0% {
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+        }
+
+        50% {
+            box-shadow: 0 0 22px rgba(245, 158, 11, 0.95);
+        }
+
+        100% {
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+        }
     }
 
     .slot-card__num {
@@ -449,7 +473,8 @@
         </p>
 
         <div style="margin-top: 16px; font-size: 0.85rem; color: #64748b;">
-            <a href="{{ url_for('ar.index') }}" style="color: var(--accent); text-decoration: none;">&larr; Kembali ke daftar perangkat</a>
+            <a href="{{ url_for('ar.index') }}" style="color: var(--accent); text-decoration: none;">&larr; Kembali ke
+                daftar perangkat</a>
         </div>
     </div>
 </div>
@@ -488,14 +513,8 @@
             <!-- Search Input Box -->
             <form id="arSearchForm" onsubmit="handleSearch(event)">
                 <div class="search-input-group">
-                    <input 
-                        type="text" 
-                        id="searchInput" 
-                        class="search-input" 
-                        placeholder="Masukkan Serial Number modul..." 
-                        autocomplete="off"
-                        required
-                    />
+                    <input type="text" id="searchInput" class="search-input"
+                        placeholder="Masukkan Serial Number modul..." autocomplete="off" required />
                     <button type="submit" class="search-btn" id="btnSubmitSearch">
                         <span id="searchBtnIcon">🔍</span>
                         <span id="searchBtnText">Cari</span>

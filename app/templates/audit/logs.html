@@ -89,15 +89,16 @@
   }
 </style>
 
-<div class="space-y-6 !mt-0" style="margin-top: 0 !important;">
+<div class="space-y-6 !mt-0 w-full" id="auditPageContainer" style="margin-top: 0 !important;">
 
   <!-- ========================================================
        1. HERO / BANNER AUDIT LOG & HASH CHAIN
-       Menggunakan Ikon HD Vector Transparan Tanpa Background Box
+       Locked to 120px matching Kelola User & Dashboard standards
+       (Efek Animasi Pergerakan Konten Saat Popup Muncul/Hilang)
        ======================================================== -->
   <div
-    class="relative overflow-hidden rounded-2xl border border-slate-200 dark:border-[#1E3A5F] bg-white dark:bg-[#0A182B] p-5 sm:p-6 shadow-sm dark:shadow-2xl transition-all !mt-0"
-    style="margin-top: 0 !important;">
+    class="relative overflow-hidden rounded-2xl border border-slate-200 dark:border-[#1E3A5F] bg-white dark:bg-[#0A182B] px-5 sm:px-6 h-[120px] min-h-[120px] max-h-[120px] flex items-center justify-between transition-all duration-300 shadow-sm dark:shadow-2xl w-full"
+    style="height: 120px !important; min-height: 120px !important; max-height: 120px !important;">
     <!-- Ambient glow background effects -->
     <div
       class="absolute -top-24 -left-24 w-72 h-72 bg-blue-500/10 dark:bg-blue-600/15 rounded-full blur-3xl pointer-events-none">
@@ -106,39 +107,38 @@
       class="absolute -bottom-24 -right-24 w-72 h-72 bg-cyan-500/10 dark:bg-cyan-600/10 rounded-full blur-3xl pointer-events-none">
     </div>
 
-    <div class="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 sm:gap-5 w-full">
-      <!-- Left: Glowing Verified Icon & Text (Kembali ke tampilan awal sebelum revisi terakhir) -->
-      <div class="flex items-center gap-4 sm:gap-5 shrink-0 max-w-xl">
-        <!-- Squircle Icon Container -->
+    <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-5 w-full">
+      <!-- Left: Glowing Verified Icon & Text -->
+      <div class="flex items-center gap-3.5 sm:gap-4 shrink-0">
+        <!-- Squircle Icon Container persis Kelola User -->
         <div
-          class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-[#1677FF]/40 dark:to-[#0A2540] border border-blue-200 dark:border-[#38BDF8]/40 shadow-sm dark:shadow-[0_0_24px_rgba(22,119,255,0.45)] flex items-center justify-center shrink-0">
+          class="relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-[#1677FF]/40 dark:to-[#0A2540] border border-blue-200 dark:border-[#38BDF8]/40 shadow-sm dark:shadow-[0_0_24px_rgba(22,119,255,0.45)] flex items-center justify-center shrink-0">
           <span
-            class="material-symbols-outlined text-[30px] sm:text-[34px] text-blue-600 dark:text-[#38BDF8]">verified_user</span>
+            class="material-symbols-outlined text-[26px] sm:text-[30px] text-blue-600 dark:text-[#38BDF8]">verified_user</span>
         </div>
 
         <div>
           <h1
-            class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2 !m-0">
+            class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2 !m-0">
             Audit Log &amp; Hash Chain
           </h1>
-          <p class="text-xs text-slate-500 dark:text-[#94A3B8] mt-1 font-normal leading-relaxed !m-0">
-            Ini adalah ledger sistem — satu-satunya sumber kebenaran riwayat perubahan data dicatat sebagai rantai hash
-            SHA-256 (append-only, tidak pernah diubah).
+          <p class="text-xs text-slate-500 dark:text-[#94A3B8] mt-0.5 font-normal leading-relaxed !m-0 whitespace-nowrap">
+            Ledger sistem riwayat perubahan data dengan verifikasi rantai hash SHA-256.
           </p>
         </div>
       </div>
 
-      <!-- Center: 3D Isometric Nodes Graphic (Di tengah di antara h2 dan button verifikasi) -->
-      <div class="hidden xl:flex items-center justify-center flex-1 px-4 select-none">
-        <img src="{{ url_for('static', filename='img/audit_banner_graphic.svg') }}"
+      <!-- Tengah: Ilustrasi Vector SVG Banner Audit Log (Kloning 100% Teknik Kelola User) -->
+      <div class="hidden md:flex items-center justify-center flex-1 px-2 select-none pointer-events-none h-full overflow-hidden">
+        <img src="{{ url_for('static', filename='img/audit_banner_graphic.svg') }}?v=6.0"
           alt="Audit Hash Chain Ledger Nodes HD"
-          class="h-16 w-auto object-contain drop-shadow-md dark:drop-shadow-[0_0_20px_rgba(56,189,248,0.35)] pointer-events-none">
+          class="h-[108px] lg:h-[114px] w-auto max-h-[114px] object-contain drop-shadow-[0_8px_20px_rgba(22,119,255,0.25)] dark:drop-shadow-[0_0_28px_rgba(56,189,248,0.5)] transition-all duration-300 pointer-events-none select-none">
       </div>
 
       <!-- Right: Button Verifikasi Integritas (Direct Action) -->
-      <div class="shrink-0 w-full sm:w-[230px] flex justify-end">
+      <div class="shrink-0 w-full sm:w-auto flex justify-end">
         <button type="button" id="verifyIntegrityBtn"
-          class="w-full sm:w-[230px] flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl bg-[#1677FF] hover:bg-blue-600 active:scale-95 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-[#1677FF]/25 hover:shadow-[#1677FF]/40 transition-all duration-150 cursor-pointer !m-0">
+          class="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-[#1677FF] hover:bg-blue-600 active:scale-95 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-[#1677FF]/25 hover:shadow-[#1677FF]/40 transition-all duration-150 cursor-pointer !m-0 whitespace-nowrap">
           <span class="material-symbols-outlined text-[19px]">verified_user</span>
           <span>Verifikasi Integritas</span>
           <span class="material-symbols-outlined text-[18px]">chevron_right</span>
@@ -152,7 +152,7 @@
        Style Menu Dropdown Konsisten dengan Box Card Halaman Perangkat
        ======================================================== -->
   <div
-    class="rounded-2xl border border-slate-200 dark:border-[#162F52] bg-white dark:bg-[#0A182B] shadow-sm dark:shadow-2xl overflow-visible">
+    class="rounded-2xl border border-slate-200 dark:border-[#162F52] bg-white dark:bg-[#0A182B] shadow-sm dark:shadow-2xl overflow-visible w-full">
     <!-- Toolbar: Search Bar & Dropdown Filters -->
     <div
       class="p-4 sm:p-5 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 sm:gap-4 border-b border-slate-100 dark:border-[#142D4C]">
@@ -1151,7 +1151,7 @@
       const isDark = document.documentElement.classList.contains("dark");
       const toast = document.createElement("div");
       toast.id = "audit-verify-toast";
-      toast.className = `fixed top-20 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl backdrop-blur-md transition-all duration-300 ${type === "success"
+      toast.className = `fixed top-20 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl backdrop-blur-md transition-all duration-300 animate-slideIn ${type === "success"
         ? isDark
           ? "bg-[#06241E] border-emerald-500/50 text-emerald-300 shadow-emerald-950/40"
           : "bg-emerald-50 border-emerald-400 text-emerald-700 shadow-lg"
@@ -1164,19 +1164,22 @@
           ${type === 'success' ? 'check_circle' : 'error'}
         </span>
         <span class="text-xs font-semibold">${message}</span>
-        <button type="button" onclick="this.parentElement.remove()" class="!bg-transparent hover:!bg-transparent !p-0 !m-0 !border-none !shadow-none !outline-none ml-2 hover:opacity-75 cursor-pointer text-xs" style="background: transparent !important; background-color: transparent !important; box-shadow: none !important; border: none !important; outline: none !important; margin: 0 !important; padding: 0 !important;" title="Tutup">
+        <button type="button" onclick="this.parentElement.remove()" class="ml-2 hover:opacity-75 cursor-pointer text-xs" title="Tutup">
           ✕
         </button>
       `;
-      document.body.appendChild(toast);
 
-      // Auto dismiss setelah 3.5 detik dengan transisi halus
+      const pageContainer = document.getElementById("auditPageContainer");
+      if (pageContainer) {
+        pageContainer.insertBefore(toast, pageContainer.firstChild);
+      } else {
+        document.body.appendChild(toast);
+      }
+
+      // Auto dismiss setelah 4.5 detik
       toastTimeout = setTimeout(() => {
-        toast.style.transition = "opacity 0.4s ease, transform 0.4s ease";
-        toast.style.opacity = "0";
-        toast.style.transform = "translateY(-10px)";
-        setTimeout(() => toast.remove(), 400);
-      }, 3500);
+        toast.remove();
+      }, 4500);
     }
 
   // ========================================================

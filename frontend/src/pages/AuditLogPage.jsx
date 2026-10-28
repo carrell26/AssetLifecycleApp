@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useTheme } from "../context/ThemeContext";
 import TableSortHeader from "../components/TableSortHeader";
 import ModalPortal from "../components/ModalPortal";
+import auditBannerGraphic from "../assets/audit_banner_graphic.svg";
 
 export default function AuditLogPage({ user, searchValue, onSearchChange }) {
   const { isDark } = useTheme();
@@ -308,11 +309,11 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
   };
 
   return (
-    <div className="space-y-6 !mt-0" style={{ marginTop: 0 }}>
-      {/* ── TOAST NOTIFICATION VERIFIKASI (STYLE IDENTIK HALAMAN IMPORT DATA) ── */}
+    <div className="space-y-6 !mt-0 w-full" style={{ marginTop: 0 }}>
+      {/* ── TOAST NOTIFICATION VERIFIKASI (STYLE & ANIMASI IDENTIK HALAMAN IMPORT DATA) ── */}
       {verifyToast && (
         <div
-          className={`fixed top-20 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl backdrop-blur-md transition-all duration-300 ${verifyToast.type === "success"
+          className={`fixed top-20 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl backdrop-blur-md transition-all duration-300 animate-slideIn ${verifyToast.type === "success"
             ? isDark
               ? "bg-[#06241E] border-emerald-500/50 text-emerald-300 shadow-emerald-950/40"
               : "bg-emerald-50 border-emerald-400 text-emerald-700 shadow-lg"
@@ -328,8 +329,7 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
           <button
             type="button"
             onClick={() => setVerifyToast(null)}
-            className="!bg-transparent hover:!bg-transparent !p-0 !m-0 !border-none !shadow-none !outline-none ml-2 hover:opacity-75 cursor-pointer text-xs"
-            style={{ background: "transparent", backgroundColor: "transparent", boxShadow: "none", border: "none", outline: "none", margin: 0, padding: 0 }}
+            className="ml-2 hover:opacity-75 cursor-pointer text-xs"
             title="Tutup notifikasi"
           >
             ✕
@@ -339,68 +339,68 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
 
       {/* ========================================================
            1. HERO / BANNER AUDIT LOG & HASH CHAIN
-           High-Definition Vector Graphic (No Background Box)
+           Locked to 120px matching Kelola User & Dashboard standards
+           (Efek Animasi Pergerakan Konten Saat Popup Muncul/Hilang)
            ======================================================== */}
       <div
-        className={`relative overflow-hidden rounded-2xl border p-5 sm:p-6 transition-all duration-300 !mt-0 ${isDark
+        className={`relative overflow-hidden rounded-2xl border px-5 sm:px-6 h-[120px] min-h-[120px] max-h-[120px] flex items-center justify-between transition-all duration-300 shadow-sm w-full ${isDark
           ? "border-[#1E3A5F] bg-[#0A182B] shadow-2xl"
           : "border-slate-200 bg-white shadow-sm"
           }`}
-        style={{ marginTop: 0 }}
+        style={{ height: "120px", minHeight: "120px", maxHeight: "120px" }}
       >
         {/* Glow ambient background circles */}
         <div className="absolute -top-24 -left-24 w-72 h-72 bg-blue-500/10 dark:bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-cyan-500/10 dark:bg-cyan-600/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 sm:gap-5 w-full">
+        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-5 w-full">
           {/* Left: Verified Icon & Header Text */}
-          <div className="flex items-center gap-4 sm:gap-5 shrink-0 max-w-xl">
+          <div className="flex items-center gap-3.5 sm:gap-4 shrink-0">
             <div
-              className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shrink-0 border ${isDark
+              className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0 border ${isDark
                 ? "bg-gradient-to-br from-[#1677FF]/40 to-[#0A2540] border-[#38BDF8]/40 shadow-[0_0_24px_rgba(22,119,255,0.45)] text-[#38BDF8]"
                 : "bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 shadow-sm text-blue-600"
                 }`}
             >
-              <span className="material-symbols-outlined text-[30px] sm:text-[34px]">
+              <span className="material-symbols-outlined text-[26px] sm:text-[30px]">
                 verified_user
               </span>
             </div>
 
             <div>
               <h1
-                className={`text-2xl font-bold tracking-tight flex items-center gap-2 !m-0 ${isDark ? "text-white" : "text-slate-900"
+                className={`text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2 !m-0 ${isDark ? "text-white" : "text-slate-900"
                   }`}
               >
                 Audit Log &amp; Hash Chain
               </h1>
               <p
-                className={`text-xs font-normal mt-1 leading-relaxed !m-0 ${isDark ? "text-[#94A3B8]" : "text-slate-500"
+                className={`text-xs font-normal mt-0.5 leading-relaxed !m-0 whitespace-nowrap ${isDark ? "text-[#94A3B8]" : "text-slate-500"
                   }`}
               >
-                Ini adalah ledger sistem — satu-satunya sumber kebenaran riwayat perubahan data
-                dicatat sebagai rantai hash SHA-256 (append-only, tidak pernah diubah).
+                Ledger sistem riwayat perubahan data dengan verifikasi rantai hash SHA-256.
               </p>
             </div>
           </div>
 
-          {/* Center: High-Definition Vector SVG Graphic (Di tengah di antara h2 dan button) */}
-          <div className="hidden xl:flex items-center justify-center flex-1 px-4 select-none">
+          {/* Tengah: Ilustrasi Vector SVG Banner Audit Log (Kloning 100% Teknik Kelola User) */}
+          <div className="hidden md:flex items-center justify-center flex-1 px-2 select-none pointer-events-none h-full overflow-hidden">
             <img
-              src="/static/img/audit_banner_graphic.svg"
+              src={auditBannerGraphic}
               alt="Audit Hash Chain Ledger Nodes HD"
-              className="h-16 w-auto object-contain drop-shadow-md dark:drop-shadow-[0_0_20px_rgba(56,189,248,0.35)] pointer-events-none"
+              className="h-[108px] lg:h-[114px] w-auto max-h-[114px] object-contain drop-shadow-[0_8px_20px_rgba(22,119,255,0.25)] dark:drop-shadow-[0_0_28px_rgba(56,189,248,0.5)] transition-all duration-300 pointer-events-none select-none"
             />
           </div>
 
           {/* Right: Button Verifikasi Integritas (Direct Action) */}
-          <div className="shrink-0 w-full sm:w-[230px] flex justify-end">
+          <div className="shrink-0 w-full sm:w-auto flex justify-end">
             <button
               type="button"
               id="verifyIntegrityBtn"
               data-testid="btn-verifikasi-integritas"
               onClick={handleExecuteVerify}
               disabled={verifying}
-              className="w-full sm:w-[230px] flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl bg-[#1677FF] hover:bg-blue-600 active:scale-95 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-[#1677FF]/25 hover:shadow-[#1677FF]/40 transition-all duration-150 cursor-pointer disabled:opacity-60 !m-0"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-[#1677FF] hover:bg-blue-600 active:scale-95 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-[#1677FF]/25 hover:shadow-[#1677FF]/40 transition-all duration-150 cursor-pointer disabled:opacity-60 !m-0 whitespace-nowrap"
             >
               {verifying ? (
                 <>
@@ -424,7 +424,7 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
            Consistent Box Card Dropdown Styles (Like Devices Page)
            ======================================================== */}
       <div
-        className={`rounded-2xl border transition-all duration-300 overflow-visible ${isDark
+        className={`rounded-2xl border transition-all duration-300 overflow-visible w-full ${isDark
           ? "border-[#162F52] bg-[#0A182B] shadow-2xl"
           : "border-slate-200 bg-white shadow-sm"
           }`}

@@ -228,15 +228,14 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 !mt-0 w-full" style={{ marginTop: 0 }}>
       {/* Toast Alert Notification */}
       {toast && (
         <div
-          className={`fixed bottom-6 right-6 z-50 px-5 py-3.5 rounded-xl border shadow-2xl flex items-center gap-3 transition-all animate-bounce ${
-            toast.type === "success"
-              ? "bg-[#06241E] border-emerald-500/50 text-emerald-300 shadow-emerald-950/40"
-              : "bg-[#2A0E12] border-rose-500/50 text-rose-300 shadow-rose-950/40"
-          }`}
+          className={`fixed bottom-6 right-6 z-50 px-5 py-3.5 rounded-xl border shadow-2xl flex items-center gap-3 transition-all animate-bounce ${toast.type === "success"
+            ? "bg-[#06241E] border-emerald-500/50 text-emerald-300 shadow-emerald-950/40"
+            : "bg-[#2A0E12] border-rose-500/50 text-rose-300 shadow-rose-950/40"
+            }`}
         >
           <span className="material-symbols-outlined text-[20px]">
             {toast.type === "success" ? "check_circle" : "error"}
@@ -248,14 +247,13 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
       {/* ============================================================ */}
       {/* 1. DUA KARTU STATISTIK (Sesuai Referensi Screenshot)          */}
       {/* ============================================================ */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full">
         {/* KPI 1: TOTAL PERANGKAT */}
         <div
-          className={`relative overflow-hidden rounded-2xl border transition-all duration-300 ease-in-out p-6 flex items-center justify-between group cursor-pointer hover:-translate-y-1 ${
-            isDark
-              ? "bg-[#0D1F36] border-[#1A3358] hover:border-[#1677FF] hover:shadow-[0_10px_30px_rgba(22,119,255,0.22)]"
-              : "bg-white border-slate-200 shadow-sm hover:border-blue-400 hover:shadow-md"
-          }`}
+          className={`relative overflow-hidden rounded-2xl border transition-all duration-300 ease-in-out p-6 flex items-center justify-between group cursor-pointer hover:-translate-y-1 ${isDark
+            ? "bg-[#0D1F36] border-[#1A3358] hover:border-[#1677FF] hover:shadow-[0_10px_30px_rgba(22,119,255,0.22)]"
+            : "bg-white border-slate-200 shadow-sm hover:border-blue-400 hover:shadow-md"
+            }`}
         >
           <div className="flex flex-col justify-between h-full z-10">
             {/* Header: Cyan dot indicator */}
@@ -283,11 +281,10 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
           </div>
 
           {/* Right Icon / 3D Illustration Container with Neon Glow */}
-          <div className={`relative shrink-0 w-24 h-24 rounded-2xl overflow-hidden p-1 group-hover:scale-105 transition-all duration-300 flex items-center justify-center ${
-            isDark
-              ? "bg-[#071527] border border-[#00E5FF]/40 shadow-[0_0_18px_rgba(0,229,255,0.22)] group-hover:border-[#00E5FF]/80"
-              : "bg-blue-50/80 border border-blue-200 shadow-sm group-hover:border-blue-400"
-          }`}>
+          <div className={`relative shrink-0 w-24 h-24 rounded-2xl overflow-hidden p-1 group-hover:scale-105 transition-all duration-300 flex items-center justify-center ${isDark
+            ? "bg-[#071527] border border-[#00E5FF]/40 shadow-[0_0_18px_rgba(0,229,255,0.22)] group-hover:border-[#00E5FF]/80"
+            : "bg-blue-50/80 border border-blue-200 shadow-sm group-hover:border-blue-400"
+            }`}>
             <img
               src={statDevice}
               alt="Total Perangkat 3D"
@@ -299,11 +296,10 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
 
         {/* KPI 2: TOTAL LOKASI */}
         <div
-          className={`relative overflow-hidden rounded-2xl border transition-all duration-300 ease-in-out p-6 flex items-center justify-between group cursor-pointer hover:-translate-y-1 ${
-            isDark
-              ? "bg-[#0D1F36] border-[#1A3358] hover:border-[#10B981] hover:shadow-[0_10px_30px_rgba(16,185,129,0.22)]"
-              : "bg-white border-slate-200 shadow-sm hover:border-emerald-400 hover:shadow-md"
-          }`}
+          className={`relative overflow-hidden rounded-2xl border transition-all duration-300 ease-in-out p-6 flex items-center justify-between group cursor-pointer hover:-translate-y-1 ${isDark
+            ? "bg-[#0D1F36] border-[#1A3358] hover:border-[#10B981] hover:shadow-[0_10px_30px_rgba(16,185,129,0.22)]"
+            : "bg-white border-slate-200 shadow-sm hover:border-emerald-400 hover:shadow-md"
+            }`}
         >
           <div className="flex flex-col justify-between h-full z-10">
             {/* Header: Green dot indicator */}
@@ -331,11 +327,10 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
           </div>
 
           {/* Right Icon / 3D Illustration Container with Neon Glow */}
-          <div className={`relative shrink-0 w-24 h-24 rounded-2xl overflow-hidden p-1 group-hover:scale-105 transition-all duration-300 flex items-center justify-center ${
-            isDark
-              ? "bg-[#061814] border border-[#10B981]/40 shadow-[0_0_18px_rgba(16,185,129,0.22)] group-hover:border-[#10B981]/80"
-              : "bg-emerald-50/80 border border-emerald-200 shadow-sm group-hover:border-emerald-400"
-          }`}>
+          <div className={`relative shrink-0 w-24 h-24 rounded-2xl overflow-hidden p-1 group-hover:scale-105 transition-all duration-300 flex items-center justify-center ${isDark
+            ? "bg-[#061814] border border-[#10B981]/40 shadow-[0_0_18px_rgba(16,185,129,0.22)] group-hover:border-[#10B981]/80"
+            : "bg-emerald-50/80 border border-emerald-200 shadow-sm group-hover:border-emerald-400"
+            }`}>
             <img
               src={statLocation}
               alt="Total Lokasi 3D"
@@ -350,11 +345,10 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
       {/* 2. PANEL TABEL PERANGKAT DENGAN KONTROL FILTER & SEARCH      */}
       {/* ============================================================ */}
       <div
-        className={`rounded-2xl border p-5 sm:p-6 transition-all duration-300 ${
-          isDark
-            ? "bg-[#0D1F36] border-[#1A3358] shadow-[0_8px_24px_rgba(0,0,0,0.35)]"
-            : "bg-white border-slate-200 shadow-md"
-        }`}
+        className={`rounded-2xl border p-5 sm:p-6 transition-all duration-300 ${isDark
+          ? "bg-[#0D1F36] border-[#1A3358] shadow-[0_8px_24px_rgba(0,0,0,0.35)]"
+          : "bg-white border-slate-200 shadow-md"
+          }`}
       >
         {/* Controls Row: Dropdown Lokasi, Dropdown Tipe, & Tambah Perangkat */}
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 pb-4">
@@ -366,11 +360,10 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
               <button
                 type="button"
                 onClick={() => setLocationDropdownOpen(!locationDropdownOpen)}
-                className={`relative w-full h-11 px-4 rounded-xl border flex items-center justify-between text-xs font-medium transition-all cursor-pointer ${
-                  isDark
-                    ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
-                    : "bg-slate-50 border-slate-300 text-slate-800 hover:border-blue-500"
-                }`}
+                className={`relative w-full h-11 px-4 rounded-xl border flex items-center justify-between text-xs font-medium transition-all cursor-pointer ${isDark
+                  ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
+                  : "bg-slate-50 border-slate-300 text-slate-800 hover:border-blue-500"
+                  }`}
               >
                 <div className="flex items-center gap-2 truncate pr-2">
                   <span className="material-symbols-outlined text-[18px] text-[#38BDF8] shrink-0">
@@ -379,15 +372,14 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
                   <span className="truncate font-semibold">
                     {selectedLocation
                       ? filterOptions.locations.find(
-                          (l) => String(l.id) === String(selectedLocation)
-                        )?.nama || "Lokasi Terpilih"
+                        (l) => String(l.id) === String(selectedLocation)
+                      )?.nama || "Lokasi Terpilih"
                       : "Semua lokasi"}
                   </span>
                 </div>
                 <span
-                  className={`material-symbols-outlined text-[18px] text-[#94A3B8] transition-transform duration-200 shrink-0 ${
-                    locationDropdownOpen ? "rotate-180" : ""
-                  }`}
+                  className={`material-symbols-outlined text-[18px] text-[#94A3B8] transition-transform duration-200 shrink-0 ${locationDropdownOpen ? "rotate-180" : ""
+                    }`}
                 >
                   expand_more
                 </span>
@@ -396,11 +388,10 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
               {/* Menu Dropdown Lokasi */}
               {locationDropdownOpen && (
                 <div
-                  className={`absolute left-0 top-12 mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-30 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-md ${
-                    isDark
-                      ? "bg-[#0A182B]/95 border-[#1E3A5F] text-[#E6EDF7]"
-                      : "bg-white border-slate-200 text-slate-800"
-                  }`}
+                  className={`absolute left-0 top-12 mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-30 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-md ${isDark
+                    ? "bg-[#0A182B]/95 border-[#1E3A5F] text-[#E6EDF7]"
+                    : "bg-white border-slate-200 text-slate-800"
+                    }`}
                 >
                   <button
                     type="button"
@@ -408,15 +399,14 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
                       setSelectedLocation("");
                       setLocationDropdownOpen(false);
                     }}
-                    className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
-                      selectedLocation === ""
-                        ? isDark
-                          ? "bg-[#1677FF] text-white"
-                          : "bg-blue-600 text-white"
-                        : isDark
+                    className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${selectedLocation === ""
+                      ? isDark
+                        ? "bg-[#1677FF] text-white"
+                        : "bg-blue-600 text-white"
+                      : isDark
                         ? "hover:bg-[#122846] text-[#CBD5E1]"
                         : "hover:bg-slate-100 text-slate-700"
-                    }`}
+                      }`}
                   >
                     <span>Semua lokasi</span>
                     {selectedLocation === "" && (
@@ -438,15 +428,14 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
                           setSelectedLocation(String(loc.id));
                           setLocationDropdownOpen(false);
                         }}
-                        className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
-                          isSelected
-                            ? isDark
-                              ? "bg-[#1677FF] text-white"
-                              : "bg-blue-600 text-white"
-                            : isDark
+                        className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${isSelected
+                          ? isDark
+                            ? "bg-[#1677FF] text-white"
+                            : "bg-blue-600 text-white"
+                          : isDark
                             ? "hover:bg-[#122846] text-[#CBD5E1]"
                             : "hover:bg-slate-100 text-slate-700"
-                        }`}
+                          }`}
                       >
                         <span className="truncate pr-2">{loc.nama}</span>
                         {isSelected && (
@@ -466,11 +455,10 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
               <button
                 type="button"
                 onClick={() => setTypeDropdownOpen(!typeDropdownOpen)}
-                className={`relative w-full h-11 px-4 rounded-xl border flex items-center justify-between text-xs font-medium transition-all cursor-pointer ${
-                  isDark
-                    ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
-                    : "bg-slate-50 border-slate-300 text-slate-800 hover:border-blue-500"
-                }`}
+                className={`relative w-full h-11 px-4 rounded-xl border flex items-center justify-between text-xs font-medium transition-all cursor-pointer ${isDark
+                  ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
+                  : "bg-slate-50 border-slate-300 text-slate-800 hover:border-blue-500"
+                  }`}
               >
                 <div className="flex items-center gap-2 truncate pr-2">
                   <span className="material-symbols-outlined text-[18px] text-[#38BDF8] shrink-0">
@@ -479,15 +467,14 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
                   <span className="truncate font-semibold">
                     {selectedType
                       ? filterOptions.types.find(
-                          (t) => String(t.id) === String(selectedType)
-                        )?.nama || "Tipe Terpilih"
+                        (t) => String(t.id) === String(selectedType)
+                      )?.nama || "Tipe Terpilih"
                       : "Semua tipe"}
                   </span>
                 </div>
                 <span
-                  className={`material-symbols-outlined text-[18px] text-[#94A3B8] transition-transform duration-200 shrink-0 ${
-                    typeDropdownOpen ? "rotate-180" : ""
-                  }`}
+                  className={`material-symbols-outlined text-[18px] text-[#94A3B8] transition-transform duration-200 shrink-0 ${typeDropdownOpen ? "rotate-180" : ""
+                    }`}
                 >
                   expand_more
                 </span>
@@ -496,11 +483,10 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
               {/* Menu Dropdown Tipe */}
               {typeDropdownOpen && (
                 <div
-                  className={`absolute left-0 top-12 mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-30 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-md ${
-                    isDark
-                      ? "bg-[#0A182B]/95 border-[#1E3A5F] text-[#E6EDF7]"
-                      : "bg-white border-slate-200 text-slate-800"
-                  }`}
+                  className={`absolute left-0 top-12 mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-30 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-md ${isDark
+                    ? "bg-[#0A182B]/95 border-[#1E3A5F] text-[#E6EDF7]"
+                    : "bg-white border-slate-200 text-slate-800"
+                    }`}
                 >
                   <button
                     type="button"
@@ -508,15 +494,14 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
                       setSelectedType("");
                       setTypeDropdownOpen(false);
                     }}
-                    className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
-                      selectedType === ""
-                        ? isDark
-                          ? "bg-[#1677FF] text-white"
-                          : "bg-blue-600 text-white"
-                        : isDark
+                    className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${selectedType === ""
+                      ? isDark
+                        ? "bg-[#1677FF] text-white"
+                        : "bg-blue-600 text-white"
+                      : isDark
                         ? "hover:bg-[#122846] text-[#CBD5E1]"
                         : "hover:bg-slate-100 text-slate-700"
-                    }`}
+                      }`}
                   >
                     <span>Semua tipe</span>
                     {selectedType === "" && (
@@ -538,15 +523,14 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
                           setSelectedType(String(tp.id));
                           setTypeDropdownOpen(false);
                         }}
-                        className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
-                          isSelected
-                            ? isDark
-                              ? "bg-[#1677FF] text-white"
-                              : "bg-blue-600 text-white"
-                            : isDark
+                        className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${isSelected
+                          ? isDark
+                            ? "bg-[#1677FF] text-white"
+                            : "bg-blue-600 text-white"
+                          : isDark
                             ? "hover:bg-[#122846] text-[#CBD5E1]"
                             : "hover:bg-slate-100 text-slate-700"
-                        }`}
+                          }`}
                       >
                         <span className="truncate pr-2">{tp.nama}</span>
                         {isSelected && (
@@ -636,9 +620,8 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
                 </th>
 
                 {/* 4. AKSI */}
-                <th className={`py-3.5 px-4 text-[11px] font-extrabold uppercase tracking-wider text-center ${
-                  isDark ? "text-[#38BDF8]" : "text-blue-600"
-                }`}>
+                <th className={`py-3.5 px-4 text-[11px] font-extrabold uppercase tracking-wider text-center ${isDark ? "text-[#38BDF8]" : "text-blue-600"
+                  }`}>
                   AKSI
                 </th>
               </tr>
@@ -675,29 +658,25 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
                 paginatedDevices.map((item) => (
                   <tr
                     key={item.id}
-                    className={`transition-colors group ${
-                      isDark
-                        ? "hover:bg-[#102444]/60"
-                        : "hover:bg-slate-50/80 even:bg-slate-50/40"
-                    }`}
+                    className={`transition-colors group ${isDark
+                      ? "hover:bg-[#102444]/60"
+                      : "hover:bg-slate-50/80 even:bg-slate-50/40"
+                      }`}
                   >
                     {/* 1. NAMA PERANGKAT */}
-                    <td className={`py-3.5 px-5 font-semibold whitespace-nowrap overflow-hidden text-ellipsis ${
-                      isDark ? "text-[#E6EDF7]" : "text-slate-800"
-                    }`}>
+                    <td className={`py-3.5 px-5 font-semibold whitespace-nowrap overflow-hidden text-ellipsis ${isDark ? "text-[#E6EDF7]" : "text-slate-800"
+                      }`}>
                       <div className="flex items-center gap-3">
-                        <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[13px] shrink-0 border ${
-                          isDark
-                            ? "bg-[#0D264A] text-[#38BDF8] border-[#164375]"
-                            : "bg-blue-50 text-blue-600 border-blue-200"
-                        }`}>
+                        <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[13px] shrink-0 border ${isDark
+                          ? "bg-[#0D264A] text-[#38BDF8] border-[#164375]"
+                          : "bg-blue-50 text-blue-600 border-blue-200"
+                          }`}>
                           <span className="material-symbols-outlined text-[15px]">
                             dns
                           </span>
                         </div>
-                        <span className={`font-bold tracking-wide truncate ${
-                          isDark ? "text-white" : "text-slate-900"
-                        }`}>
+                        <span className={`font-bold tracking-wide truncate ${isDark ? "text-white" : "text-slate-900"
+                          }`}>
                           {item.nama_perangkat}
                         </span>
                       </div>
@@ -705,20 +684,18 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
 
                     {/* 2. TIPE */}
                     <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                      <span className={`inline-block px-3 py-1 rounded-full text-[11px] font-semibold border ${
-                        isDark
-                          ? "bg-[#0C2548] border-[#1A4378] text-[#38BDF8]"
-                          : "bg-blue-50 border-blue-200 text-blue-700"
-                      }`}>
+                      <span className={`inline-block px-3 py-1 rounded-full text-[11px] font-semibold border ${isDark
+                        ? "bg-[#0C2548] border-[#1A4378] text-[#38BDF8]"
+                        : "bg-blue-50 border-blue-200 text-blue-700"
+                        }`}>
                         {item.tipe}
                       </span>
                     </td>
 
                     {/* 3. LOKASI */}
                     <td className="py-3.5 px-4 whitespace-nowrap text-center">
-                      <div className={`inline-flex items-center gap-1.5 font-bold uppercase ${
-                        isDark ? "text-[#CBD5E1]" : "text-slate-700"
-                      }`}>
+                      <div className={`inline-flex items-center gap-1.5 font-bold uppercase ${isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                        }`}>
                         <span className="material-symbols-outlined text-[16px] text-[#38BDF8]">
                           location_on
                         </span>
@@ -734,11 +711,10 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
                           type="button"
                           onClick={() => handleOpenDetail(item)}
                           title="Detail Perangkat & Modul Terpasang"
-                          className={`w-8 h-8 min-w-[32px] min-h-[32px] max-w-[32px] max-h-[32px] p-0 shrink-0 rounded-lg flex items-center justify-center border transition-colors cursor-pointer shadow-sm ${
-                            isDark
-                              ? "bg-[#07383E] hover:bg-[#0A4E57] text-[#00E5FF] border-[#0A545E]"
-                              : "bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border-cyan-200"
-                          }`}
+                          className={`w-8 h-8 min-w-[32px] min-h-[32px] max-w-[32px] max-h-[32px] p-0 shrink-0 rounded-lg flex items-center justify-center border transition-colors cursor-pointer shadow-sm ${isDark
+                            ? "bg-[#07383E] hover:bg-[#0A4E57] text-[#00E5FF] border-[#0A545E]"
+                            : "bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border-cyan-200"
+                            }`}
                         >
                           <span className="material-symbols-outlined text-[17px] leading-none select-none flex items-center justify-center pointer-events-none">
                             visibility
@@ -751,11 +727,10 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
                             type="button"
                             onClick={() => handleOpenEdit(item)}
                             title="Edit Perangkat"
-                            className={`w-8 h-8 min-w-[32px] min-h-[32px] max-w-[32px] max-h-[32px] p-0 shrink-0 rounded-lg flex items-center justify-center border transition-colors cursor-pointer shadow-sm ${
-                              isDark
-                                ? "bg-[#3D2C0D] hover:bg-[#523B11] text-[#FBBF24] border-[#5E4413]"
-                                : "bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200"
-                            }`}
+                            className={`w-8 h-8 min-w-[32px] min-h-[32px] max-w-[32px] max-h-[32px] p-0 shrink-0 rounded-lg flex items-center justify-center border transition-colors cursor-pointer shadow-sm ${isDark
+                              ? "bg-[#3D2C0D] hover:bg-[#523B11] text-[#FBBF24] border-[#5E4413]"
+                              : "bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200"
+                              }`}
                           >
                             <span className="material-symbols-outlined text-[17px] leading-none select-none flex items-center justify-center pointer-events-none">
                               edit
@@ -769,11 +744,10 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
                             type="button"
                             onClick={() => handleOpenDelete(item)}
                             title="Hapus Perangkat"
-                            className={`w-8 h-8 min-w-[32px] min-h-[32px] max-w-[32px] max-h-[32px] p-0 shrink-0 rounded-lg flex items-center justify-center border transition-colors cursor-pointer shadow-sm ${
-                              isDark
-                                ? "bg-[#3C1318] hover:bg-[#541B22] text-[#F43F5E] border-[#5C1D25]"
-                                : "bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200"
-                            }`}
+                            className={`w-8 h-8 min-w-[32px] min-h-[32px] max-w-[32px] max-h-[32px] p-0 shrink-0 rounded-lg flex items-center justify-center border transition-colors cursor-pointer shadow-sm ${isDark
+                              ? "bg-[#3C1318] hover:bg-[#541B22] text-[#F43F5E] border-[#5C1D25]"
+                              : "bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200"
+                              }`}
                           >
                             <span className="material-symbols-outlined text-[17px] leading-none select-none flex items-center justify-center pointer-events-none">
                               delete
@@ -903,11 +877,10 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
                 <div className="flex justify-between">
                   <span className="text-[#94A3B8]">Modul Aktif Terpasang:</span>
                   <span
-                    className={`font-semibold ${
-                      selectedForDelete.installed_modules_count > 0
-                        ? "text-rose-400"
-                        : "text-emerald-400"
-                    }`}
+                    className={`font-semibold ${selectedForDelete.installed_modules_count > 0
+                      ? "text-rose-400"
+                      : "text-emerald-400"
+                      }`}
                   >
                     {selectedForDelete.installed_modules_count} Modul
                   </span>
@@ -1039,130 +1012,130 @@ function CreateDeviceModal({ filterOptions, onClose, onSuccess }) {
           className="bg-[#0D1F36] border border-[#1E3A5F] rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-5 max-h-[92vh] overflow-y-auto custom-scrollbar"
           onClick={(e) => e.stopPropagation()}
         >
-        {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-[#1A2E4C]">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#1677FF]/15 border border-[#1677FF]/30 flex items-center justify-center text-[#38BDF8]">
-              <span className="material-symbols-outlined text-[22px]">
-                add_circle
-              </span>
+          {/* Header */}
+          <div className="flex items-center justify-between pb-3 border-b border-[#1A2E4C]">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#1677FF]/15 border border-[#1677FF]/30 flex items-center justify-center text-[#38BDF8]">
+                <span className="material-symbols-outlined text-[22px]">
+                  add_circle
+                </span>
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">
+                  Tambah Perangkat Baru
+                </h3>
+                <p className="text-xs text-[#94A3B8]">
+                  Daftarkan perangkat jaringan transmisi optik ke sistem
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-base font-bold text-white">
-                Tambah Perangkat Baru
-              </h3>
-              <p className="text-xs text-[#94A3B8]">
-                Daftarkan perangkat jaringan transmisi optik ke sistem
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-8 h-8 rounded-lg text-[#94A3B8] hover:text-white hover:bg-[#1A2E4C] flex items-center justify-center transition-colors cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-[20px]">close</span>
-          </button>
-        </div>
-
-        {error && (
-          <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2.5">
-            <span className="material-symbols-outlined text-[18px]">error</span>
-            <span>{error}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Nama Perangkat */}
-            <div className="md:col-span-2">
-              <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
-                Nama Perangkat *
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="Contoh: WN-24X-SUL-PAL11"
-                value={namaPerangkat}
-                onChange={(e) => setNamaPerangkat(e.target.value)}
-                className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white placeholder-[#64748B] focus:outline-none focus:border-[#1677FF]"
-              />
-            </div>
-
-            {/* Tipe Perangkat */}
-            <div>
-              <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
-                Tipe Perangkat *
-              </label>
-              <select
-                required
-                value={deviceTypeId}
-                onChange={(e) => setDeviceTypeId(e.target.value)}
-                className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white focus:outline-none focus:border-[#1677FF]"
-              >
-                {filterOptions.types.map((tp) => (
-                  <option key={tp.id} value={tp.id}>
-                    {tp.nama} {tp.vendor ? `(${tp.vendor})` : ""}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Lokasi STO */}
-            <div>
-              <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
-                Lokasi STO *
-              </label>
-              <select
-                required
-                value={locationId}
-                onChange={(e) => setLocationId(e.target.value)}
-                className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white focus:outline-none focus:border-[#1677FF]"
-              >
-                {filterOptions.locations.map((loc) => (
-                  <option key={loc.id} value={loc.id}>
-                    {loc.nama}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#1A2E4C]">
             <button
               type="button"
-              disabled={loading}
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl border border-[#1E3A5F] text-[#CBD5E1] hover:bg-[#122846] text-xs font-semibold transition-colors cursor-pointer"
+              className="w-8 h-8 rounded-lg text-[#94A3B8] hover:text-white hover:bg-[#1A2E4C] flex items-center justify-center transition-colors cursor-pointer"
             >
-              Batal
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-5 py-2.5 rounded-xl bg-[#1677FF] hover:bg-[#0E65D9] text-white text-xs font-semibold flex items-center gap-2 shadow-lg shadow-[#1677FF]/30 transition-all cursor-pointer disabled:opacity-50"
-            >
-              {loading ? (
-                <>
-                  <span className="material-symbols-outlined text-[16px] animate-spin">
-                    progress_activity
-                  </span>
-                  <span>Menyimpan...</span>
-                </>
-              ) : (
-                <>
-                  <span className="material-symbols-outlined text-[16px]">
-                    check
-                  </span>
-                  <span>Simpan Perangkat</span>
-                </>
-              )}
+              <span className="material-symbols-outlined text-[20px]">close</span>
             </button>
           </div>
-        </form>
+
+          {error && (
+            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2.5">
+              <span className="material-symbols-outlined text-[18px]">error</span>
+              <span>{error}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Nama Perangkat */}
+              <div className="md:col-span-2">
+                <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
+                  Nama Perangkat *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Contoh: WN-24X-SUL-PAL11"
+                  value={namaPerangkat}
+                  onChange={(e) => setNamaPerangkat(e.target.value)}
+                  className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white placeholder-[#64748B] focus:outline-none focus:border-[#1677FF]"
+                />
+              </div>
+
+              {/* Tipe Perangkat */}
+              <div>
+                <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
+                  Tipe Perangkat *
+                </label>
+                <select
+                  required
+                  value={deviceTypeId}
+                  onChange={(e) => setDeviceTypeId(e.target.value)}
+                  className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white focus:outline-none focus:border-[#1677FF]"
+                >
+                  {filterOptions.types.map((tp) => (
+                    <option key={tp.id} value={tp.id}>
+                      {tp.nama} {tp.vendor ? `(${tp.vendor})` : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Lokasi STO */}
+              <div>
+                <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
+                  Lokasi STO *
+                </label>
+                <select
+                  required
+                  value={locationId}
+                  onChange={(e) => setLocationId(e.target.value)}
+                  className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white focus:outline-none focus:border-[#1677FF]"
+                >
+                  {filterOptions.locations.map((loc) => (
+                    <option key={loc.id} value={loc.id}>
+                      {loc.nama}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#1A2E4C]">
+              <button
+                type="button"
+                disabled={loading}
+                onClick={onClose}
+                className="px-4 py-2.5 rounded-xl border border-[#1E3A5F] text-[#CBD5E1] hover:bg-[#122846] text-xs font-semibold transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-5 py-2.5 rounded-xl bg-[#1677FF] hover:bg-[#0E65D9] text-white text-xs font-semibold flex items-center gap-2 shadow-lg shadow-[#1677FF]/30 transition-all cursor-pointer disabled:opacity-50"
+              >
+                {loading ? (
+                  <>
+                    <span className="material-symbols-outlined text-[16px] animate-spin">
+                      progress_activity
+                    </span>
+                    <span>Menyimpan...</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-[16px]">
+                      check
+                    </span>
+                    <span>Simpan Perangkat</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
     </ModalPortal>
   );
 }
@@ -1227,127 +1200,127 @@ function EditDeviceModal({ deviceData, filterOptions, onClose, onSuccess }) {
           className="bg-[#0D1F36] border border-[#1E3A5F] rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-5 max-h-[92vh] overflow-y-auto custom-scrollbar"
           onClick={(e) => e.stopPropagation()}
         >
-        {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-[#1A2E4C]">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
-              <span className="material-symbols-outlined text-[22px]">
-                edit
-              </span>
+          {/* Header */}
+          <div className="flex items-center justify-between pb-3 border-b border-[#1A2E4C]">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                <span className="material-symbols-outlined text-[22px]">
+                  edit
+                </span>
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">
+                  Edit Data Perangkat
+                </h3>
+                <p className="text-xs text-[#94A3B8]">
+                  Perbarui konfigurasi atau status unit perangkat
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-base font-bold text-white">
-                Edit Data Perangkat
-              </h3>
-              <p className="text-xs text-[#94A3B8]">
-                Perbarui konfigurasi atau status unit perangkat
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-8 h-8 rounded-lg text-[#94A3B8] hover:text-white hover:bg-[#1A2E4C] flex items-center justify-center transition-colors cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-[20px]">close</span>
-          </button>
-        </div>
-
-        {error && (
-          <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2.5">
-            <span className="material-symbols-outlined text-[18px]">error</span>
-            <span>{error}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Nama Perangkat */}
-            <div className="md:col-span-2">
-              <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
-                Nama Perangkat *
-              </label>
-              <input
-                type="text"
-                required
-                value={namaPerangkat}
-                onChange={(e) => setNamaPerangkat(e.target.value)}
-                className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white focus:outline-none focus:border-[#1677FF]"
-              />
-            </div>
-
-            {/* Tipe Perangkat */}
-            <div>
-              <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
-                Tipe Perangkat
-              </label>
-              <select
-                value={deviceTypeId}
-                onChange={(e) => setDeviceTypeId(e.target.value)}
-                className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white focus:outline-none focus:border-[#1677FF]"
-              >
-                {filterOptions.types.map((tp) => (
-                  <option key={tp.id} value={tp.id}>
-                    {tp.nama}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Lokasi STO */}
-            <div>
-              <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
-                Lokasi STO
-              </label>
-              <select
-                value={locationId}
-                onChange={(e) => setLocationId(e.target.value)}
-                className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white focus:outline-none focus:border-[#1677FF]"
-              >
-                {filterOptions.locations.map((loc) => (
-                  <option key={loc.id} value={loc.id}>
-                    {loc.nama}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#1A2E4C]">
             <button
               type="button"
-              disabled={loading}
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl border border-[#1E3A5F] text-[#CBD5E1] hover:bg-[#122846] text-xs font-semibold transition-colors cursor-pointer"
+              className="w-8 h-8 rounded-lg text-[#94A3B8] hover:text-white hover:bg-[#1A2E4C] flex items-center justify-center transition-colors cursor-pointer"
             >
-              Batal
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-5 py-2.5 rounded-xl bg-[#1677FF] hover:bg-[#0E65D9] text-white text-xs font-semibold flex items-center gap-2 shadow-lg shadow-[#1677FF]/30 transition-all cursor-pointer disabled:opacity-50"
-            >
-              {loading ? (
-                <>
-                  <span className="material-symbols-outlined text-[16px] animate-spin">
-                    progress_activity
-                  </span>
-                  <span>Menyimpan...</span>
-                </>
-              ) : (
-                <>
-                  <span className="material-symbols-outlined text-[16px]">
-                    check
-                  </span>
-                  <span>Perbarui Perangkat</span>
-                </>
-              )}
+              <span className="material-symbols-outlined text-[20px]">close</span>
             </button>
           </div>
-        </form>
+
+          {error && (
+            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2.5">
+              <span className="material-symbols-outlined text-[18px]">error</span>
+              <span>{error}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Nama Perangkat */}
+              <div className="md:col-span-2">
+                <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
+                  Nama Perangkat *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={namaPerangkat}
+                  onChange={(e) => setNamaPerangkat(e.target.value)}
+                  className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white focus:outline-none focus:border-[#1677FF]"
+                />
+              </div>
+
+              {/* Tipe Perangkat */}
+              <div>
+                <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
+                  Tipe Perangkat
+                </label>
+                <select
+                  value={deviceTypeId}
+                  onChange={(e) => setDeviceTypeId(e.target.value)}
+                  className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white focus:outline-none focus:border-[#1677FF]"
+                >
+                  {filterOptions.types.map((tp) => (
+                    <option key={tp.id} value={tp.id}>
+                      {tp.nama}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Lokasi STO */}
+              <div>
+                <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
+                  Lokasi STO
+                </label>
+                <select
+                  value={locationId}
+                  onChange={(e) => setLocationId(e.target.value)}
+                  className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white focus:outline-none focus:border-[#1677FF]"
+                >
+                  {filterOptions.locations.map((loc) => (
+                    <option key={loc.id} value={loc.id}>
+                      {loc.nama}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#1A2E4C]">
+              <button
+                type="button"
+                disabled={loading}
+                onClick={onClose}
+                className="px-4 py-2.5 rounded-xl border border-[#1E3A5F] text-[#CBD5E1] hover:bg-[#122846] text-xs font-semibold transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-5 py-2.5 rounded-xl bg-[#1677FF] hover:bg-[#0E65D9] text-white text-xs font-semibold flex items-center gap-2 shadow-lg shadow-[#1677FF]/30 transition-all cursor-pointer disabled:opacity-50"
+              >
+                {loading ? (
+                  <>
+                    <span className="material-symbols-outlined text-[16px] animate-spin">
+                      progress_activity
+                    </span>
+                    <span>Menyimpan...</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-[16px]">
+                      check
+                    </span>
+                    <span>Perbarui Perangkat</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
     </ModalPortal>
   );
 }
@@ -1389,154 +1362,153 @@ function DetailDeviceModal({ item, onClose }) {
           className="bg-[#0D1F36] border border-[#1E3A5F] rounded-2xl w-full max-w-2xl p-6 shadow-2xl space-y-5 max-h-[92vh] overflow-y-auto custom-scrollbar"
           onClick={(e) => e.stopPropagation()}
         >
-        {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-[#1A2E4C]">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#1677FF]/15 border border-[#1677FF]/30 flex items-center justify-center text-[#38BDF8]">
-              <span className="material-symbols-outlined text-[22px]">
-                dns
-              </span>
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-white">
-                  {deviceDetail.nama_perangkat}
-                </h3>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#0F294D] border border-[#1E4378] text-[#38BDF8]">
-                  {deviceDetail.tipe}
-                </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
-                  {deviceDetail.status}
+          {/* Header */}
+          <div className="flex items-center justify-between pb-3 border-b border-[#1A2E4C]">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#1677FF]/15 border border-[#1677FF]/30 flex items-center justify-center text-[#38BDF8]">
+                <span className="material-symbols-outlined text-[22px]">
+                  dns
                 </span>
               </div>
-              <p className="text-xs text-[#94A3B8]">
-                Informasi identitas perangkat dan daftar modul di slot
-              </p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-white">
+                    {deviceDetail.nama_perangkat}
+                  </h3>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#0F294D] border border-[#1E4378] text-[#38BDF8]">
+                    {deviceDetail.tipe}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
+                    {deviceDetail.status}
+                  </span>
+                </div>
+                <p className="text-xs text-[#94A3B8]">
+                  Informasi identitas perangkat dan daftar modul di slot
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-8 h-8 rounded-lg text-[#94A3B8] hover:text-white hover:bg-[#1A2E4C] flex items-center justify-center transition-colors cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[20px]">close</span>
+            </button>
+          </div>
+
+          {/* Spesifikasi Grid */}
+          <div>
+            <h4 className="text-[11px] font-bold text-[#38BDF8] uppercase tracking-wider mb-2.5">
+              Spesifikasi Unit Perangkat
+            </h4>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-[#071426] border border-[#1A2E4C] rounded-xl p-4 text-xs">
+              <div>
+                <span className="text-[#94A3B8] text-[11px] block">
+                  Nama Perangkat
+                </span>
+                <span className="font-bold text-white">
+                  {deviceDetail.nama_perangkat}
+                </span>
+              </div>
+              <div>
+                <span className="text-[#94A3B8] text-[11px] block">Tipe</span>
+                <span className="font-semibold text-[#38BDF8]">
+                  {deviceDetail.tipe || "-"}
+                </span>
+              </div>
+              <div>
+                <span className="text-[#94A3B8] text-[11px] block">Lokasi STO</span>
+                <span className="font-semibold text-white">
+                  {deviceDetail.lokasi || "-"}
+                </span>
+              </div>
+              <div>
+                <span className="text-[#94A3B8] text-[11px] block">
+                  Vendor / Pabrikan
+                </span>
+                <span className="text-[#CBD5E1]">
+                  {deviceDetail.vendor || "Nokia"}
+                </span>
+              </div>
+              <div>
+                <span className="text-[#94A3B8] text-[11px] block">
+                  Modul Terpasang
+                </span>
+                <span className="font-bold text-[#38BDF8]">
+                  {installedModules.length} Modul Aktif
+                </span>
+              </div>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-8 h-8 rounded-lg text-[#94A3B8] hover:text-white hover:bg-[#1A2E4C] flex items-center justify-center transition-colors cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-[20px]">close</span>
-          </button>
-        </div>
 
-        {/* Spesifikasi Grid */}
-        <div>
-          <h4 className="text-[11px] font-bold text-[#38BDF8] uppercase tracking-wider mb-2.5">
-            Spesifikasi Unit Perangkat
-          </h4>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-[#071426] border border-[#1A2E4C] rounded-xl p-4 text-xs">
-            <div>
-              <span className="text-[#94A3B8] text-[11px] block">
-                Nama Perangkat
-              </span>
-              <span className="font-bold text-white">
-                {deviceDetail.nama_perangkat}
-              </span>
-            </div>
-            <div>
-              <span className="text-[#94A3B8] text-[11px] block">Tipe</span>
-              <span className="font-semibold text-[#38BDF8]">
-                {deviceDetail.tipe || "-"}
-              </span>
-            </div>
-            <div>
-              <span className="text-[#94A3B8] text-[11px] block">Lokasi STO</span>
-              <span className="font-semibold text-white">
-                {deviceDetail.lokasi || "-"}
-              </span>
-            </div>
-            <div>
-              <span className="text-[#94A3B8] text-[11px] block">
-                Vendor / Pabrikan
-              </span>
-              <span className="text-[#CBD5E1]">
-                {deviceDetail.vendor || "Nokia"}
-              </span>
-            </div>
-            <div>
-              <span className="text-[#94A3B8] text-[11px] block">
-                Modul Terpasang
-              </span>
-              <span className="font-bold text-[#38BDF8]">
-                {installedModules.length} Modul Aktif
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Daftar Modul Terpasang di Slot Perangkat */}
-        <div>
-          <h4 className="text-[11px] font-bold text-[#38BDF8] uppercase tracking-wider mb-2.5">
-            Daftar Modul Terpasang di Slot ({installedModules.length})
-          </h4>
-          {loading ? (
-            <div className="py-8 text-center text-[#94A3B8] text-xs">
-              <span className="material-symbols-outlined text-2xl animate-spin text-[#1677FF] mb-1">
-                progress_activity
-              </span>
-              <p>Memuat modul terpasang...</p>
-            </div>
-          ) : installedModules.length > 0 ? (
-            <div className="border border-[#1A2E4C] rounded-xl overflow-hidden text-xs max-h-56 overflow-y-auto custom-scrollbar">
-              <table className="w-full text-left">
-                <thead className="bg-[#09172A] text-[#94A3B8] text-[10px] uppercase sticky top-0">
-                  <tr>
-                    <th className="py-2.5 px-3">Slot / Shelf</th>
-                    <th className="py-2.5 px-3 font-mono">Serial Number</th>
-                    <th className="py-2.5 px-3 font-mono">Part Number</th>
-                    <th className="py-2.5 px-3 text-center">Kondisi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#132845] text-[#CBD5E1]">
-                  {installedModules.map((m) => (
-                    <tr key={m.position_id} className="hover:bg-[#102444]/40">
-                      <td className="py-2 px-3 font-bold text-white">
-                        Slot #{m.slot_number} (Shelf {m.shelf})
-                      </td>
-                      <td className="py-2 px-3 font-mono text-[#38BDF8]">
-                        {m.serial_number}
-                      </td>
-                      <td className="py-2 px-3 font-mono">
-                        {m.unit_part_number}
-                      </td>
-                      <td className="py-2 px-3 text-center">
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            m.kondisi === "AKTIF"
+          {/* Daftar Modul Terpasang di Slot Perangkat */}
+          <div>
+            <h4 className="text-[11px] font-bold text-[#38BDF8] uppercase tracking-wider mb-2.5">
+              Daftar Modul Terpasang di Slot ({installedModules.length})
+            </h4>
+            {loading ? (
+              <div className="py-8 text-center text-[#94A3B8] text-xs">
+                <span className="material-symbols-outlined text-2xl animate-spin text-[#1677FF] mb-1">
+                  progress_activity
+                </span>
+                <p>Memuat modul terpasang...</p>
+              </div>
+            ) : installedModules.length > 0 ? (
+              <div className="border border-[#1A2E4C] rounded-xl overflow-hidden text-xs max-h-56 overflow-y-auto custom-scrollbar">
+                <table className="w-full text-left">
+                  <thead className="bg-[#09172A] text-[#94A3B8] text-[10px] uppercase sticky top-0">
+                    <tr>
+                      <th className="py-2.5 px-3">Slot / Shelf</th>
+                      <th className="py-2.5 px-3 font-mono">Serial Number</th>
+                      <th className="py-2.5 px-3 font-mono">Part Number</th>
+                      <th className="py-2.5 px-3 text-center">Kondisi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#132845] text-[#CBD5E1]">
+                    {installedModules.map((m) => (
+                      <tr key={m.position_id} className="hover:bg-[#102444]/40">
+                        <td className="py-2 px-3 font-bold text-white">
+                          Slot #{m.slot_number} (Shelf {m.shelf})
+                        </td>
+                        <td className="py-2 px-3 font-mono text-[#38BDF8]">
+                          {m.serial_number}
+                        </td>
+                        <td className="py-2 px-3 font-mono">
+                          {m.unit_part_number}
+                        </td>
+                        <td className="py-2 px-3 text-center">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${m.kondisi === "AKTIF"
                               ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
                               : "bg-amber-500/15 text-amber-400 border border-amber-500/30"
-                          }`}
-                        >
-                          {m.kondisi}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="bg-[#071426] border border-[#1A2E4C] rounded-xl p-4 text-center text-xs text-[#94A3B8]">
-              Belum ada modul yang terpasang pada slot perangkat ini.
-            </div>
-          )}
-        </div>
+                              }`}
+                          >
+                            {m.kondisi}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="bg-[#071426] border border-[#1A2E4C] rounded-xl p-4 text-center text-xs text-[#94A3B8]">
+                Belum ada modul yang terpasang pada slot perangkat ini.
+              </div>
+            )}
+          </div>
 
-        <div className="flex justify-end pt-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-5 py-2 rounded-xl bg-[#1677FF] hover:bg-[#0E65D9] text-white text-xs font-semibold cursor-pointer transition-colors"
-          >
-            Tutup
-          </button>
+          <div className="flex justify-end pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-2 rounded-xl bg-[#1677FF] hover:bg-[#0E65D9] text-white text-xs font-semibold cursor-pointer transition-colors"
+            >
+              Tutup
+            </button>
+          </div>
         </div>
       </div>
-    </div>
     </ModalPortal>
   );
 }

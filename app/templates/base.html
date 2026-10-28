@@ -89,29 +89,39 @@
 
     html:not(.dark) #global-theme-btn,
     html.light #global-theme-btn {
-      background-color: #f8fafc !important; /* bg-slate-50 */
-      border-color: #e2e8f0 !important; /* border-slate-200 */
-      color: #d97706 !important; /* text-amber-600 */
+      background-color: #f8fafc !important;
+      /* bg-slate-50 */
+      border-color: #e2e8f0 !important;
+      /* border-slate-200 */
+      color: #d97706 !important;
+      /* text-amber-600 */
       box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
     }
 
     html:not(.dark) #global-theme-btn:hover,
     html.light #global-theme-btn:hover {
-      background-color: #f1f5f9 !important; /* hover:bg-slate-100 */
-      border-color: rgba(245, 158, 11, 0.5) !important; /* hover:border-amber-500/50 */
+      background-color: #f1f5f9 !important;
+      /* hover:bg-slate-100 */
+      border-color: rgba(245, 158, 11, 0.5) !important;
+      /* hover:border-amber-500/50 */
       box-shadow: 0 0 12px rgba(245, 158, 11, 0.25) !important;
     }
 
     html.dark #global-theme-btn {
-      background-color: #0D1F36 !important; /* bg-[#0D1F36] */
-      border-color: #1E3A5F !important; /* border-[#1E3A5F] */
-      color: #fbbf24 !important; /* text-amber-400 */
+      background-color: #0D1F36 !important;
+      /* bg-[#0D1F36] */
+      border-color: #1E3A5F !important;
+      /* border-[#1E3A5F] */
+      color: #fbbf24 !important;
+      /* text-amber-400 */
       box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
     }
 
     html.dark #global-theme-btn:hover {
-      background-color: #122846 !important; /* hover:bg-[#122846] */
-      border-color: rgba(251, 191, 36, 0.5) !important; /* hover:border-amber-400/50 */
+      background-color: #122846 !important;
+      /* hover:bg-[#122846] */
+      border-color: rgba(251, 191, 36, 0.5) !important;
+      /* hover:border-amber-400/50 */
       box-shadow: 0 0 12px rgba(251, 191, 36, 0.3) !important;
     }
   </style>
@@ -375,7 +385,7 @@
       </header>
 
       <!-- SCROLLABLE CONTENT AREA: HANYA INI YANG BER-SCROLL -->
-      <main class="flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-5 custom-scrollbar">
+      <main id="baseMain" class="flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-5 custom-scrollbar">
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
         <div class="space-y-2 mb-4">
@@ -454,6 +464,29 @@
           console.error(err);
           alert('Terjadi kesalahan saat mengunggah foto profil');
         });
+    }
+
+    // Kompensasi dinamis scrollbar agar perataan card sebelah kanan di halaman ber-scrollbar selalu 100% rata presisi dengan halaman lain
+    function updateBaseScrollbarCompensation() {
+      const mainEl = document.getElementById('baseMain') || document.querySelector('main');
+      if (mainEl) {
+        // offsetWidth mencakup scrollbar, clientWidth tidak mencakup scrollbar
+        const sbWidth = Math.max(0, mainEl.offsetWidth - mainEl.clientWidth);
+        mainEl.style.paddingRight = Math.max(0, 24 - sbWidth) + 'px';
+      }
+    }
+    window.addEventListener('resize', updateBaseScrollbarCompensation);
+    window.addEventListener('DOMContentLoaded', updateBaseScrollbarCompensation);
+    setTimeout(updateBaseScrollbarCompensation, 50);
+    setTimeout(updateBaseScrollbarCompensation, 200);
+    if (typeof ResizeObserver !== 'undefined') {
+      const mainEl = document.getElementById('baseMain') || document.querySelector('main');
+      if (mainEl) {
+        new ResizeObserver(updateBaseScrollbarCompensation).observe(mainEl);
+        if (mainEl.firstElementChild) {
+          new ResizeObserver(updateBaseScrollbarCompensation).observe(mainEl.firstElementChild);
+        }
+      }
     }
   </script>
 </body>

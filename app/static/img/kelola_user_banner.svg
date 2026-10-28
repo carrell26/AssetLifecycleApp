@@ -1,0 +1,520 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-40 -35 600 260" width="100%" height="100%" fill="none" overflow="visible">
+  <defs>
+    <!-- =========================================================
+         1. ULTRA-SMOOTH RADIAL SHADOWS (100% Seamless Depth)
+         ========================================================= -->
+    <!-- Macro Environment Floor Shadow (Unifies the entire 3D cluster) -->
+    <radialGradient id="macro-floor-shadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#010612" stop-opacity="0.65" />
+      <stop offset="40%" stop-color="#020B1B" stop-opacity="0.35" />
+      <stop offset="70%" stop-color="#041228" stop-opacity="0.10" />
+      <stop offset="100%" stop-color="#041228" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Main Central Pedestal Contact Shadow (Deep ambient occlusion) -->
+    <radialGradient id="main-contact-shadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.90" />
+      <stop offset="25%" stop-color="#010714" stop-opacity="0.75" />
+      <stop offset="55%" stop-color="#020E22" stop-opacity="0.38" />
+      <stop offset="80%" stop-color="#041630" stop-opacity="0.10" />
+      <stop offset="100%" stop-color="#041630" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Sub-Pedestal Contact Shadow -->
+    <radialGradient id="sub-contact-shadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.85" />
+      <stop offset="30%" stop-color="#010714" stop-opacity="0.60" />
+      <stop offset="65%" stop-color="#031126" stop-opacity="0.22" />
+      <stop offset="100%" stop-color="#031126" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Floating Object Projected Shadow (Soft blur below floating cards) -->
+    <radialGradient id="floating-cast-shadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#010715" stop-opacity="0.60" />
+      <stop offset="45%" stop-color="#031229" stop-opacity="0.25" />
+      <stop offset="80%" stop-color="#041834" stop-opacity="0.05" />
+      <stop offset="100%" stop-color="#041834" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Pedestal Top Surface Cast Shadow (from floating window) -->
+    <radialGradient id="console-pedestal-shadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#020815" stop-opacity="0.70" />
+      <stop offset="50%" stop-color="#05142B" stop-opacity="0.30" />
+      <stop offset="100%" stop-color="#05142B" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- =========================================================
+         2. VOLUMETRIC GLOWS & AURA GRADIENTS
+         ========================================================= -->
+    <!-- Floor Cyan Ambient Glow -->
+    <radialGradient id="floor-cyan-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00E5FF" stop-opacity="0.28" />
+      <stop offset="30%" stop-color="#1677FF" stop-opacity="0.16" />
+      <stop offset="70%" stop-color="#0A2540" stop-opacity="0.04" />
+      <stop offset="100%" stop-color="#0A2540" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Holographic Pedestal Light Beam -->
+    <linearGradient id="holo-beam-cyan" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.45" />
+      <stop offset="40%" stop-color="#0284C7" stop-opacity="0.22" />
+      <stop offset="85%" stop-color="#00E5FF" stop-opacity="0.08" />
+      <stop offset="100%" stop-color="#38BDF8" stop-opacity="0" />
+    </linearGradient>
+
+    <linearGradient id="holo-beam-gold" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.40" />
+      <stop offset="50%" stop-color="#FBBF24" stop-opacity="0.18" />
+      <stop offset="100%" stop-color="#F59E0B" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- GLOW FILTERS WITH GENEROUS 300% REGION (Zero Edge Cuts) -->
+    <filter id="neon-glow-cyan" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="3.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <filter id="neon-glow-blue" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="5.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <filter id="neon-glow-gold" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="4.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <!-- =========================================================
+         3. 3D SHADING GRADIENTS FOR PEDESTALS & VOLUMES
+         ========================================================= -->
+    <!-- Two-Tier Main Base (Lower Stepped Tier) -->
+    <linearGradient id="tier1-top" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1B3556" />
+      <stop offset="100%" stop-color="#0B1A2E" />
+    </linearGradient>
+    <linearGradient id="tier1-left" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0A182A" />
+      <stop offset="100%" stop-color="#040A12" />
+    </linearGradient>
+    <linearGradient id="tier1-right" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#122742" />
+      <stop offset="100%" stop-color="#071220" />
+    </linearGradient>
+
+    <!-- Main Base (Upper Tier with Core Illumination) -->
+    <linearGradient id="main-plat-top" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#244773" />
+      <stop offset="45%" stop-color="#142F50" />
+      <stop offset="100%" stop-color="#0B1B30" />
+    </linearGradient>
+    <linearGradient id="main-plat-left" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0E233C" />
+      <stop offset="100%" stop-color="#050E18" />
+    </linearGradient>
+    <linearGradient id="main-plat-right" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#18365C" />
+      <stop offset="100%" stop-color="#09182A" />
+    </linearGradient>
+
+    <!-- Sub Pedestals -->
+    <linearGradient id="sub-ped-top" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#203C62" />
+      <stop offset="100%" stop-color="#0D1E33" />
+    </linearGradient>
+    <linearGradient id="sub-ped-left" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0C1B2E" />
+      <stop offset="100%" stop-color="#050B14" />
+    </linearGradient>
+    <linearGradient id="sub-ped-right" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#142B48" />
+      <stop offset="100%" stop-color="#081322" />
+    </linearGradient>
+
+    <!-- UI Window Console -->
+    <linearGradient id="win-glass-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#163A66" stop-opacity="0.96" />
+      <stop offset="50%" stop-color="#102B4D" stop-opacity="0.96" />
+      <stop offset="100%" stop-color="#081A32" stop-opacity="0.98" />
+    </linearGradient>
+    <linearGradient id="win-glass-border" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#93C5FD" />
+      <stop offset="40%" stop-color="#38BDF8" />
+      <stop offset="80%" stop-color="#1677FF" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+
+    <!-- Padlock & Shackle -->
+    <linearGradient id="lock-body-front" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="60%" stop-color="#0284C7" />
+      <stop offset="100%" stop-color="#0369A1" />
+    </linearGradient>
+    <linearGradient id="lock-body-side" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0284C7" />
+      <stop offset="100%" stop-color="#02365C" />
+    </linearGradient>
+    <linearGradient id="shackle-grad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="35%" stop-color="#CBD5E1" />
+      <stop offset="70%" stop-color="#64748B" />
+      <stop offset="100%" stop-color="#94A3B8" />
+    </linearGradient>
+
+    <!-- Shield Hologram -->
+    <linearGradient id="shield-hologram" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#67E8F9" stop-opacity="0.85" />
+      <stop offset="45%" stop-color="#0EA5E9" stop-opacity="0.60" />
+      <stop offset="80%" stop-color="#0284C7" stop-opacity="0.30" />
+      <stop offset="100%" stop-color="#0369A1" stop-opacity="0.15" />
+    </linearGradient>
+    <linearGradient id="shield-rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#E0F2FE" />
+      <stop offset="50%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+
+    <!-- Golden Key -->
+    <linearGradient id="gold-key-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FEF08A" />
+      <stop offset="30%" stop-color="#FACC15" />
+      <stop offset="70%" stop-color="#EAB308" />
+      <stop offset="100%" stop-color="#A16207" />
+    </linearGradient>
+
+    <!-- Badges & Avatars -->
+    <linearGradient id="badge-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#24344D" />
+      <stop offset="100%" stop-color="#0E1726" />
+    </linearGradient>
+    <linearGradient id="avatar-primary" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#93C5FD" />
+      <stop offset="50%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#1D4ED8" />
+    </linearGradient>
+    <linearGradient id="avatar-amber" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="50%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#B45309" />
+    </linearGradient>
+    <linearGradient id="avatar-purple" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#DDD6FE" />
+      <stop offset="50%" stop-color="#A855F7" />
+      <stop offset="100%" stop-color="#6B21A8" />
+    </linearGradient>
+  </defs>
+
+  <!-- =========================================================
+       STAGE 0: AMBIENT ENVIRONMENT & SOFT RADIAL SHADOWS
+       (Memberikan kedalaman 3D tanpa garis potong di bawah/samping)
+       ========================================================= -->
+  <g>
+    <!-- 1. Macro Floor Shadow (Ambient Occlusion untuk seluruh cluster) -->
+    <ellipse cx="260" cy="175" rx="220" ry="48" fill="url(#macro-floor-shadow)" />
+
+    <!-- 2. Ambient Cyan Floor Glow (Pendaran cahaya inti dari bawah platform) -->
+    <ellipse cx="260" cy="165" rx="130" ry="32" fill="url(#floor-cyan-glow)" />
+
+    <!-- 3. Central Pedestal Deep Contact Shadow -->
+    <ellipse cx="260" cy="182" rx="108" ry="26" fill="url(#main-contact-shadow)" />
+
+    <!-- 4. Sub-Pedestal Deep Contact Shadows -->
+    <!-- Left Padlock Pedestal -->
+    <ellipse cx="140" cy="146" rx="50" ry="15" fill="url(#sub-contact-shadow)" />
+    <!-- Left Fingerprint Scanner -->
+    <ellipse cx="164" cy="160" rx="30" ry="10" fill="url(#sub-contact-shadow)" />
+    <!-- Right Shield Pedestal -->
+    <ellipse cx="395" cy="120" rx="46" ry="15" fill="url(#sub-contact-shadow)" />
+    <!-- Right Key Pedestal -->
+    <ellipse cx="441" cy="148" rx="40" ry="13" fill="url(#sub-contact-shadow)" />
+
+    <!-- 5. Floating Object Ground Cast Shadows (Proyeksi bayangan objek terbang ke lantai) -->
+    <!-- Floating ID Smart Card Cast Shadow -->
+    <ellipse cx="94" cy="100" rx="34" ry="11" fill="url(#floating-cast-shadow)" />
+    <!-- Floating Notification Bubble Cast Shadow -->
+    <ellipse cx="440" cy="82" rx="26" ry="9" fill="url(#floating-cast-shadow)" />
+  </g>
+
+  <!-- =========================================================
+       STAGE 1: NEON BUS CIRCUIT HIGHWAYS (Interkoneksi Sistem)
+       ========================================================= -->
+  <g stroke="#1677FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.65">
+    <path d="M 220 135 L 180 135 L 140 125" />
+    <path d="M 215 142 L 175 142 L 140 132" />
+    <path d="M 215 118 L 160 118 L 110 85" stroke-dasharray="3 3" />
+    <path d="M 305 130 L 350 130 L 375 110" />
+    <path d="M 300 142 L 350 142 L 400 138" />
+    <path d="M 245 158 L 225 170 L 195 170" />
+  </g>
+
+  <!-- Glowing Cyan Circuit Traces (Neon Pulse) -->
+  <g stroke="#38BDF8" stroke-width="1.6" stroke-linecap="round" opacity="0.9" filter="url(#neon-glow-cyan)">
+    <path d="M 220 135 L 180 135 L 140 125" />
+    <path d="M 305 130 L 350 130 L 375 110" />
+    <path d="M 245 158 L 225 170 L 195 170" />
+  </g>
+
+  <!-- Cyber Node Particle Dots -->
+  <g fill="#E0F2FE" filter="url(#neon-glow-cyan)">
+    <circle cx="180" cy="135" r="2.2" />
+    <circle cx="140" cy="125" r="2.5" />
+    <circle cx="110" cy="85" r="2.2" />
+    <circle cx="350" cy="130" r="2.2" />
+    <circle cx="375" cy="110" r="2.5" />
+    <circle cx="400" cy="138" r="2.2" />
+    <circle cx="225" cy="170" r="2.2" />
+    <circle cx="195" cy="170" r="2.5" />
+  </g>
+
+  <!-- =========================================================
+       STAGE 2: SUB-NODE 1 - FLOATING SMART ID CARD
+       ========================================================= -->
+  <g transform="translate(68, 48)">
+    <g transform="skewY(-14) scale(0.95, 0.85)">
+      <!-- 3D Card Thickness Rim -->
+      <rect x="0" y="1" width="56" height="38" rx="6" fill="#07111D" />
+      <!-- Card Body -->
+      <rect x="0" y="0" width="56" height="38" rx="6" fill="url(#badge-bg)" stroke="#38BDF8" stroke-width="1.3" />
+      
+      <!-- Top Card Header -->
+      <rect x="0" y="0" width="56" height="9" rx="5" fill="#1677FF" opacity="0.85" />
+      <!-- Lanyard Slot -->
+      <rect x="23" y="2" width="10" height="3" rx="1.5" fill="#0A182B" />
+
+      <!-- Avatar Silhouette -->
+      <circle cx="14" cy="22" r="6" fill="#38BDF8" opacity="0.9" />
+      <circle cx="14" cy="20" r="3" fill="#0A182B" />
+      <path d="M 9 27 C 9 24, 19 24, 19 27 Z" fill="#0A182B" />
+
+      <!-- ID Card Details Lines -->
+      <line x1="26" y1="18" x2="48" y2="18" stroke="#93C5FD" stroke-width="2" stroke-linecap="round" />
+      <line x1="26" y1="23" x2="44" y2="23" stroke="#64748B" stroke-width="1.5" stroke-linecap="round" />
+      <line x1="26" y1="28" x2="38" y2="28" stroke="#38BDF8" stroke-width="1.5" stroke-linecap="round" />
+    </g>
+    <!-- Lanyard Ring -->
+    <circle cx="26" cy="-2" r="3.5" stroke="#38BDF8" stroke-width="1.5" fill="none" opacity="0.8" />
+  </g>
+
+  <!-- =========================================================
+       STAGE 3: SUB-NODE 2 - LEFT SECURITY PADLOCK & PEDESTAL
+       ========================================================= -->
+  <g transform="translate(105, 95)">
+    <!-- Holographic Cyan Beam Shooting Up -->
+    <polygon points="12,18 35,8 58,18 48,-14 35,-18 22,-14" fill="url(#holo-beam-cyan)" />
+
+    <!-- 3D Stepped Pedestal Base -->
+    <!-- Tier 1: Lower Stepped Edge -->
+    <polygon points="35,36 74,18 35,-1 -4,18" fill="url(#tier1-top)" stroke="#0E2847" stroke-width="0.8" />
+    <polygon points="-4,18 35,36 35,42 -4,24" fill="url(#tier1-left)" />
+    <polygon points="35,36 74,18 74,24 35,42" fill="url(#tier1-right)" />
+
+    <!-- Tier 2: Upper Pedestal Surface -->
+    <polygon points="35,32 70,16 35,0 0,16" fill="url(#sub-ped-top)" stroke="#38BDF8" stroke-width="0.9" />
+    <polygon points="0,16 35,32 35,48 0,32" fill="url(#sub-ped-left)" />
+    <polygon points="35,32 70,16 70,32 35,48" fill="url(#sub-ped-right)" />
+
+    <!-- Cyan Neon Bevel Edge -->
+    <path d="M 0 16 L 35 32 L 70 16" stroke="#38BDF8" stroke-width="1.5" stroke-linecap="round" filter="url(#neon-glow-cyan)" />
+
+    <!-- 3D Security Padlock -->
+    <g transform="translate(23, -24)">
+      <!-- Silver Metal Shackle -->
+      <path d="M 6 12 L 6 7 C 6 1, 18 1, 18 7 L 18 12" stroke="url(#shackle-grad)" stroke-width="3.5" stroke-linecap="round" fill="none" />
+      <!-- Shackle Shadow onto Padlock Body -->
+      <ellipse cx="12" cy="10" rx="8" ry="2" fill="#010714" opacity="0.6" />
+
+      <!-- Padlock 3D Body Front -->
+      <rect x="0" y="10" width="24" height="20" rx="4" fill="url(#lock-body-front)" stroke="#7DD3FC" stroke-width="0.8" />
+      <!-- Side Thickness Face -->
+      <polygon points="24,10 27,8 27,26 24,30" fill="url(#lock-body-side)" />
+
+      <!-- Keyhole with Deep Ambient Inset -->
+      <circle cx="12" cy="18" r="2.4" fill="#021020" />
+      <polygon points="10.8,18 13.2,18 14.2,24 9.8,24" fill="#021020" />
+      <!-- Glowing Keyhole Center Core -->
+      <circle cx="12" cy="18" r="1.1" fill="#38BDF8" filter="url(#neon-glow-cyan)" />
+    </g>
+  </g>
+
+  <!-- Biometrics Fingerprint Scanner Plate (Lower Left) -->
+  <g transform="translate(142, 142)">
+    <polygon points="22,12 44,2 22,-8 0,2" fill="url(#sub-ped-top)" stroke="#38BDF8" stroke-width="0.8" />
+    <polygon points="0,2 22,12 22,18 0,8" fill="url(#sub-ped-left)" />
+    <polygon points="22,12 44,2 44,8 22,18" fill="url(#sub-ped-right)" />
+    <!-- Fingerprint Cyan Arcs -->
+    <g transform="translate(22, 2) scale(0.65, 0.35) rotate(-30)" stroke="#38BDF8" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.85">
+      <circle cx="0" cy="0" r="3" />
+      <path d="M -7 -2 C -6 -8, 6 -8, 7 -2 C 8 5, -8 5, -7 11" />
+      <path d="M -12 -2 C -10 -14, 10 -14, 12 -2 C 14 10, -12 10, -10 18" />
+    </g>
+  </g>
+
+  <!-- =========================================================
+       STAGE 4: CENTER NODE - MAIN USER MANAGEMENT CONSOLE
+       (Multi-Tier 3D Platform with Stepped Bevels & Window Depth)
+       ========================================================= -->
+  <g transform="translate(260, 115)">
+    <!-- TIER 1: Lower Stepped Sub-Base (Memberikan depth bertingkat 3D) -->
+    <polygon points="72,42 144,0 72,-42 0,0" fill="url(#tier1-top)" stroke="#0E2A4D" stroke-width="1" transform="translate(-72, 18)" />
+    <polygon points="-72,18 0,60 0,72 -72,30" fill="url(#tier1-left)" />
+    <polygon points="0,60 72,18 72,30 0,72" fill="url(#tier1-right)" />
+    <!-- Glowing Seam between Tier 1 and Tier 2 -->
+    <path d="M -72 18 L 0 60 L 72 18" stroke="#00E5FF" stroke-width="1.2" opacity="0.75" filter="url(#neon-glow-cyan)" />
+
+    <!-- TIER 2: Main Upper 3D Platform Base -->
+    <polygon points="65,38 130,0 65,-38 0,0" fill="url(#main-plat-top)" stroke="#1677FF" stroke-width="1.2" transform="translate(-65, 12)" />
+    <polygon points="-65,12 0,50 0,64 -65,26" fill="url(#main-plat-left)" />
+    <polygon points="0,50 65,12 65,26 0,64" fill="url(#main-plat-right)" />
+
+    <!-- Platform Crease Highlights -->
+    <path d="M -65 12 L 0 50 L 65 12" stroke="#60A5FA" stroke-width="1.2" opacity="0.7" />
+    <line x1="0" y1="50" x2="0" y2="64" stroke="#0284C7" stroke-width="1.2" opacity="0.6" />
+
+    <!-- Concentric Glowing Pulse Rings on Upper Platform -->
+    <g transform="translate(0, 12) scale(1, 0.52)" opacity="0.85">
+      <ellipse cx="0" cy="0" rx="42" ry="24" stroke="#1677FF" stroke-width="2.5" fill="none" />
+      <ellipse cx="0" cy="0" rx="42" ry="24" stroke="#38BDF8" stroke-width="1.5" fill="none" filter="url(#neon-glow-cyan)" />
+      <!-- Pulsing Node Dots -->
+      <circle cx="-42" cy="0" r="2.5" fill="#38BDF8" filter="url(#neon-glow-cyan)" />
+      <circle cx="42" cy="0" r="2.5" fill="#38BDF8" filter="url(#neon-glow-cyan)" />
+      <circle cx="0" cy="-24" r="2.5" fill="#38BDF8" filter="url(#neon-glow-cyan)" />
+      <circle cx="0" cy="24" r="2.5" fill="#38BDF8" filter="url(#neon-glow-cyan)" />
+    </g>
+
+    <!-- Console Cast Shadow onto Platform Top Surface -->
+    <ellipse cx="0" cy="6" rx="55" ry="15" fill="url(#console-pedestal-shadow)" />
+
+    <!-- FLOATING ISOMETRIC USER DIRECTORY WINDOW CONSOLE -->
+    <g transform="translate(0, -32) skewY(-14) scale(0.96, 0.88)">
+      <!-- 3D Glass Thickness Backplate (Memberikan ketebalan kaca 3D) -->
+      <rect x="-61" y="-46" width="124" height="88" rx="10" fill="#040D1A" />
+
+      <!-- Glass Console Main Body -->
+      <rect x="-62" y="-48" width="124" height="88" rx="10" fill="url(#win-glass-bg)" stroke="url(#win-glass-border)" stroke-width="1.8" />
+      
+      <!-- Top Title Bar -->
+      <rect x="-62" y="-48" width="124" height="15" rx="8" fill="#0A1E35" opacity="0.95" />
+      <!-- 3 Window Control Dots (Red, Yellow, Green) -->
+      <circle cx="-53" cy="-40" r="2.2" fill="#EF4444" />
+      <circle cx="-46" cy="-40" r="2.2" fill="#F59E0B" />
+      <circle cx="-39" cy="-40" r="2.2" fill="#10B981" />
+      <!-- Console Mini Title Text Line -->
+      <line x1="-28" y1="-40" x2="10" y2="-40" stroke="#93C5FD" stroke-width="1.8" stroke-linecap="round" opacity="0.7" />
+
+      <!-- Glass Gloss Diagonal Highlight (Pantulan kilap kaca) -->
+      <path d="M -60 -30 L -10 -46 L -20 -46 L -60 -15 Z" fill="#FFFFFF" opacity="0.10" />
+
+      <!-- USER 1: SUPER ADMIN (Top Center Node) -->
+      <g transform="translate(0, -20)">
+        <circle cx="0" cy="0" r="8.5" fill="url(#avatar-primary)" stroke="#93C5FD" stroke-width="1.3" />
+        <circle cx="0" cy="-2.5" r="3.2" fill="#FFFFFF" />
+        <path d="M -5.2 5.5 C -5.2 2.2, 5.2 2.2, 5.2 5.5 Z" fill="#FFFFFF" />
+        <!-- Admin Golden Crown/Badge -->
+        <circle cx="6.5" cy="-5.5" r="2.5" fill="#F59E0B" stroke="#FEF08A" stroke-width="0.7" />
+      </g>
+
+      <!-- Hierarchy Tree Branches -->
+      <path d="M 0 -11 L 0 -5 M 0 -5 L -30 2 M 0 -5 L 30 2" stroke="#38BDF8" stroke-width="1.3" stroke-linecap="round" opacity="0.65" />
+
+      <!-- USER 2: KARYAWAN TIF (Left Branch Node) -->
+      <g transform="translate(-32, 10)">
+        <circle cx="0" cy="0" r="7" fill="url(#avatar-amber)" stroke="#FDE68A" stroke-width="1.1" />
+        <circle cx="0" cy="-2" r="2.6" fill="#FFFFFF" />
+        <path d="M -4.2 4.5 C -4.2 1.6, 4.2 1.6, 4.2 4.5 Z" fill="#FFFFFF" />
+        <!-- Info Bars -->
+        <line x1="-12" y1="11" x2="12" y2="11" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round" />
+        <line x1="-8" y1="15" x2="8" y2="15" stroke="#38BDF8" stroke-width="1.2" stroke-linecap="round" />
+      </g>
+
+      <!-- USER 3: TEKNISI (Right Branch Node) -->
+      <g transform="translate(32, 10)">
+        <circle cx="0" cy="0" r="7" fill="url(#avatar-purple)" stroke="#DDD6FE" stroke-width="1.1" />
+        <circle cx="0" cy="-2" r="2.6" fill="#FFFFFF" />
+        <path d="M -4.2 4.5 C -4.2 1.6, 4.2 1.6, 4.2 4.5 Z" fill="#FFFFFF" />
+        <!-- Info Bars -->
+        <line x1="-12" y1="11" x2="12" y2="11" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round" />
+        <line x1="-8" y1="15" x2="8" y2="15" stroke="#34D399" stroke-width="1.2" stroke-linecap="round" />
+      </g>
+
+      <!-- Bottom Status Pill Buttons -->
+      <g transform="translate(-40, 28)">
+        <rect x="0" y="0" width="36" height="7" rx="3.5" fill="#172E4C" stroke="#38BDF8" stroke-width="0.8" />
+        <circle cx="5" cy="3.5" r="2" fill="#34D399" />
+        <line x1="11" y1="3.5" x2="30" y2="3.5" stroke="#E2E8F0" stroke-width="1.2" stroke-linecap="round" />
+      </g>
+      <g transform="translate(4, 28)">
+        <rect x="0" y="0" width="36" height="7" rx="3.5" fill="#172E4C" stroke="#1677FF" stroke-width="0.8" />
+        <circle cx="5" cy="3.5" r="2" fill="#60A5FA" />
+        <line x1="11" y1="3.5" x2="30" y2="3.5" stroke="#E2E8F0" stroke-width="1.2" stroke-linecap="round" />
+      </g>
+    </g>
+  </g>
+
+  <!-- =========================================================
+       STAGE 5: SUB-NODE 3 - RIGHT HOLOGRAPHIC VERIFIED SHIELD
+       ========================================================= -->
+  <g transform="translate(365, 75)">
+    <!-- Holographic Cyan Beam Shooting Up -->
+    <polygon points="10,16 30,6 50,16 42,-12 30,-16 18,-12" fill="url(#holo-beam-cyan)" />
+
+    <!-- 3D Stepped Pedestal Base -->
+    <polygon points="30,32 64,16 30,-1 -4,16" fill="url(#tier1-top)" stroke="#0E2847" stroke-width="0.8" />
+    <polygon points="-4,16 30,32 30,38 -4,22" fill="url(#tier1-left)" />
+    <polygon points="30,32 64,16 64,22 30,38" fill="url(#tier1-right)" />
+
+    <polygon points="30,28 60,14 30,0 0,14" fill="url(#sub-ped-top)" stroke="#38BDF8" stroke-width="0.9" />
+    <polygon points="0,14 30,28 30,44 0,30" fill="url(#sub-ped-left)" />
+    <polygon points="30,28 60,14 60,30 30,44" fill="url(#sub-ped-right)" />
+    <path d="M 0 14 L 30 28 L 60 14" stroke="#38BDF8" stroke-width="1.4" stroke-linecap="round" filter="url(#neon-glow-cyan)" />
+
+    <!-- Floating 3D Holographic Cyber Shield -->
+    <g transform="translate(15, -34)">
+      <!-- Shield Ambient Glow Aura (Soft blur aura around shield) -->
+      <path d="M 15 0 L 29 6 C 29 18, 22 28, 15 32 C 8 28, 1 18, 1 6 Z" fill="url(#shield-hologram)" stroke="url(#shield-rim)" stroke-width="1.8" filter="url(#neon-glow-blue)" />
+      
+      <!-- Inner Glowing Core Facet -->
+      <path d="M 15 3 L 26 8 C 26 18, 20 26, 15 29 C 10 26, 4 18, 4 8 Z" fill="#38BDF8" opacity="0.25" />
+
+      <!-- Verified White & Cyan Checkmark ✓ -->
+      <polyline points="9,16 13,20 21,11" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#neon-glow-cyan)" />
+      <polyline points="9,16 13,20 21,11" stroke="#E0F2FE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    </g>
+  </g>
+
+  <!-- =========================================================
+       STAGE 6: SUB-NODE 4 - RIGHT GOLDEN KEY OF AUTHORIZATION
+       ========================================================= -->
+  <g transform="translate(415, 110)">
+    <!-- Holographic Warm Beam -->
+    <polygon points="8,14 26,5 44,14 36,-10 26,-14 16,-10" fill="url(#holo-beam-gold)" />
+
+    <!-- 3D Pedestal Base -->
+    <polygon points="26,24 52,12 26,0 0,12" fill="url(#sub-ped-top)" stroke="#EAB308" stroke-width="0.9" />
+    <polygon points="0,12 26,24 26,38 0,26" fill="url(#sub-ped-left)" />
+    <polygon points="26,24 52,12 52,26 26,38" fill="url(#sub-ped-right)" />
+    <!-- Golden Neon Rim Glow -->
+    <path d="M 0 12 L 26 24 L 52 12" stroke="#FBBF24" stroke-width="1.4" stroke-linecap="round" filter="url(#neon-glow-gold)" />
+
+    <!-- Upright Floating 3D Golden Key -->
+    <g transform="translate(20, -28)" filter="url(#neon-glow-gold)">
+      <!-- Key Ring Head -->
+      <circle cx="6" cy="6" r="6" fill="none" stroke="url(#gold-key-grad)" stroke-width="2.6" />
+      <circle cx="6" cy="6" r="3" fill="#0A182B" />
+      <!-- Key Shaft -->
+      <line x1="6" y1="12" x2="6" y2="28" stroke="url(#gold-key-grad)" stroke-width="3" stroke-linecap="round" />
+      <!-- Key Teeth Bit -->
+      <path d="M 6 22 L 11 22 M 6 26 L 10 26" stroke="url(#gold-key-grad)" stroke-width="2.4" stroke-linecap="round" />
+    </g>
+  </g>
+
+  <!-- Floating Chat Notification Bubble (Top Right) -->
+  <g transform="translate(425, 45)">
+    <g transform="skewY(-10) scale(0.9, 0.85)">
+      <rect x="0" y="1" width="34" height="24" rx="6" fill="#091322" />
+      <rect x="0" y="0" width="34" height="24" rx="6" fill="#1E2B40" stroke="#818CF8" stroke-width="1.3" />
+      <polygon points="8,24 14,28 14,24" fill="#1E2B40" stroke="#818CF8" stroke-width="1.3" />
+      <circle cx="11" cy="11" r="4.5" fill="#818CF8" />
+      <!-- 3 typing dots -->
+      <circle cx="20" cy="11" r="1.3" fill="#E2E8F0" />
+      <circle cx="24" cy="11" r="1.3" fill="#E2E8F0" />
+      <circle cx="28" cy="11" r="1.3" fill="#E2E8F0" />
+    </g>
+  </g>
+</svg>
