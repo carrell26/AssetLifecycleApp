@@ -4,7 +4,15 @@ import { useTheme } from "../context/ThemeContext";
 export default function Sidebar({ user }) {
   const { isDark } = useTheme();
 
-  const role = user?.role;
+  const cachedUser = typeof window !== "undefined" ? (() => {
+    try {
+      return JSON.parse(localStorage.getItem("cached_user") || "{}");
+    } catch {
+      return {};
+    }
+  })() : {};
+
+  const role = user?.role || cachedUser?.role;
 
   const currentPath = typeof window !== "undefined" ? window.location.pathname : "/";
   const isMutasiActive = currentPath.startsWith("/modules/requests") || currentPath.startsWith("/modules/new");
@@ -121,26 +129,6 @@ export default function Sidebar({ user }) {
             );
           })}
         </nav>
-      </div>
-
-      {/* Footer Info */}
-      <div
-        className="sidebar-footer p-4 mx-3 mb-4 rounded-xl border"
-        style={{
-          backgroundColor: "#0D1F36",
-          borderColor: "#1E3A5F",
-          color: "#94A3B8",
-        }}
-      >
-        <div className="flex items-center gap-2 text-xs font-semibold">
-          <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-          <span className="sidebar-footer-title text-[#E6EDF7]">
-            Sistem Aktif
-          </span>
-        </div>
-        <p className="text-[11px] mt-1 leading-relaxed">
-          v2.4.0 • Enterprise Edition
-        </p>
       </div>
     </aside>
   );

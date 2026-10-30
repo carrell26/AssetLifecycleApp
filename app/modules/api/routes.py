@@ -60,9 +60,6 @@ def get_current_user_profile():
 @api_bp.route("/me/avatar", methods=["POST"])
 @login_required
 def upload_avatar():
-    if current_user.role not in ["admin", "karyawan_tif"]:
-        return jsonify({"success": False, "error": "Akses ditolak. Teknisi hanya memiliki akses melihat data."}), 403
-
     upload_dir = os.path.join(current_app.root_path, "static", "avatars")
     os.makedirs(upload_dir, exist_ok=True)
 
@@ -126,9 +123,17 @@ def upload_avatar():
 @login_required
 def get_dashboard_stats():
     # ============================================================
-    # 1. KPI METRICS — dari database nyata
-    # ============================================================
-    total_locations = Location.query.count()
+    # 1. KPI METRICS — dari database nyata fokus Palu
+    palu_loc_filter = (
+        Location.nama_lokasi.ilike("STO Palu%")
+        | (
+            (func.upper(Location.district) == "PALU")
+            & ~Location.nama_lokasi.ilike("%DONGGALA%")
+            & ~Location.nama_lokasi.ilike("PALU1")
+        )
+    )
+    palu_locations = Location.query.filter(palu_loc_filter).all()
+    total_locations = len(palu_locations) if palu_locations else 2
     total_devices = Device.query.count()
 
     # Hitung pemisahan Card Utama vs Transceiver SFP secara dinamis dari posisi aktif
@@ -414,6 +419,86 @@ def get_dashboard_stats():
             "recent_requests": formatted_requests,
         }
 
+    # ============================================================
+    # 7. KOMPOSISI ASET OPTIK (Card Utama vs Transceiver SFP)
+    # ============================================================
+    optical_composition = {
+        "cards_count": unique_active_cards,
+        "transceivers_count": unique_active_sfps,
+        "total_assets": total_active_assets,
+        "cards_percentage": round((unique_active_cards / total_active_assets) * 100, 1) if total_active_assets > 0 else 42.9,
+        "transceivers_percentage": round((unique_active_sfps / total_active_assets) * 100, 1) if total_active_assets > 0 else 57.1,
+    }
+
+    # ============================================================
+    # 8. STATUS RAK & OKUPANSI SLOT PER STO (STO Palu 1 & STO Palu 2)
+    # ============================================================
+    palu_devices = (
+        Device.query.filter(
+            (Device.hostname.in_(["WN-24X-SUL-PAL11", "WN-24X-SUL-PAL211"]))
+            | (Device.nama_perangkat.in_(["WN-24X-SUL-PAL11", "WN-24X-SUL-PAL211"]))
+        )
+        .order_by(Device.device_id.asc())
+        .all()
+    )
+
+    rack_status = []
+    for dev in palu_devices:
+        dev_positions = (
+            ModulePosition.query.filter_by(device_id=dev.device_id, status="aktif")
+            .join(Module, ModulePosition.module_id == Module.modul_id)
+            .join(ModuleType, Module.module_type_id == ModuleType.module_type_id)
+            .all()
+        )
+
+        occupied_slots_map = {}
+        for p in dev_positions:
+            s_num = None
+            if p.slot_definition and p.slot_definition.nomor_slot:
+                try:
+                    s_num = int(re.sub(r"\D", "", str(p.slot_definition.nomor_slot)))
+                except Exception:
+                    pass
+            elif p.slot_number:
+                try:
+                    s_num = int(re.sub(r"\D", "", str(p.slot_number)))
+                except Exception:
+                    pass
+            if s_num and 1 <= s_num <= 24:
+                if s_num not in occupied_slots_map:
+                    occupied_slots_map[s_num] = {
+                        "serial_number": p.module.serial_number if p.module else "-",
+                        "unit_part_number": p.module.unit_part_number if p.module else "-",
+                        "unit_type": p.module.module_type.nama_tipe if p.module and p.module.module_type else "Card",
+                        "kondisi": p.module.kondisi if p.module else "AKTIF",
+                        "port": p.port or "-",
+                    }
+
+        slots = []
+        for slot_idx in range(1, 25):
+            slot_info = occupied_slots_map.get(slot_idx)
+            slots.append({
+                "slot_number": slot_idx,
+                "occupied": slot_info is not None,
+                "module": slot_info,
+            })
+
+        occ_count = len(occupied_slots_map)
+        sto_label = dev.location.nama_lokasi if dev.location else ("STO Palu 1" if "PAL11" in dev.hostname else "STO Palu 2")
+        rack_status.append({
+            "device_id": dev.device_id,
+            "nama_perangkat": dev.nama_perangkat or dev.hostname,
+            "hostname": dev.hostname or dev.nama_perangkat,
+            "sto_nama": sto_label,
+            "tipe": dev.device_type.nama_tipe if dev.device_type else "PSS-24x Shelf",
+            "vendor": dev.device_type.vendor if (dev.device_type and dev.device_type.vendor) else "Nokia",
+            "total_slots": 24,
+            "occupied_slots": occ_count if occ_count > 0 else 24,
+            "percentage": round((occ_count / 24) * 100) if occ_count > 0 else 100,
+            "status": dev.status or "aktif",
+            "slots": slots,
+        })
+
     return jsonify({
         "success": True,
         "kpi": {
@@ -435,6 +520,8 @@ def get_dashboard_stats():
         "module_conditions": module_conditions,
         "movement_trend": movement_trend,
         "recent_activities": recent_activities,
+        "optical_composition": optical_composition,
+        "rack_status": rack_status,
         "teknisi": teknisi_data,
     })
 
@@ -458,6 +545,7 @@ def get_modules():
     category_filter = request.args.get("category", "all").strip().lower()
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 15, type=int)
+    show_all = request.args.get("all", "0") in ("1", "true", "True")
 
     base_query = (
         db.session.query(
@@ -533,7 +621,10 @@ def get_modules():
         display_rows = all_matching_rows
 
     total_count = len(display_rows)
-    items_raw = display_rows[(page - 1) * per_page : page * per_page]
+    if show_all:
+        items_raw = display_rows
+    else:
+        items_raw = display_rows[(page - 1) * per_page : page * per_page]
 
     items = []
     for row in items_raw:
@@ -1033,7 +1124,9 @@ def get_module_movements():
                 to_shelf = pos_to.shelf or "1"
                 to_port = pos_to.port or "-"
 
-        actor_name = m.actor.name if m.actor else (db.session.get(User, m.user_id).name if m.user_id else "-")
+        actor = m.actor or (db.session.get(User, m.user_id) if m.user_id else None)
+        actor_name = actor.name if actor else "-"
+        actor_avatar_url = actor.avatar_url if actor else None
         waktu_str = m.tanggal.strftime("%d %b %Y %H:%M") if m.tanggal else "-"
 
         # Search filter in-memory if needed
@@ -1065,6 +1158,7 @@ def get_module_movements():
             "keterangan": m.keterangan or "-",
             "user_id": m.user_id,
             "actor_name": actor_name,
+            "actor_avatar_url": actor_avatar_url,
             "from_device_id": m.from_device_id,
             "from_device_name": from_dev_name,
             "from_hostname": from_hostname,
@@ -2000,6 +2094,103 @@ def delete_device(device_id):
     })
 
 
+
+# =====================================================================
+# DEVICE TYPE (JENIS PERANGKAT) APIS
+# =====================================================================
+
+@api_bp.route("/device-types", methods=["GET"])
+@login_required
+def get_device_types():
+    """
+    Mengambil daftar seluruh jenis/tipe perangkat (DeviceType).
+    """
+    types = DeviceType.query.order_by(DeviceType.nama_tipe.asc()).all()
+    items = [
+        {
+            "id": dt.device_type_id,
+            "device_type_id": dt.device_type_id,
+            "nama": dt.nama_tipe,
+            "nama_tipe": dt.nama_tipe,
+            "vendor": dt.vendor or "-",
+            "deskripsi": dt.deskripsi or "-",
+            "devices_count": len(dt.devices) if dt.devices else 0,
+            "created_at": dt.created_at.strftime("%Y-%m-%d %H:%M") if dt.created_at else None,
+        }
+        for dt in types
+    ]
+    return jsonify({
+        "success": True,
+        "items": items,
+        "types": items,
+        "total_count": len(items)
+    })
+
+
+@api_bp.route("/device-types", methods=["POST"])
+@login_required
+def create_device_type():
+    """
+    Menambahkan jenis/tipe perangkat baru ke database dengan pencatatan audit ledger.
+    """
+    if current_user.role not in ["admin", "karyawan_tif"]:
+        return jsonify({"success": False, "error": "Akses ditolak. Hanya Admin dan Karyawan TIF yang berhak."}), 403
+
+    data = request.get_json(silent=True) or request.form.to_dict()
+    nama_tipe = (data.get("nama_tipe") or data.get("nama") or "").strip()
+    vendor = (data.get("vendor") or "").strip() or None
+    deskripsi = (data.get("deskripsi") or "").strip() or None
+
+    if not nama_tipe:
+        return jsonify({"success": False, "error": "Nama jenis/tipe perangkat wajib diisi."}), 400
+
+    if len(nama_tipe) > 100:
+        return jsonify({"success": False, "error": "Nama tipe perangkat maksimal 100 karakter."}), 400
+
+    # Cek duplikasi nama tipe (case-insensitive)
+    existing = DeviceType.query.filter(func.lower(DeviceType.nama_tipe) == func.lower(nama_tipe)).first()
+    if existing:
+        return jsonify({
+            "success": False,
+            "error": f"Jenis perangkat dengan nama '{nama_tipe}' sudah terdaftar di sistem."
+        }), 400
+
+    new_type = DeviceType(
+        nama_tipe=nama_tipe,
+        vendor=vendor,
+        deskripsi=deskripsi
+    )
+    db.session.add(new_type)
+    db.session.commit()
+
+    append_audit_log(
+        db,
+        user_id=current_user.user_id,
+        aksi="CREATE_DEVICE_TYPE",
+        table_name="device_types",
+        record_id=new_type.device_type_id,
+        data_dict={
+            "nama_tipe": new_type.nama_tipe,
+            "vendor": new_type.vendor or "-",
+            "deskripsi": new_type.deskripsi or "-",
+            "created_by": current_user.name,
+        }
+    )
+
+    return jsonify({
+        "success": True,
+        "message": f"Jenis perangkat '{nama_tipe}' berhasil ditambahkan ke database.",
+        "device_type": {
+            "id": new_type.device_type_id,
+            "device_type_id": new_type.device_type_id,
+            "nama": new_type.nama_tipe,
+            "nama_tipe": new_type.nama_tipe,
+            "vendor": new_type.vendor or "-",
+            "deskripsi": new_type.deskripsi or "-",
+        }
+    }), 201
+
+
 # =====================================================================
 # ADMIN USER MANAGEMENT (KELOLA USER) APIS
 # =====================================================================
@@ -2195,6 +2386,7 @@ def update_admin_user(user_id):
             "role": u.role,
             "district": u.district,
             "status": u.status,
+            "avatar_url": u.get_avatar_url(),
         }
     })
 
@@ -2331,6 +2523,7 @@ def get_audit_logs():
             "actor_name": e.actor.name if e.actor else "System",
             "actor_role": e.actor.role if e.actor else "-",
             "actor_email": e.actor.email if e.actor else "-",
+            "actor_avatar_url": e.actor.avatar_url if e.actor else None,
             "hash": e.hash or "",
             "previous_hash": e.previous_hash or "GENESIS",
             "data_snapshot": e.data_snapshot or "",

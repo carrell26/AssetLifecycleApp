@@ -65,7 +65,15 @@ def api_login():
         return jsonify(success=False, message="Akun kamu masih menunggu persetujuan Admin."), 403
 
     login_user(user, remember=data.get("remember", False))
-    return jsonify(success=True, redirect="/")
+    user_dict = {
+        "id": user.user_id,
+        "name": user.name,
+        "email": user.email,
+        "role": user.role,
+        "district": user.district,
+        "avatar_url": user.avatar_url or "",
+    }
+    return jsonify(success=True, redirect="/", user=user_dict)
 
 
 

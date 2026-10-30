@@ -32,6 +32,7 @@ function toInputDateFormat(dateStr) {
 const moduleColumnTypes = {
   ne_name: "text",
   unit_type: "text",
+  category: "text",
   location_name: "text",
   shelf: "number",
   slot: "number",
@@ -44,6 +45,7 @@ const moduleColumnTypes = {
 const moduleColumnNames = {
   ne_name: "Nama Perangkat",
   unit_type: "Unit Type",
+  category: "Kategori",
   location_name: "Lokasi",
   shelf: "Shelf",
   slot: "Slot",
@@ -89,6 +91,22 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
 
+  // Local search state synced with prop
+  const [localSearch, setLocalSearch] = useState(searchValue || "");
+
+  useEffect(() => {
+    if (searchValue !== undefined && searchValue !== localSearch) {
+      setLocalSearch(searchValue);
+      setPage(1);
+    }
+  }, [searchValue]);
+
+  const handleSearchChange = (val) => {
+    setLocalSearch(val);
+    setPage(1);
+    if (onSearchChange) onSearchChange(val);
+  };
+
   const deviceDropdownRef = useRef(null);
 
   // Close dropdown on outside click
@@ -128,16 +146,16 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
     }
   };
 
-  // Fetch Modules & Stats
-  const fetchModules = async (targetDevice = selectedDevice, search = searchValue) => {
-    setLoading(true);
+  // Fetch Modules & Stats (load all modules once on mount or mutation)
+  const fetchModules = async (forceLoading = false) => {
+    if (forceLoading || allModules.length === 0) {
+      setLoading(true);
+    }
     try {
       const params = new URLSearchParams({
         page: 1,
         per_page: 1000,
       });
-      if (targetDevice) params.append("ne", targetDevice);
-      if (search && search.trim()) params.append("q", search.trim());
 
       const res = await fetch(`/api/modules?${params.toString()}`);
       if (res.status === 401) {
@@ -146,7 +164,15 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
       }
       const data = await res.json();
       if (data.success) {
-        setAllModules(data.items || []);
+        const mapped = (data.items || []).map((m) => {
+          const p = m.port !== null && m.port !== undefined ? String(m.port).trim() : "";
+          const isSfp = p !== "" && p !== "-" && p.toLowerCase() !== "null" && p.toLowerCase() !== "none";
+          return {
+            ...m,
+            category: isSfp ? "SFP" : "Card",
+          };
+        });
+        setAllModules(mapped);
         setScopeInfo(data.scope_info || "");
         if (data.stats) {
           setStats(data.stats);
@@ -164,12 +190,8 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
 
   useEffect(() => {
     fetchMeta();
+    fetchModules(true);
   }, []);
-
-  useEffect(() => {
-    fetchModules(selectedDevice, searchValue);
-    setPage(1);
-  }, [selectedDevice, searchValue]);
 
   // Handle Column Sorting (toggle: asc -> desc -> none)
   const handleSort = (key) => {
@@ -185,14 +207,19 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
     setPage(1);
   };
 
-  // 1. Search filtering across all fields
+  // 1. Device filter & Search filtering across all fields (Instant in-memory, no layout jitter)
   const searchedModules = useMemo(() => {
-    if (!searchValue || !searchValue.trim()) return allModules;
-    const q = searchValue.trim().toLowerCase();
-    return allModules.filter((item) => {
+    let list = allModules;
+    if (selectedDevice) {
+      list = list.filter((item) => item.ne_name === selectedDevice);
+    }
+    const q = (localSearch || searchValue || "").trim().toLowerCase();
+    if (!q) return list;
+    return list.filter((item) => {
       return (
         (item.ne_name && item.ne_name.toLowerCase().includes(q)) ||
         (item.unit_type && item.unit_type.toLowerCase().includes(q)) ||
+        (item.category && item.category.toLowerCase().includes(q)) ||
         (item.location_name && item.location_name.toLowerCase().includes(q)) ||
         (item.shelf && String(item.shelf).toLowerCase().includes(q)) ||
         (item.slot && String(item.slot).toLowerCase().includes(q)) ||
@@ -202,7 +229,18 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
         (item.date_str && item.date_str.toLowerCase().includes(q))
       );
     });
-  }, [allModules, searchValue]);
+  }, [allModules, selectedDevice, searchValue, localSearch]);
+
+  // Dynamic stats calculation when device is selected
+  const displayStats = useMemo(() => {
+    if (!selectedDevice) return stats;
+    const devModules = allModules.filter((m) => m.ne_name === selectedDevice);
+    return {
+      total_modules: devModules.length,
+      total_devices: 1,
+      total_locations: 1,
+    };
+  }, [allModules, selectedDevice, stats]);
 
   // 2. Sorting applied before pagination
   const sortedModules = useMemo(() => {
@@ -338,12 +376,17 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
             {/* Value & Badge */}
             <div className="flex items-baseline gap-3 mt-4">
               <span className={`text-4xl lg:text-5xl font-extrabold tracking-tight ${isDark ? "text-[#F8FAFC]" : "text-slate-900"}`}>
-                {stats.total_modules}
+                {displayStats.total_modules}
               </span>
               <span className={`px-2.5 py-1 text-xs font-semibold rounded-md ${isDark ? "bg-[#0F294D] text-[#38BDF8] border border-[#1E4378]" : "bg-blue-50 text-blue-700 border border-blue-200"}`}>
                 Unit
               </span>
             </div>
+
+            {/* Subtitle */}
+            <p className={`text-xs mt-2 font-medium ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
+              Modul optik dan card aktif terpasang
+            </p>
           </div>
 
           {/* Right Icon / 3D Illustration Container with Neon Glow */}
@@ -379,12 +422,17 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
             {/* Value & Badge */}
             <div className="flex items-baseline gap-3 mt-4">
               <span className={`text-4xl lg:text-5xl font-extrabold tracking-tight ${isDark ? "text-[#F8FAFC]" : "text-slate-900"}`}>
-                {stats.total_devices}
+                {displayStats.total_devices}
               </span>
               <span className={`px-2.5 py-1 text-xs font-semibold rounded-md ${isDark ? "bg-[#24133F] text-[#D8B4FE] border border-[#4C2880]" : "bg-purple-50 text-purple-700 border border-purple-200"}`}>
                 Unit
               </span>
             </div>
+
+            {/* Subtitle */}
+            <p className={`text-xs mt-2 font-medium ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
+              Perangkat transmisi optik aktif
+            </p>
           </div>
 
           {/* Right Icon / 3D Illustration Container with Neon Glow */}
@@ -420,12 +468,17 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
             {/* Value & Badge */}
             <div className="flex items-baseline gap-3 mt-4">
               <span className={`text-4xl lg:text-5xl font-extrabold tracking-tight ${isDark ? "text-[#F8FAFC]" : "text-slate-900"}`}>
-                {stats.total_locations}
+                {displayStats.total_locations}
               </span>
               <span className={`px-2.5 py-1 text-xs font-semibold rounded-md ${isDark ? "bg-[#0A2E24] text-[#6EE7B7] border border-[#15604B]" : "bg-emerald-50 text-emerald-700 border border-emerald-200"}`}>
                 Titik STO
               </span>
             </div>
+
+            {/* Subtitle */}
+            <p className={`text-xs mt-2 font-medium ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
+              Titik STO operasional regional
+            </p>
           </div>
 
           {/* Right Icon / 3D Illustration Container with Neon Glow */}
@@ -447,169 +500,208 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
       {/* B. PANEL DAFTAR MODUL & KONTROL TABEL                    */}
       {/* ======================================================== */}
       <div
-        className={`rounded-2xl border p-5 sm:p-6 transition-all duration-300 ${isDark
-          ? "bg-[#0D1F36] border-[#1A3358] shadow-[0_8px_24px_rgba(0,0,0,0.35)]"
-          : "bg-white border-slate-200 shadow-md"
+        className={`rounded-2xl border transition-colors duration-200 overflow-visible w-full ${isDark
+          ? "border-[#162F52] bg-[#0A182B] shadow-2xl"
+          : "border-slate-200 bg-white shadow-sm"
           }`}
       >
-        {/* Controls Row: Dropdown filter on left, Pasang Modul Baru on right */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pb-4">
-          {/* Left: Device Filter Dropdown (HANYA STO PALU 1 & STO PALU 2) */}
-          <div className="relative w-full sm:w-80" ref={deviceDropdownRef}>
-            <button
-              type="button"
-              onClick={() => setDeviceDropdownOpen(!deviceDropdownOpen)}
-              className={`relative w-full h-11 px-9 rounded-xl border flex items-center justify-center text-xs font-medium transition-all cursor-pointer ${isDark
-                ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
-                : "bg-slate-50 border-slate-300 text-slate-800 hover:border-blue-500"
+        {/* Controls Toolbar: Search di kiri, Dropdown Filter & Pasang Modul Baru di kanan */}
+        <div
+          className={`px-6 py-4 sm:py-5 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 sm:gap-4 border-b ${isDark ? "border-[#142D4C]" : "border-slate-100"
+            }`}
+        >
+          {/* Left: Input Search Bar */}
+          <div className="relative flex-1 max-w-md">
+            <span
+              className={`absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px] pointer-events-none ${isDark ? "text-[#64748B]" : "text-slate-400"
                 }`}
             >
-              <div className="flex items-center justify-center gap-2.5 truncate">
-                <span className="material-symbols-outlined text-[19px] text-[#38BDF8] shrink-0">
-                  desktop_windows
-                </span>
-                <span className="truncate font-semibold">
-                  {selectedDevice ? selectedDevice : "Semua Perangkat"}
-                </span>
-              </div>
-              <span
-                className={`absolute right-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px] text-[#94A3B8] transition-transform duration-200 ${deviceDropdownOpen ? "rotate-180" : ""
+              search
+            </span>
+            <input
+              type="text"
+              id="moduleSearchInput"
+              value={localSearch}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              placeholder="Cari perangkat, modul, serial number, atau lokasi..."
+              className={`w-full h-11 pl-10 pr-9 rounded-xl border text-xs sm:text-sm outline-none transition-all duration-200 ease-in-out ${isDark
+                ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] placeholder-[#4d6686] focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF]"
+                : "bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:bg-white"
+                }`}
+            />
+            {localSearch && (
+              <button
+                type="button"
+                onClick={() => handleSearchChange("")}
+                className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors cursor-pointer ${isDark ? "text-[#64748B] hover:text-white" : "text-slate-400 hover:text-slate-700"
                   }`}
               >
-                expand_more
-              </span>
-            </button>
-
-            {/* Custom Filter Dropdown Menu (Hanya STO PALU 1 & 2) */}
-            {deviceDropdownOpen && (
-              <div
-                className={`absolute left-0 top-12 mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-30 max-h-64 overflow-y-auto custom-scrollbar backdrop-blur-md ${isDark
-                  ? "bg-[#0A182B]/95 border-[#1E3A5F] text-[#E6EDF7]"
-                  : "bg-white border-slate-200 text-slate-800"
-                  }`}
-              >
-                {/* Option: Semua Perangkat Palu */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedDevice("");
-                    setDeviceDropdownOpen(false);
-                  }}
-                  className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${selectedDevice === ""
-                    ? isDark
-                      ? "bg-[#1677FF] text-white"
-                      : "bg-blue-600 text-white"
-                    : isDark
-                      ? "hover:bg-[#122846] text-[#CBD5E1]"
-                      : "hover:bg-slate-100 text-slate-700"
-                    }`}
-                >
-                  <div className="flex flex-col">
-                    <span className="font-semibold">Semua Perangkat</span>
-                    <span className={`text-[10px] ${selectedDevice === "" ? "text-blue-100" : isDark ? "text-[#64748B]" : "text-slate-400"}`}>
-                      Fokus STO PALU 1 & STO PALU 2
-                    </span>
-                  </div>
-                  {selectedDevice === "" && (
-                    <span className="material-symbols-outlined text-[16px]">check</span>
-                  )}
-                </button>
-
-                <div className="h-px bg-[#1A3358] my-1"></div>
-
-                {/* Device Options from DB (Only STO PALU 1 & STO PALU 2) */}
-                {meta.palu_devices.map((dev) => {
-                  const isSelected = selectedDevice === dev.hostname;
-                  return (
-                    <button
-                      key={dev.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedDevice(dev.hostname);
-                        setDeviceDropdownOpen(false);
-                      }}
-                      className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${isSelected
-                        ? isDark
-                          ? "bg-[#1677FF] text-white"
-                          : "bg-blue-600 text-white"
-                        : isDark
-                          ? "hover:bg-[#122846] text-[#CBD5E1]"
-                          : "hover:bg-slate-100 text-slate-700"
-                        }`}
-                    >
-                      <div className="flex flex-col truncate pr-2">
-                        <span className="font-semibold">{dev.hostname}</span>
-                        <span
-                          className={`text-[10px] ${isSelected
-                            ? "text-blue-100"
-                            : isDark
-                              ? "text-[#64748B]"
-                              : "text-slate-400"
-                            }`}
-                        >
-                          {dev.location}
-                        </span>
-                      </div>
-                      {isSelected && (
-                        <span className="material-symbols-outlined text-[16px] shrink-0">
-                          check
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
+                <span className="material-symbols-outlined text-[16px]">close</span>
+              </button>
             )}
           </div>
 
-          {/* Right: Pasang Modul Baru Button (Hanya 1 ikon plus, tanpa dobel +) */}
-          {user?.role !== "teknisi" && (
-            <button
-              type="button"
-              onClick={() => setCreateModalOpen(true)}
-              className="h-11 px-5 rounded-xl bg-[#1677FF] hover:bg-[#0E65D9] text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-[#1677FF]/30 transition-all duration-200 hover:shadow-[#1677FF]/50 active:scale-[0.98] cursor-pointer shrink-0"
-            >
-              <span className="material-symbols-outlined text-[19px]">add</span>
-              <span>Pasang Modul Baru</span>
-            </button>
-          )}
-        </div>
+          {/* Right: Device Filter Dropdown & Pasang Modul Baru */}
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Filter Dropdown: Semua Perangkat (Panjang container box tetap stabil 215px agar tidak bergetar/geser) */}
+            <div className="relative w-[215px] min-w-[215px]" ref={deviceDropdownRef}>
+              <button
+                type="button"
+                onClick={() => setDeviceDropdownOpen(!deviceDropdownOpen)}
+                className={`relative w-full h-11 px-4 rounded-xl border flex items-center justify-between gap-3 text-xs font-medium transition-all duration-200 cursor-pointer ${
+                  deviceDropdownOpen
+                    ? isDark
+                      ? "bg-[#0A182B] border-[#1677FF] ring-2 ring-[#1677FF]/25 text-[#E6EDF7]"
+                      : "bg-white border-[#1677FF] ring-2 ring-[#1677FF]/20 text-slate-900"
+                    : isDark
+                      ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
+                      : "bg-slate-50 border-slate-300 text-slate-800 hover:border-blue-500"
+                }`}
+              >
+                <div className="flex items-center gap-2 truncate pr-2">
+                  <span className="material-symbols-outlined text-[18px] text-[#38BDF8] shrink-0">
+                    desktop_windows
+                  </span>
+                  <span className="truncate font-semibold">
+                    {selectedDevice ? selectedDevice : "Semua Perangkat"}
+                  </span>
+                </div>
+                <span
+                  className={`material-symbols-outlined text-[18px] text-[#94A3B8] transition-transform duration-200 shrink-0 ${deviceDropdownOpen ? "rotate-180" : ""
+                    }`}
+                >
+                  expand_more
+                </span>
+              </button>
 
-        {/* Sub-header: Total baris info banner (Ukuran tetap tanpa pergeseran layout) */}
-        <div className="flex items-center gap-2 pt-1 pb-4 text-xs font-medium text-[#38BDF8]">
-          <span className="material-symbols-outlined text-[17px] text-[#00E5FF]">
-            info
-          </span>
-          <span>
-            Total data ditampilkan:{" "}
-            <strong className={isDark ? "text-white font-bold" : "text-slate-900 font-bold"}>
-              {totalItems}
-            </strong>{" "}
-            baris ({scopeInfo})
-          </span>
+              {/* Custom Filter Dropdown Menu */}
+              {deviceDropdownOpen && (
+                <div
+                  className={`absolute left-0 top-12 mt-1.5 w-full min-w-full rounded-xl border shadow-2xl p-1.5 z-30 max-h-64 overflow-y-auto custom-scrollbar backdrop-blur-md animate-dropdown ${isDark
+                    ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7]"
+                    : "bg-white border-slate-200 text-slate-800 shadow-xl"
+                    }`}
+                  style={{
+                    backgroundColor: isDark ? "#0A182B" : "#FFFFFF",
+                    borderColor: isDark ? "#1E3A5F" : "#E2E8F0",
+                  }}
+                >
+                  {/* Option: Semua Perangkat (Tanpa sublabel fokus STO) */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedDevice("");
+                      setDeviceDropdownOpen(false);
+                    }}
+                    className={`w-full px-3 py-2.5 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${selectedDevice === ""
+                      ? isDark
+                        ? "bg-[#1677FF] text-white font-semibold"
+                        : "bg-blue-600 text-white font-semibold"
+                      : isDark
+                        ? "hover:bg-[#122846] text-[#CBD5E1]"
+                        : "hover:bg-slate-100 text-slate-700"
+                      }`}
+                  >
+                    <span>Semua Perangkat</span>
+                    {selectedDevice === "" && (
+                      <span className="material-symbols-outlined text-[16px] shrink-0">check</span>
+                    )}
+                  </button>
+
+                  <div className={`h-px my-1 ${isDark ? "bg-[#1A3358]" : "bg-slate-100"}`} />
+
+                  {/* Device Options from DB */}
+                  {meta.palu_devices.map((dev) => {
+                    const isSelected = selectedDevice === dev.hostname;
+                    return (
+                      <button
+                        key={dev.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedDevice(dev.hostname);
+                          setDeviceDropdownOpen(false);
+                        }}
+                        className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${isSelected
+                          ? isDark
+                            ? "bg-[#1677FF] text-white font-semibold"
+                            : "bg-blue-600 text-white font-semibold"
+                          : isDark
+                            ? "hover:bg-[#122846] text-[#CBD5E1]"
+                            : "hover:bg-slate-100 text-slate-700"
+                          }`}
+                      >
+                        <div className="flex flex-col truncate pr-2">
+                          <span className="font-semibold">{dev.hostname}</span>
+                          <span
+                            className={`text-[10px] ${isSelected
+                              ? "text-blue-100"
+                              : isDark
+                                ? "text-[#64748B]"
+                                : "text-slate-400"
+                              }`}
+                          >
+                            {dev.location}
+                          </span>
+                        </div>
+                        {isSelected && (
+                          <span className="material-symbols-outlined text-[16px] shrink-0">
+                            check
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Right: Pasang Modul Baru Button */}
+            {user?.role !== "teknisi" && (
+              <button
+                type="button"
+                onClick={() => setCreateModalOpen(true)}
+                className="h-11 px-5 rounded-xl bg-[#1677FF] hover:bg-[#0E65D9] text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-[#1677FF]/30 transition-all duration-200 hover:shadow-[#1677FF]/50 active:scale-[0.98] cursor-pointer shrink-0"
+              >
+                <span className="material-symbols-outlined text-[19px]">add</span>
+                <span>Pasang Modul Baru</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* ======================================================== */}
-        {/* C. STRUKTUR TABEL MODUL (WAJIB 10 KOLOM SESUAI GAMBAR)    */}
-        {/* ======================================================== */}
-        <div className={`overflow-x-auto custom-scrollbar rounded-xl border ${isDark ? "border-[#162F52]" : "border-slate-200"}`}>
-          <table className="w-full text-left border-collapse min-w-[1180px] table-fixed">
+        {/* C. STRUKTUR TABEL MODUL (100% MENGIKUTI STYLE MUTASI MODUL) */}
+        <div className="overflow-x-auto custom-scrollbar rounded-t-xl">
+          <table
+            id="modulesTable"
+            className="w-full text-left border-collapse min-w-[1200px] table-fixed"
+            style={{ tableLayout: "fixed", width: "100%" }}
+          >
             <colgroup>
-              <col style={{ width: '15%' }} /> {/* 1. NAMA PERANGKAT */}
-              <col style={{ width: '10%' }} /> {/* 2. UNIT TYPE */}
-              <col style={{ width: '11%' }} /> {/* 3. LOKASI */}
-              <col style={{ width: '5%' }} />  {/* 4. SHELF */}
-              <col style={{ width: '5%' }} />  {/* 5. SLOT */}
-              <col style={{ width: '5%' }} />  {/* 6. PORT */}
-              <col style={{ width: '13%' }} /> {/* 7. UNIT PART NUMBER */}
-              <col style={{ width: '13%' }} /> {/* 8. SERIAL NUMBER */}
-              <col style={{ width: '9%' }} />  {/* 9. DATE */}
-              <col style={{ width: '14%' }} /> {/* 10. AKSI */}
+              <col style={{ width: '16%' }} />   {/* 1. NAMA PERANGKAT */}
+              <col style={{ width: '10.5%' }} /> {/* 2. UNIT TYPE */}
+              <col style={{ width: '7%' }} />    {/* 3. KATEGORI */}
+              <col style={{ width: '8%' }} />    {/* 4. LOKASI */}
+              <col style={{ width: '4.5%' }} />  {/* 5. SHELF */}
+              <col style={{ width: '4.5%' }} />  {/* 6. SLOT */}
+              <col style={{ width: '4.5%' }} />  {/* 7. PORT */}
+              <col style={{ width: '12%' }} />   {/* 8. UNIT PART NUMBER */}
+              <col style={{ width: '12.5%' }} /> {/* 9. SERIAL NUMBER */}
+              <col style={{ width: '9%' }} />    {/* 10. DATE */}
+              <col style={{ width: '11.5%' }} /> {/* 11. AKSI */}
             </colgroup>
-            <thead>
-              <tr className={`border-b ${isDark ? "bg-[#09172A] border-[#18355C]" : "bg-slate-50 border-slate-200"}`}>
+            <thead className={`rounded-t-xl ${isDark ? "bg-[#071426]" : "bg-slate-50"}`}>
+              <tr
+                className={`border-b text-[11px] font-bold uppercase tracking-wider ${isDark
+                  ? "bg-[#071426] border-[#142D4C] text-[#94A3B8]"
+                  : "bg-slate-50 border-slate-200 text-slate-600"
+                  } rounded-t-xl`}
+              >
                 {/* 1. NAMA PERANGKAT */}
-                <th className="py-3 px-3 text-[11px] font-extrabold uppercase tracking-wider text-left">
+                <th
+                  className="py-3.5 pl-6 pr-3 text-left select-none rounded-tl-xl"
+                  style={{ width: "16%" }}
+                >
                   <TableSortHeader
                     title="NAMA PERANGKAT"
                     sortKey="ne_name"
@@ -620,7 +712,10 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
                 </th>
 
                 {/* 2. UNIT TYPE */}
-                <th className="py-3 px-3 text-[11px] font-extrabold uppercase tracking-wider text-left">
+                <th
+                  className="py-3.5 px-3 text-left select-none"
+                  style={{ width: "10.5%" }}
+                >
                   <TableSortHeader
                     title="UNIT TYPE"
                     sortKey="unit_type"
@@ -630,8 +725,25 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
                   />
                 </th>
 
-                {/* 3. LOKASI */}
-                <th className="py-3 px-3 text-[11px] font-extrabold uppercase tracking-wider text-left">
+                {/* 3. KATEGORI */}
+                <th
+                  className="py-3.5 px-3 text-left select-none"
+                  style={{ width: "7%" }}
+                >
+                  <TableSortHeader
+                    title="KATEGORI"
+                    sortKey="category"
+                    currentSort={sortConfig}
+                    onSort={handleSort}
+                    isDark={isDark}
+                  />
+                </th>
+
+                {/* 4. LOKASI */}
+                <th
+                  className="py-3.5 px-3 text-left select-none"
+                  style={{ width: "8%" }}
+                >
                   <TableSortHeader
                     title="LOKASI"
                     sortKey="location_name"
@@ -641,8 +753,11 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
                   />
                 </th>
 
-                {/* 4. SHELF */}
-                <th className="py-3 px-2 text-[11px] font-extrabold uppercase tracking-wider text-center">
+                {/* 5. SHELF */}
+                <th
+                  className="py-3.5 px-1 text-center select-none"
+                  style={{ width: "4.5%" }}
+                >
                   <TableSortHeader
                     title="SHELF"
                     sortKey="shelf"
@@ -653,8 +768,11 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
                   />
                 </th>
 
-                {/* 5. SLOT */}
-                <th className="py-3 px-2 text-[11px] font-extrabold uppercase tracking-wider text-center">
+                {/* 6. SLOT */}
+                <th
+                  className="py-3.5 px-1 text-center select-none"
+                  style={{ width: "4.5%" }}
+                >
                   <TableSortHeader
                     title="SLOT"
                     sortKey="slot"
@@ -665,8 +783,11 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
                   />
                 </th>
 
-                {/* 6. PORT */}
-                <th className="py-3 px-2 text-[11px] font-extrabold uppercase tracking-wider text-center">
+                {/* 7. PORT */}
+                <th
+                  className="py-3.5 px-1 text-center select-none"
+                  style={{ width: "4.5%" }}
+                >
                   <TableSortHeader
                     title="PORT"
                     sortKey="port"
@@ -677,8 +798,11 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
                   />
                 </th>
 
-                {/* 7. UNIT PART NUMBER */}
-                <th className="py-3 px-3 text-[11px] font-extrabold uppercase tracking-wider text-left">
+                {/* 8. UNIT PART NUMBER */}
+                <th
+                  className="py-3.5 px-3 text-left select-none"
+                  style={{ width: "12%" }}
+                >
                   <TableSortHeader
                     title="UNIT PART NUMBER"
                     sortKey="unit_part_number"
@@ -688,8 +812,11 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
                   />
                 </th>
 
-                {/* 8. SERIAL NUMBER */}
-                <th className="py-3 px-3 text-[11px] font-extrabold uppercase tracking-wider text-left">
+                {/* 9. SERIAL NUMBER */}
+                <th
+                  className="py-3.5 px-3 text-left select-none"
+                  style={{ width: "12.5%" }}
+                >
                   <TableSortHeader
                     title="SERIAL NUMBER"
                     sortKey="serial_number"
@@ -699,28 +826,36 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
                   />
                 </th>
 
-                {/* 9. DATE */}
-                <th className="py-3 px-2 text-[11px] font-extrabold uppercase tracking-wider text-left">
+                {/* 10. DATE */}
+                <th
+                  className="py-3.5 px-3 text-left select-none"
+                  style={{ width: "9%" }}
+                >
                   <TableSortHeader
                     title="DATE"
                     sortKey="date_str"
                     currentSort={sortConfig}
                     onSort={handleSort}
+                    align="left"
                     isDark={isDark}
                   />
                 </th>
 
-                {/* 10. AKSI */}
-                <th className={`py-3.5 px-3 text-[11px] font-extrabold uppercase tracking-wider text-center ${isDark ? "text-[#38BDF8]" : "text-blue-600"
-                  }`}>
-                  AKSI
+                {/* 11. AKSI */}
+                <th
+                  className="py-3.5 pl-3 pr-6 text-center select-none rounded-tr-xl"
+                  style={{ width: "11.5%" }}
+                >
+                  <span className={`font-extrabold uppercase tracking-wider text-[11px] ${isDark ? "text-[#38BDF8]" : "text-blue-600"}`}>
+                    AKSI
+                  </span>
                 </th>
               </tr>
             </thead>
-            <tbody className={`divide-y text-xs ${isDark ? "divide-[#132845]" : "divide-slate-200"}`}>
-              {loading ? (
+            <tbody className={`divide-y text-xs ${isDark ? "divide-[#0F2238]" : "divide-slate-100"}`}>
+              {loading && allModules.length === 0 ? (
                 <tr>
-                  <td colSpan="10" className={`py-16 text-center ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
+                  <td colSpan="11" className={`py-16 text-center ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
                     <div className="flex flex-col items-center justify-center gap-3">
                       <span className="material-symbols-outlined text-4xl animate-spin text-[#1677FF]">
                         progress_activity
@@ -731,7 +866,7 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
                 </tr>
               ) : paginatedModules.length === 0 ? (
                 <tr>
-                  <td colSpan="10" className={`py-14 text-center ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
+                  <td colSpan="11" className={`py-14 text-center ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
                     <div className="flex flex-col items-center justify-center gap-2">
                       <span className="material-symbols-outlined text-4xl text-[#64748B]">
                         inbox
@@ -747,15 +882,15 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
                 paginatedModules.map((item) => (
                   <tr
                     key={item.position_id}
-                    className={`transition-colors group ${isDark
-                      ? "hover:bg-[#102444]/60"
-                      : "hover:bg-slate-50/80 even:bg-slate-50/40"
+                    className={`transition-colors border-b ${isDark
+                      ? "border-[#0F2238] hover:bg-[#0D2138]/80 text-[#E6EDF7]"
+                      : "border-slate-100 hover:bg-slate-50/80 text-slate-800"
                       }`}
                   >
                     {/* 1. NAMA PERANGKAT */}
-                    <td className={`py-3 px-4 font-semibold whitespace-nowrap ${isDark ? "text-[#E6EDF7]" : "text-slate-800"
+                    <td className={`py-3.5 pl-6 pr-3 font-semibold whitespace-nowrap ${isDark ? "text-[#E6EDF7]" : "text-slate-800"
                       }`}>
-                      <div className="flex items-center gap-2.5">
+                      <div className="flex items-center gap-2 min-w-0">
                         <div className={`w-5 h-5 rounded-md flex items-center justify-center text-[13px] shrink-0 border ${isDark
                           ? "bg-[#0D264A] text-[#38BDF8] border-[#164375]"
                           : "bg-blue-50 text-blue-600 border-blue-200"
@@ -764,13 +899,13 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
                             hard_drive
                           </span>
                         </div>
-                        <span className="font-mono">{item.ne_name}</span>
+                        <span className="font-mono text-xs tracking-wide">{item.ne_name}</span>
                       </div>
                     </td>
 
                     {/* 2. UNIT TYPE */}
-                    <td className="py-3 px-3 whitespace-nowrap">
-                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${isDark
+                    <td className="py-3.5 px-3 whitespace-nowrap">
+                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold border max-w-full ${isDark
                         ? "bg-[#0C2548] border-[#1A4378] text-[#38BDF8]"
                         : "bg-blue-50 border-blue-200 text-blue-700"
                         }`}>
@@ -778,15 +913,36 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
                       </span>
                     </td>
 
-                    {/* 3. LOKASI */}
-                    <td className={`py-3 px-3 whitespace-nowrap ${isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                    {/* 3. KATEGORI */}
+                    <td className="py-3.5 px-3 whitespace-nowrap">
+                      {item.category === "SFP" ? (
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase border ${isDark
+                          ? "bg-[#0E3B33] text-[#34D399] border-[#059669]/40"
+                          : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          }`}>
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]"></span>
+                          <span>SFP</span>
+                        </span>
+                      ) : (
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase border ${isDark
+                          ? "bg-[#25133E] text-[#C084FC] border-[#A855F7]/35"
+                          : "bg-purple-50 text-purple-700 border-purple-200"
+                          }`}>
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#A855F7]"></span>
+                          <span>CARD</span>
+                        </span>
+                      )}
+                    </td>
+
+                    {/* 4. LOKASI */}
+                    <td className={`py-3.5 px-3 text-xs whitespace-nowrap ${isDark ? "text-[#CBD5E1]" : "text-slate-700"
                       }`}>
                       {item.location_name}
                     </td>
 
-                    {/* 4. SHELF */}
-                    <td className="py-3 px-3 text-center whitespace-nowrap">
-                      <span className={`inline-flex items-center justify-center min-w-[26px] h-[26px] px-1.5 rounded-md border font-bold text-xs font-mono ${isDark
+                    {/* 5. SHELF */}
+                    <td className="py-3.5 px-1 text-center whitespace-nowrap">
+                      <span className={`inline-flex items-center justify-center min-w-[24px] h-[24px] px-1 rounded-md border font-bold text-xs font-mono ${isDark
                         ? "bg-[#0D2F54] border-[#174F88] text-[#38BDF8]"
                         : "bg-sky-50 border-sky-200 text-sky-700"
                         }`}>
@@ -794,9 +950,9 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
                       </span>
                     </td>
 
-                    {/* 5. SLOT */}
-                    <td className="py-3 px-3 text-center whitespace-nowrap">
-                      <span className={`inline-flex items-center justify-center min-w-[26px] h-[26px] px-1.5 rounded-md border font-bold text-xs font-mono ${isDark
+                    {/* 6. SLOT */}
+                    <td className="py-3.5 px-1 text-center whitespace-nowrap">
+                      <span className={`inline-flex items-center justify-center min-w-[28px] h-[24px] px-1.5 rounded-md border font-bold text-xs font-mono ${isDark
                         ? "bg-[#0D2F54] border-[#174F88] text-[#38BDF8]"
                         : "bg-sky-50 border-sky-200 text-sky-700"
                         }`}>
@@ -804,9 +960,9 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
                       </span>
                     </td>
 
-                    {/* 6. PORT */}
-                    <td className="py-3 px-3 text-center whitespace-nowrap">
-                      <span className={`inline-flex items-center justify-center min-w-[26px] h-[26px] px-1.5 rounded-md border font-bold text-xs font-mono ${isDark
+                    {/* 7. PORT */}
+                    <td className="py-3.5 px-1 text-center whitespace-nowrap">
+                      <span className={`inline-flex items-center justify-center min-w-[24px] h-[24px] px-1 rounded-md border font-bold text-xs font-mono ${isDark
                         ? "bg-[#0D2F54] border-[#174F88] text-[#38BDF8]"
                         : "bg-sky-50 border-sky-200 text-sky-700"
                         }`}>
@@ -814,26 +970,26 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
                       </span>
                     </td>
 
-                    {/* 7. UNIT PART NUMBER */}
-                    <td className={`py-3 px-4 font-mono text-[11px] whitespace-nowrap ${isDark ? "text-[#94A3B8]" : "text-slate-500"
+                    {/* 8. UNIT PART NUMBER */}
+                    <td className={`py-3.5 px-3 font-mono text-xs tracking-wide whitespace-nowrap ${isDark ? "text-[#94A3B8]" : "text-slate-600"
                       }`}>
                       {item.unit_part_number}
                     </td>
 
-                    {/* 8. SERIAL NUMBER */}
-                    <td className={`py-3 px-4 font-mono font-bold tracking-wide whitespace-nowrap ${isDark ? "text-[#F8FAFC]" : "text-slate-900"
+                    {/* 9. SERIAL NUMBER */}
+                    <td className={`py-3.5 px-3 font-mono font-medium tracking-wide text-xs whitespace-nowrap ${isDark ? "text-slate-100" : "text-slate-800"
                       }`}>
                       {item.serial_number}
                     </td>
 
-                    {/* 9. DATE */}
-                    <td className={`py-3 px-3 font-mono text-[11px] whitespace-nowrap ${isDark ? "text-[#94A3B8]" : "text-slate-500"
+                    {/* 10. DATE */}
+                    <td className={`py-3.5 px-3 font-mono text-[11.5px] tracking-wide whitespace-nowrap text-left ${isDark ? "text-[#94A3B8]" : "text-slate-500"
                       }`}>
                       {item.date_str}
                     </td>
 
-                    {/* 10. AKSI */}
-                    <td className="py-3 px-3 whitespace-nowrap text-center">
+                    {/* 11. AKSI */}
+                    <td className="py-3.5 pl-3 pr-6 whitespace-nowrap text-center">
                       <div className="flex items-center justify-center gap-1.5 flex-nowrap shrink-0 mx-auto">
                         {/* Detail Action */}
                         <button
@@ -897,6 +1053,7 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
           page={safePage}
           perPage={perPage}
           totalCount={totalItems}
+          itemLabel="modul"
           onPageChange={(newPage) => setPage(newPage)}
           onPerPageChange={(newPerPage) => {
             setPerPage(newPerPage);
@@ -912,6 +1069,7 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
       {createModalOpen && (
         <CreateModuleModal
           meta={meta}
+          allModules={allModules}
           onClose={() => setCreateModalOpen(false)}
           onSuccess={(msg) => {
             setCreateModalOpen(false);
@@ -928,6 +1086,7 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
         <EditModuleModal
           moduleData={selectedForEdit}
           meta={meta}
+          allModules={allModules}
           onClose={() => {
             setEditModalOpen(false);
             setSelectedForEdit(null);
@@ -968,45 +1127,63 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
             }}
           >
             <div
-              className="bg-[#0D1F36] border border-rose-500/40 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4"
+              className={`rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4 border transition-colors ${
+                isDark
+                  ? "bg-[#0D1F36] border-rose-500/40 text-[#E6EDF7]"
+                  : "bg-white border-rose-300 text-slate-800 shadow-xl"
+              }`}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center gap-3 text-rose-400">
-                <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center">
+              <div className="flex items-center gap-3 text-rose-500">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
+                  isDark
+                    ? "bg-rose-500/10 border-rose-500/30 text-rose-400"
+                    : "bg-rose-50 border-rose-200 text-rose-600"
+                }`}>
                   <span className="material-symbols-outlined text-[24px]">warning</span>
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">Konfirmasi Hapus Modul</h3>
-                  <p className="text-xs text-rose-300">Tindakan ini tidak dapat dibatalkan</p>
+                  <h3 className={`text-base font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
+                    Konfirmasi Hapus Modul
+                  </h3>
+                  <p className={`text-xs ${isDark ? "text-rose-300" : "text-rose-600"}`}>
+                    Tindakan ini tidak dapat dibatalkan
+                  </p>
                 </div>
               </div>
 
-              <div className="bg-[#071426] border border-[#1A2E4C] rounded-xl p-4 text-xs space-y-2 text-[#CBD5E1]">
+              <div className={`rounded-xl p-4 text-xs space-y-2 border ${
+                isDark
+                  ? "bg-[#071426] border-[#1A2E4C] text-[#CBD5E1]"
+                  : "bg-slate-50 border-slate-200 text-slate-700"
+              }`}>
                 <div className="flex justify-between">
-                  <span className="text-[#94A3B8]">Serial Number:</span>
-                  <span className="font-mono font-bold text-white">
+                  <span className={isDark ? "text-[#94A3B8]" : "text-slate-500"}>Serial Number:</span>
+                  <span className={`font-mono font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
                     {selectedForDelete.serial_number}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#94A3B8]">Perangkat:</span>
-                  <span className="font-mono text-white">{selectedForDelete.ne_name}</span>
+                  <span className={isDark ? "text-[#94A3B8]" : "text-slate-500"}>Perangkat:</span>
+                  <span className={`font-mono ${isDark ? "text-white" : "text-slate-900"}`}>
+                    {selectedForDelete.ne_name}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#94A3B8]">Unit Type:</span>
-                  <span className="font-semibold text-[#38BDF8]">
+                  <span className={isDark ? "text-[#94A3B8]" : "text-slate-500"}>Unit Type:</span>
+                  <span className={`font-semibold ${isDark ? "text-[#38BDF8]" : "text-blue-600"}`}>
                     {selectedForDelete.unit_type}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#94A3B8]">Lokasi / Slot:</span>
+                  <span className={isDark ? "text-[#94A3B8]" : "text-slate-500"}>Lokasi / Slot:</span>
                   <span>
                     {selectedForDelete.location_name} • Slot {selectedForDelete.slot}
                   </span>
                 </div>
               </div>
 
-              <p className="text-[11px] text-[#94A3B8] leading-relaxed">
+              <p className={`text-[11px] leading-relaxed ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
                 Sistem akan memeriksa integritas riwayat mutasi dan audit log. Modul dengan catatan
                 resmi tidak akan dihapus sembarangan sesuai aturan integritas data.
               </p>
@@ -1019,7 +1196,11 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
                     setDeleteModalOpen(false);
                     setSelectedForDelete(null);
                   }}
-                  className="px-4 py-2.5 rounded-xl border border-[#1E3A5F] text-[#CBD5E1] hover:bg-[#122846] text-xs font-semibold transition-colors cursor-pointer"
+                  className={`px-4 py-2.5 rounded-xl border text-xs font-semibold transition-colors cursor-pointer ${
+                    isDark
+                      ? "border-[#1E3A5F] text-[#CBD5E1] hover:bg-[#122846]"
+                      : "border-slate-300 text-slate-700 hover:bg-slate-100"
+                  }`}
                 >
                   Batal
                 </button>
@@ -1055,18 +1236,34 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
 // ==============================================================
 // SUBCOMPONENT: CREATE MODULE MODAL
 // ==============================================================
-function CreateModuleModal({ meta, onClose, onSuccess }) {
-  // 4. Dropdown harus dalam keadaan belum dipilih dengan placeholder
+// ==============================================================
+// SUBCOMPONENT: CREATE MODULE MODAL
+// ==============================================================
+function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
+  const { isDark } = useTheme();
+  // 1. Perangkat State & Refs
   const [deviceId, setDeviceId] = useState("");
-  // 5. Unit Type teks autocomplete
+  const [deviceDropdownOpen, setDeviceDropdownOpen] = useState(false);
+  const [deviceSearchQuery, setDeviceSearchQuery] = useState("");
+  const deviceDropdownRef = useRef(null);
+
+  // 2. Unit Type State & Refs
   const [unitType, setUnitType] = useState("");
   const [showTypeSuggestions, setShowTypeSuggestions] = useState(false);
+  const typeDropdownRef = useRef(null);
+  const typeInputRef = useRef(null);
+
+  // 3. Serial Number State & Refs
   const [serialNumber, setSerialNumber] = useState("");
+  const [serialDropdownOpen, setSerialDropdownOpen] = useState(false);
+  const serialDropdownRef = useRef(null);
+  const serialInputRef = useRef(null);
+
+  // 4. Form States
   const [unitPartNumber, setUnitPartNumber] = useState("");
   const [slot, setSlot] = useState("");
   const [shelf, setShelf] = useState("1");
   const [port, setPort] = useState("");
-  // 3. Date picker calendar (YYYY-MM-DD)
   const [date, setDate] = useState(() => {
     const today = new Date();
     const yyyy = today.getFullYear();
@@ -1078,11 +1275,72 @@ function CreateModuleModal({ meta, onClose, onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Close dropdowns on click outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (deviceDropdownRef.current && !deviceDropdownRef.current.contains(e.target)) {
+        setDeviceDropdownOpen(false);
+      }
+      if (serialDropdownRef.current && !serialDropdownRef.current.contains(e.target)) {
+        setSerialDropdownOpen(false);
+      }
+      if (typeDropdownRef.current && !typeDropdownRef.current.contains(e.target)) {
+        setShowTypeSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Selected device object
+  const selectedDeviceObj = useMemo(() => {
+    if (!deviceId) return null;
+    return (meta.palu_devices || []).find((d) => String(d.id) === String(deviceId));
+  }, [deviceId, meta.palu_devices]);
+
+  // Filtered devices for popup
+  const filteredDevices = useMemo(() => {
+    const list = meta.palu_devices || [];
+    if (!deviceSearchQuery.trim()) return list;
+    const q = deviceSearchQuery.toLowerCase().trim();
+    return list.filter(
+      (d) =>
+        (d.hostname && d.hostname.toLowerCase().includes(q)) ||
+        (d.location && d.location.toLowerCase().includes(q)) ||
+        (d.nama && d.nama.toLowerCase().includes(q))
+    );
+  }, [meta.palu_devices, deviceSearchQuery]);
+
+  // Filtered module types for autocomplete
+  const filteredModuleTypes = useMemo(() => {
+    const types = meta.module_types || [];
+    if (!unitType.trim()) return types;
+    const q = unitType.toLowerCase().trim();
+    return types.filter((mt) => mt.nama.toLowerCase().includes(q));
+  }, [meta.module_types, unitType]);
+
+  // Matching serial numbers from inventory/active modules (unique serial numbers only)
+  const matchingSerialList = useMemo(() => {
+    const q = serialNumber.toLowerCase().trim();
+    const seen = new Set();
+    const unique = [];
+
+    for (const m of allModules || []) {
+      const sn = (m.serial_number || "").trim();
+      if (!sn || seen.has(sn)) continue;
+      seen.add(sn);
+
+      if (!q || sn.toLowerCase().includes(q)) {
+        unique.push(m);
+      }
+    }
+    return unique.slice(0, 30);
+  }, [allModules, serialNumber]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
 
-    // 4. Validasi wajib memilih
     if (!deviceId) return setError("Silakan pilih perangkat terlebih dahulu.");
     if (!unitType.trim()) return setError("Unit Type wajib diisi.");
     if (!serialNumber.trim()) return setError("Serial number wajib diisi.");
@@ -1127,18 +1385,30 @@ function CreateModuleModal({ meta, onClose, onSuccess }) {
         onClick={onClose}
       >
         <div
-          className="bg-[#0D1F36] border border-[#1E3A5F] rounded-2xl w-full max-w-xl p-6 shadow-2xl space-y-5 max-h-[92vh] overflow-y-auto custom-scrollbar"
+          className={`rounded-2xl w-full max-w-xl p-6 shadow-2xl space-y-5 max-h-[92vh] overflow-y-auto custom-scrollbar font-sans border transition-colors ${
+            isDark
+              ? "bg-[#0D1F36] border-[#1E3A5F] text-[#E6EDF7]"
+              : "bg-white border-slate-200 text-slate-800 shadow-xl"
+          }`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between pb-3 border-b border-[#1A2E4C]">
+          <div className={`flex items-center justify-between pb-3 border-b ${
+            isDark ? "border-[#1A2E4C]" : "border-slate-100"
+          }`}>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#1677FF]/15 border border-[#1677FF]/30 flex items-center justify-center text-[#38BDF8]">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
+                isDark
+                  ? "bg-[#1677FF]/15 border-[#1677FF]/30 text-[#38BDF8]"
+                  : "bg-blue-50 border-blue-200 text-blue-600"
+              }`}>
                 <span className="material-symbols-outlined text-[22px]">add_circle</span>
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">Pasang Modul Baru</h3>
-                <p className="text-xs text-[#94A3B8]">
+                <h3 className={`text-base font-bold font-sans ${isDark ? "text-white" : "text-slate-900"}`}>
+                  Pasang Modul Baru
+                </h3>
+                <p className={`text-xs font-sans ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
                   Pasang modul fisik baru pada perangkat jaringan yang aktif
                 </p>
               </div>
@@ -1146,14 +1416,22 @@ function CreateModuleModal({ meta, onClose, onSuccess }) {
             <button
               type="button"
               onClick={onClose}
-              className="w-8 h-8 rounded-lg text-[#94A3B8] hover:text-white hover:bg-[#1A2E4C] flex items-center justify-center transition-colors cursor-pointer"
+              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors cursor-pointer ${
+                isDark
+                  ? "text-[#94A3B8] hover:text-white hover:bg-[#1A2E4C]"
+                  : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+              }`}
             >
               <span className="material-symbols-outlined text-[20px]">close</span>
             </button>
           </div>
 
           {error && (
-            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2.5">
+            <div className={`p-3.5 rounded-xl border text-xs flex items-center gap-2.5 font-sans ${
+              isDark
+                ? "bg-rose-500/10 border-rose-500/30 text-rose-300"
+                : "bg-rose-50 border-rose-200 text-rose-600"
+            }`}>
               <span className="material-symbols-outlined text-[18px]">error</span>
               <span>{error}</span>
             </div>
@@ -1161,56 +1439,244 @@ function CreateModuleModal({ meta, onClose, onSuccess }) {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Perangkat (Wajib pilih, placeholder 'Pilih Perangkat') */}
-              <div>
-                <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
+              {/* 1. PERANGKAT (NE) - Custom Container Box Dropdown & Popup Menu Filter */}
+              <div className="relative" ref={deviceDropdownRef}>
+                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                }`}>
                   Perangkat (NE) *
                 </label>
-                <select
-                  value={deviceId}
-                  onChange={(e) => setDeviceId(e.target.value)}
-                  className={`w-full h-10 px-3 rounded-xl bg-[#071426] border text-xs focus:outline-none focus:border-[#1677FF] cursor-pointer ${deviceId ? "text-white border-[#1E3A5F]" : "text-[#64748B] border-[#1E3A5F]"
-                    }`}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDeviceDropdownOpen(!deviceDropdownOpen);
+                    setSerialDropdownOpen(false);
+                    setShowTypeSuggestions(false);
+                  }}
+                  className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center justify-between text-xs font-medium font-sans transition-all duration-200 cursor-pointer ${
+                    deviceDropdownOpen
+                      ? isDark
+                        ? "bg-[#0A182B] border-[#1677FF] ring-2 ring-[#1677FF]/25 text-[#E6EDF7]"
+                        : "bg-white border-[#1677FF] ring-2 ring-[#1677FF]/20 text-slate-900"
+                      : isDark
+                        ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF]/70 hover:bg-[#0A182B]"
+                        : "bg-slate-50 border-slate-200 text-slate-800 hover:border-blue-400 hover:bg-white"
+                  }`}
                 >
-                  <option value="" disabled>
-                    Pilih Perangkat
-                  </option>
-                  {meta.palu_devices.map((d) => (
-                    <option key={d.id} value={d.id} className="text-white bg-[#071426]">
-                      {d.hostname} ({d.location})
-                    </option>
-                  ))}
-                </select>
+                  <div className="flex items-center gap-2.5 truncate pr-2">
+                    <span className={`material-symbols-outlined text-[19px] shrink-0 ${
+                      isDark ? "text-[#38BDF8]" : "text-blue-600"
+                    }`}>
+                      desktop_windows
+                    </span>
+                    <span
+                      className={`truncate ${
+                        selectedDeviceObj
+                          ? isDark ? "font-semibold text-white" : "font-semibold text-slate-900"
+                          : isDark ? "text-[#64748B]" : "text-slate-400"
+                      }`}
+                    >
+                      {selectedDeviceObj
+                        ? `${selectedDeviceObj.hostname} (${selectedDeviceObj.location})`
+                        : "Pilih Perangkat"}
+                    </span>
+                  </div>
+                  <span
+                    className={`material-symbols-outlined text-[19px] transition-transform duration-200 shrink-0 ${
+                      deviceDropdownOpen
+                        ? isDark ? "rotate-180 text-[#38BDF8]" : "rotate-180 text-blue-600"
+                        : isDark ? "text-[#94A3B8]" : "text-slate-400"
+                    }`}
+                  >
+                    expand_more
+                  </span>
+                </button>
+
+                {/* Custom Filter Dropdown Menu Perangkat */}
+                {deviceDropdownOpen && (
+                  <div
+                    className={`absolute left-0 top-full mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-50 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-md font-sans animate-dropdown ${
+                      isDark
+                        ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7]"
+                        : "border-slate-200 bg-white text-slate-800"
+                    }`}
+                  >
+                    {meta.palu_devices && meta.palu_devices.length > 5 && (
+                      <div className={`px-1.5 pb-1.5 mb-1 border-b ${
+                        isDark ? "border-[#1A3358]" : "border-slate-100"
+                      }`}>
+                        <div className="relative">
+                          <span className={`material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-[15px] ${
+                            isDark ? "text-[#64748B]" : "text-slate-400"
+                          }`}>
+                            search
+                          </span>
+                          <input
+                            type="text"
+                            value={deviceSearchQuery}
+                            onChange={(e) => setDeviceSearchQuery(e.target.value)}
+                            placeholder="Cari perangkat..."
+                            className={`w-full h-8 pl-7 pr-2 rounded-lg border text-[11px] outline-none font-sans ${
+                              isDark
+                                ? "bg-[#071426] border-[#1E3A5F] text-white placeholder-[#64748B] focus:border-[#1677FF]"
+                                : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:bg-white"
+                            }`}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {filteredDevices.map((d) => {
+                      const isSelected = String(deviceId) === String(d.id);
+                      return (
+                        <button
+                          key={d.id}
+                          type="button"
+                          onClick={() => {
+                            setDeviceId(String(d.id));
+                            setDeviceDropdownOpen(false);
+                          }}
+                          className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium font-sans flex items-center justify-between transition-colors cursor-pointer ${
+                            isSelected
+                              ? "bg-[#1677FF] text-white font-semibold"
+                              : isDark
+                                ? "hover:bg-[#122846] text-[#CBD5E1]"
+                                : "hover:bg-blue-50 text-slate-700"
+                          }`}
+                        >
+                          <div className="flex flex-col truncate pr-2">
+                            <span className="font-semibold">{d.hostname}</span>
+                            <span
+                              className={`text-[10px] ${
+                                isSelected
+                                  ? "text-blue-100"
+                                  : isDark ? "text-[#64748B]" : "text-slate-400"
+                              }`}
+                            >
+                              {d.location}
+                            </span>
+                          </div>
+                          {isSelected && (
+                            <span className="material-symbols-outlined text-[16px] shrink-0">
+                              check
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
-              {/* 5. Unit Type dengan Autocomplete (Input Teks Manual + Saran DB) */}
-              <div className="relative">
-                <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
+              {/* 2. UNIT TYPE - Custom Container Box with Autocomplete Popup */}
+              <div className="relative" ref={typeDropdownRef}>
+                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                }`}>
                   Unit Type *
                 </label>
-                <input
-                  type="text"
-                  required
-                  autoComplete="off"
-                  placeholder="Ketik tipe (misal: 2UC400)..."
-                  value={unitType}
-                  onChange={(e) => {
-                    setUnitType(e.target.value);
+                <div
+                  onClick={() => {
                     setShowTypeSuggestions(true);
+                    setDeviceDropdownOpen(false);
+                    setSerialDropdownOpen(false);
+                    typeInputRef.current?.focus();
                   }}
-                  onFocus={() => setShowTypeSuggestions(true)}
-                  onBlur={() => setTimeout(() => setShowTypeSuggestions(false), 200)}
-                  className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white placeholder-[#64748B] focus:outline-none focus:border-[#1677FF] font-mono"
-                />
+                  className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center justify-between text-xs font-medium font-sans transition-all duration-200 cursor-text ${
+                    showTypeSuggestions
+                      ? isDark
+                        ? "bg-[#0A182B] border-[#1677FF] ring-2 ring-[#1677FF]/25 text-[#E6EDF7]"
+                        : "bg-white border-[#1677FF] ring-2 ring-[#1677FF]/20 text-slate-900"
+                      : isDark
+                        ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF]/70 hover:bg-[#0A182B]"
+                        : "bg-slate-50 border-slate-200 text-slate-800 hover:border-blue-400 hover:bg-white"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 flex-1 min-w-0 pr-2">
+                    <span className={`material-symbols-outlined text-[19px] shrink-0 pointer-events-none ${
+                      isDark ? "text-[#38BDF8]" : "text-blue-600"
+                    }`}>
+                      category
+                    </span>
+                    <input
+                      ref={typeInputRef}
+                      type="text"
+                      required
+                      autoComplete="off"
+                      placeholder="Pilih tipe..."
+                      value={unitType}
+                      onChange={(e) => {
+                        setUnitType(e.target.value);
+                        if (!showTypeSuggestions) setShowTypeSuggestions(true);
+                      }}
+                      onFocus={() => {
+                        setShowTypeSuggestions(true);
+                        setDeviceDropdownOpen(false);
+                        setSerialDropdownOpen(false);
+                      }}
+                      className={`w-full bg-transparent outline-none text-xs font-medium font-sans ${
+                        isDark
+                          ? "text-white placeholder-[#64748B]"
+                          : "text-slate-900 placeholder-slate-400"
+                      }`}
+                    />
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    {unitType && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setUnitType("");
+                          setShowTypeSuggestions(true);
+                          typeInputRef.current?.focus();
+                        }}
+                        title="Hapus tipe modul"
+                        className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
+                          isDark
+                            ? "text-slate-400 hover:text-white hover:bg-slate-700"
+                            : "text-slate-400 hover:text-slate-700 hover:bg-slate-200"
+                        }`}
+                      >
+                        <span className="material-symbols-outlined text-[14px]">close</span>
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowTypeSuggestions(!showTypeSuggestions);
+                        setDeviceDropdownOpen(false);
+                        setSerialDropdownOpen(false);
+                        if (!showTypeSuggestions) {
+                          typeInputRef.current?.focus();
+                        }
+                      }}
+                      className="w-6 h-6 flex items-center justify-center cursor-pointer"
+                    >
+                      <span
+                        className={`material-symbols-outlined text-[19px] transition-transform duration-200 ${
+                          showTypeSuggestions
+                            ? isDark ? "rotate-180 text-[#38BDF8]" : "rotate-180 text-blue-600"
+                            : isDark ? "text-[#94A3B8]" : "text-slate-400"
+                        }`}
+                      >
+                        expand_more
+                      </span>
+                    </button>
+                  </div>
+                </div>
 
-                {/* Saran Autocomplete */}
+                {/* Floating Popup Suggestions Menu */}
                 {showTypeSuggestions && (
-                  <div className="absolute left-0 right-0 top-full mt-1 z-30 rounded-xl bg-[#0A182B] border border-[#1E3A5F] shadow-2xl max-h-48 overflow-y-auto custom-scrollbar p-1.5">
-                    {meta.module_types
-                      .filter((mt) =>
-                        mt.nama.toLowerCase().includes(unitType.toLowerCase())
-                      )
-                      .map((mt) => (
+                  <div className={`absolute left-0 top-full mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-50 max-h-56 overflow-y-auto custom-scrollbar backdrop-blur-md font-sans animate-dropdown ${
+                    isDark
+                      ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7]"
+                      : "border-slate-200 bg-white text-slate-800"
+                  }`}>
+                    {filteredModuleTypes.map((mt) => {
+                      const isSelected = unitType.toLowerCase() === mt.nama.toLowerCase();
+                      return (
                         <button
                           key={mt.id}
                           type="button"
@@ -1218,75 +1684,246 @@ function CreateModuleModal({ meta, onClose, onSuccess }) {
                             setUnitType(mt.nama);
                             setShowTypeSuggestions(false);
                           }}
-                          className="w-full text-left px-3 py-2 rounded-lg text-xs hover:bg-[#122846] text-[#CBD5E1] hover:text-[#38BDF8] flex items-center justify-between transition-colors font-mono cursor-pointer"
+                          className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium font-sans flex items-center justify-between transition-colors cursor-pointer ${
+                            isSelected
+                              ? "bg-[#1677FF] text-white font-semibold"
+                              : isDark
+                                ? "hover:bg-[#122846] text-[#CBD5E1] hover:text-[#38BDF8]"
+                                : "hover:bg-blue-50 text-slate-700 hover:text-blue-600"
+                          }`}
                         >
                           <span className="font-semibold">{mt.nama}</span>
                           {mt.vendor && (
-                            <span className="text-[10px] text-[#64748B] font-sans">
+                            <span className={`text-[10px] font-sans ${
+                              isDark ? "text-[#64748B]" : "text-slate-400"
+                            }`}>
                               {mt.vendor}
                             </span>
                           )}
                         </button>
-                      ))}
-                    {meta.module_types.filter((mt) =>
-                      mt.nama.toLowerCase().includes(unitType.toLowerCase())
-                    ).length === 0 && unitType.trim() && (
-                        <div className="px-3 py-2 text-[11px] text-[#64748B]">
-                          Gunakan nilai manual:{" "}
-                          <span className="text-white font-mono font-semibold">{unitType}</span>
-                        </div>
-                      )}
+                      );
+                    })}
+                    {filteredModuleTypes.length === 0 && unitType.trim() && (
+                      <div className={`px-3 py-2 text-[11px] font-sans ${
+                        isDark ? "text-[#64748B]" : "text-slate-500"
+                      }`}>
+                        Gunakan nilai manual:{" "}
+                        <span className={`font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>
+                          {unitType}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
 
-              {/* Serial Number */}
-              <div>
-                <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
+              {/* 3. SERIAL NUMBER - Custom Container Box with Dropdown Popup Filter */}
+              <div className="relative" ref={serialDropdownRef}>
+                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                }`}>
                   Serial Number *
                 </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Contoh: ZJ2108000H9"
-                  value={serialNumber}
-                  onChange={(e) => setSerialNumber(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white placeholder-[#64748B] focus:outline-none focus:border-[#1677FF] font-mono"
-                />
+                <div
+                  onClick={() => {
+                    setSerialDropdownOpen(true);
+                    setDeviceDropdownOpen(false);
+                    setShowTypeSuggestions(false);
+                    serialInputRef.current?.focus();
+                  }}
+                  className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center justify-between text-xs font-medium font-sans transition-all duration-200 cursor-text ${
+                    serialDropdownOpen
+                      ? isDark
+                        ? "bg-[#0A182B] border-[#1677FF] ring-2 ring-[#1677FF]/25 text-[#E6EDF7]"
+                        : "bg-white border-[#1677FF] ring-2 ring-[#1677FF]/20 text-slate-900"
+                      : isDark
+                        ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF]/70 hover:bg-[#0A182B]"
+                        : "bg-slate-50 border-slate-200 text-slate-800 hover:border-blue-400 hover:bg-white"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 flex-1 min-w-0 pr-2">
+                    <span className={`material-symbols-outlined text-[19px] shrink-0 pointer-events-none ${
+                      isDark ? "text-[#38BDF8]" : "text-blue-600"
+                    }`}>
+                      memory
+                    </span>
+                    <input
+                      ref={serialInputRef}
+                      type="text"
+                      required
+                      value={serialNumber}
+                      onChange={(e) => {
+                        setSerialNumber(e.target.value);
+                        if (!serialDropdownOpen) setSerialDropdownOpen(true);
+                      }}
+                      onFocus={() => {
+                        setSerialDropdownOpen(true);
+                        setDeviceDropdownOpen(false);
+                        setShowTypeSuggestions(false);
+                      }}
+                      placeholder="Serial number..."
+                      className={`w-full bg-transparent outline-none text-xs font-medium font-sans ${
+                        isDark
+                          ? "text-white placeholder-[#64748B]"
+                          : "text-slate-900 placeholder-slate-400"
+                      }`}
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-1 shrink-0">
+                    {serialNumber && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSerialNumber("");
+                          setSerialDropdownOpen(true);
+                          serialInputRef.current?.focus();
+                        }}
+                        title="Hapus serial number"
+                        className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
+                          isDark
+                            ? "text-slate-400 hover:text-white hover:bg-slate-700"
+                            : "text-slate-400 hover:text-slate-700 hover:bg-slate-200"
+                        }`}
+                      >
+                        <span className="material-symbols-outlined text-[14px]">close</span>
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSerialDropdownOpen(!serialDropdownOpen);
+                        setDeviceDropdownOpen(false);
+                        setShowTypeSuggestions(false);
+                        if (!serialDropdownOpen) {
+                          serialInputRef.current?.focus();
+                        }
+                      }}
+                      className="w-6 h-6 flex items-center justify-center cursor-pointer"
+                    >
+                      <span
+                        className={`material-symbols-outlined text-[19px] transition-transform duration-200 ${
+                          serialDropdownOpen
+                            ? isDark ? "rotate-180 text-[#38BDF8]" : "rotate-180 text-blue-600"
+                            : isDark ? "text-[#94A3B8]" : "text-slate-400"
+                        }`}
+                      >
+                        expand_more
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Floating Popup Menu Filter Serial Number */}
+                {serialDropdownOpen && (
+                  <div className={`absolute left-0 top-full mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-50 max-h-56 overflow-y-auto custom-scrollbar backdrop-blur-md font-sans animate-dropdown ${
+                    isDark
+                      ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7]"
+                      : "border-slate-200 bg-white text-slate-800"
+                  }`}>
+                    {matchingSerialList.length === 0 ? (
+                      <div className={`px-3 py-2.5 text-xs font-sans ${
+                        isDark ? "text-[#94A3B8]" : "text-slate-500"
+                      }`}>
+                        Tidak ada serial number yang cocok
+                      </div>
+                    ) : (
+                      matchingSerialList.map((m) => {
+                        const isSelected = serialNumber === m.serial_number;
+                        return (
+                          <button
+                            key={m.modul_id || m.serial_number}
+                            type="button"
+                            onMouseDown={() => {
+                              setSerialNumber(m.serial_number);
+                              if (m.unit_type && (!unitType || unitType === "-")) {
+                                setUnitType(m.unit_type);
+                              }
+                              if (
+                                m.unit_part_number &&
+                                m.unit_part_number !== "-" &&
+                                !unitPartNumber
+                              ) {
+                                setUnitPartNumber(m.unit_part_number);
+                              }
+                              setSerialDropdownOpen(false);
+                            }}
+                            className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium font-sans flex items-center justify-between transition-colors cursor-pointer ${
+                              isSelected
+                                ? "bg-[#1677FF] text-white font-semibold"
+                                : isDark
+                                  ? "hover:bg-[#122846] text-[#CBD5E1]"
+                                  : "hover:bg-blue-50 text-slate-700"
+                            }`}
+                          >
+                            <span className={`font-semibold truncate ${
+                              isSelected
+                                ? "text-white"
+                                : isDark ? "text-white" : "text-slate-800"
+                            }`}>
+                              {m.serial_number}
+                            </span>
+                            {isSelected && (
+                              <span className="material-symbols-outlined text-[16px] shrink-0">
+                                check
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
               </div>
 
-              {/* Unit Part Number */}
+              {/* 4. UNIT PART NUMBER */}
               <div>
-                <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
+                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                }`}>
                   Unit Part Number
                 </label>
                 <input
                   type="text"
-                  placeholder="Contoh: 3KC60346AANG03"
+                  placeholder="Part number..."
                   value={unitPartNumber}
                   onChange={(e) => setUnitPartNumber(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white placeholder-[#64748B] focus:outline-none focus:border-[#1677FF] font-mono"
+                  className={`w-full h-11 px-3.5 rounded-xl border text-xs font-medium focus:outline-none focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF] font-sans transition-all ${
+                    isDark
+                      ? "bg-[#071426] border-[#1E3A5F] text-white placeholder-[#64748B]"
+                      : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white"
+                  }`}
                 />
               </div>
 
-              {/* Slot */}
+              {/* 5. NOMOR SLOT */}
               <div>
-                <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
+                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                }`}>
                   Nomor Slot *
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Contoh: 1, 10, atau 2"
+                  placeholder="Nomor slot..."
                   value={slot}
                   onChange={(e) => setSlot(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white placeholder-[#64748B] focus:outline-none focus:border-[#1677FF] font-mono"
+                  className={`w-full h-11 px-3.5 rounded-xl border text-xs font-medium focus:outline-none focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF] font-sans transition-all ${
+                    isDark
+                      ? "bg-[#071426] border-[#1E3A5F] text-white placeholder-[#64748B]"
+                      : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white"
+                  }`}
                 />
               </div>
 
-              {/* Shelf */}
+              {/* 6. SHELF */}
               <div>
-                <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
+                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                }`}>
                   Shelf
                 </label>
                 <input
@@ -1294,27 +1931,39 @@ function CreateModuleModal({ meta, onClose, onSuccess }) {
                   placeholder="1"
                   value={shelf}
                   onChange={(e) => setShelf(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white placeholder-[#64748B] focus:outline-none focus:border-[#1677FF] font-mono"
+                  className={`w-full h-11 px-3.5 rounded-xl border text-xs font-medium focus:outline-none focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF] font-sans transition-all ${
+                    isDark
+                      ? "bg-[#071426] border-[#1E3A5F] text-white placeholder-[#64748B]"
+                      : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white"
+                  }`}
                 />
               </div>
 
-              {/* Port */}
+              {/* 7. PORT */}
               <div>
-                <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
+                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                }`}>
                   Port
                 </label>
                 <input
                   type="text"
-                  placeholder="Contoh: 1, 2, atau N/A"
+                  placeholder="Port..."
                   value={port}
                   onChange={(e) => setPort(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white placeholder-[#64748B] focus:outline-none focus:border-[#1677FF] font-mono"
+                  className={`w-full h-11 px-3.5 rounded-xl border text-xs font-medium focus:outline-none focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF] font-sans transition-all ${
+                    isDark
+                      ? "bg-[#071426] border-[#1E3A5F] text-white placeholder-[#64748B]"
+                      : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white"
+                  }`}
                 />
               </div>
 
-              {/* 3. Date (Input Kalender type='date') */}
+              {/* 8. TANGGAL PASANG / DATE */}
               <div>
-                <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
+                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                }`}>
                   Tanggal Pasang / Date *
                 </label>
                 <input
@@ -1322,25 +1971,35 @@ function CreateModuleModal({ meta, onClose, onSuccess }) {
                   required
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white focus:outline-none focus:border-[#1677FF] font-mono [color-scheme:dark] cursor-pointer"
+                  className={`w-full h-11 px-3.5 rounded-xl border text-xs font-medium focus:outline-none focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF] font-sans cursor-pointer transition-all ${
+                    isDark
+                      ? "bg-[#071426] border-[#1E3A5F] text-white [color-scheme:dark]"
+                      : "bg-slate-50 border-slate-200 text-slate-900 [color-scheme:light] focus:bg-white"
+                  }`}
                 />
               </div>
             </div>
 
             {/* Action buttons */}
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#1A2E4C]">
+            <div className={`flex items-center justify-end gap-3 pt-3 border-t ${
+              isDark ? "border-[#1A2E4C]" : "border-slate-100"
+            }`}>
               <button
                 type="button"
                 disabled={loading}
                 onClick={onClose}
-                className="px-4 py-2.5 rounded-xl border border-[#1E3A5F] text-[#CBD5E1] hover:bg-[#122846] text-xs font-semibold transition-colors cursor-pointer"
+                className={`h-11 px-5 rounded-xl border text-xs font-semibold font-sans transition-colors cursor-pointer ${
+                  isDark
+                    ? "border-[#1E3A5F] text-[#CBD5E1] hover:bg-[#122846]"
+                    : "border-slate-300 text-slate-700 hover:bg-slate-100"
+                }`}
               >
                 Batal
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-5 py-2.5 rounded-xl bg-[#1677FF] hover:bg-[#0E65D9] text-white text-xs font-semibold flex items-center gap-2 shadow-lg shadow-[#1677FF]/30 transition-all cursor-pointer disabled:opacity-50"
+                className="h-11 px-6 rounded-xl bg-[#1677FF] hover:bg-[#0E65D9] text-white text-xs font-semibold font-sans flex items-center gap-2 shadow-lg shadow-[#1677FF]/30 transition-all cursor-pointer disabled:opacity-50"
               >
                 {loading ? (
                   <>
@@ -1351,7 +2010,7 @@ function CreateModuleModal({ meta, onClose, onSuccess }) {
                   </>
                 ) : (
                   <>
-                    <span className="material-symbols-outlined text-[16px]">check</span>
+                    <span className="material-symbols-outlined text-[18px]">check</span>
                     <span>Pasang Modul</span>
                   </>
                 )}
@@ -1367,23 +2026,83 @@ function CreateModuleModal({ meta, onClose, onSuccess }) {
 // ==============================================================
 // SUBCOMPONENT: EDIT MODULE MODAL
 // ==============================================================
-function EditModuleModal({ moduleData, meta, onClose, onSuccess }) {
+function EditModuleModal({ moduleData, meta, allModules = [], onClose, onSuccess }) {
+  const { isDark } = useTheme();
+  // 1. Perangkat State & Refs
   const [deviceId, setDeviceId] = useState(moduleData.device_id || "");
-  // 5. Unit Type autocomplete pada Edit
-  const [unitType, setUnitType] = useState(moduleData.unit_type !== "-" ? moduleData.unit_type : "");
+  const [deviceDropdownOpen, setDeviceDropdownOpen] = useState(false);
+  const [deviceSearchQuery, setDeviceSearchQuery] = useState("");
+  const deviceDropdownRef = useRef(null);
+
+  // 2. Unit Type State & Refs
+  const [unitType, setUnitType] = useState(
+    moduleData.unit_type !== "-" ? moduleData.unit_type : ""
+  );
   const [showTypeSuggestions, setShowTypeSuggestions] = useState(false);
+  const typeDropdownRef = useRef(null);
+  const typeInputRef = useRef(null);
+
+  // 3. Serial Number State & Refs
   const [serialNumber, setSerialNumber] = useState(moduleData.serial_number || "");
+  const [serialDropdownOpen, setSerialDropdownOpen] = useState(false);
+  const serialDropdownRef = useRef(null);
+  const serialInputRef = useRef(null);
+
+  // 4. Form States
   const [unitPartNumber, setUnitPartNumber] = useState(
     moduleData.unit_part_number !== "-" ? moduleData.unit_part_number : ""
   );
   const [slot, setSlot] = useState(moduleData.slot !== "-" ? moduleData.slot : "1");
   const [shelf, setShelf] = useState(moduleData.shelf !== "-" ? moduleData.shelf : "1");
   const [port, setPort] = useState(moduleData.port !== "-" ? moduleData.port : "");
-  // 3. Date picker calendar (YYYY-MM-DD)
   const [date, setDate] = useState(() => toInputDateFormat(moduleData.date_str));
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Close dropdowns on click outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (deviceDropdownRef.current && !deviceDropdownRef.current.contains(e.target)) {
+        setDeviceDropdownOpen(false);
+      }
+      if (serialDropdownRef.current && !serialDropdownRef.current.contains(e.target)) {
+        setSerialDropdownOpen(false);
+      }
+      if (typeDropdownRef.current && !typeDropdownRef.current.contains(e.target)) {
+        setShowTypeSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Selected device object
+  const selectedDeviceObj = useMemo(() => {
+    if (!deviceId) return null;
+    return (meta.palu_devices || []).find((d) => String(d.id) === String(deviceId));
+  }, [deviceId, meta.palu_devices]);
+
+  // Filtered devices for popup
+  const filteredDevices = useMemo(() => {
+    const list = meta.palu_devices || [];
+    if (!deviceSearchQuery.trim()) return list;
+    const q = deviceSearchQuery.toLowerCase().trim();
+    return list.filter(
+      (d) =>
+        (d.hostname && d.hostname.toLowerCase().includes(q)) ||
+        (d.location && d.location.toLowerCase().includes(q)) ||
+        (d.nama && d.nama.toLowerCase().includes(q))
+    );
+  }, [meta.palu_devices, deviceSearchQuery]);
+
+  // Filtered module types for autocomplete
+  const filteredModuleTypes = useMemo(() => {
+    const types = meta.module_types || [];
+    if (!unitType.trim()) return types;
+    const q = unitType.toLowerCase().trim();
+    return types.filter((mt) => mt.nama.toLowerCase().includes(q));
+  }, [meta.module_types, unitType]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -1433,18 +2152,30 @@ function EditModuleModal({ moduleData, meta, onClose, onSuccess }) {
         onClick={onClose}
       >
         <div
-          className="bg-[#0D1F36] border border-[#1E3A5F] rounded-2xl w-full max-w-xl p-6 shadow-2xl space-y-5 max-h-[92vh] overflow-y-auto custom-scrollbar"
+          className={`rounded-2xl w-full max-w-xl p-6 shadow-2xl space-y-5 max-h-[92vh] overflow-y-auto custom-scrollbar font-sans border transition-colors ${
+            isDark
+              ? "bg-[#0D1F36] border-[#1E3A5F] text-[#E6EDF7]"
+              : "bg-white border-slate-200 text-slate-800 shadow-xl"
+          }`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between pb-3 border-b border-[#1A2E4C]">
+          <div className={`flex items-center justify-between pb-3 border-b ${
+            isDark ? "border-[#1A2E4C]" : "border-slate-100"
+          }`}>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
+                isDark
+                  ? "bg-amber-500/15 border-amber-500/30 text-amber-400"
+                  : "bg-amber-50 border-amber-200 text-amber-600"
+              }`}>
                 <span className="material-symbols-outlined text-[22px]">edit_square</span>
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">Edit Data Modul</h3>
-                <p className="text-xs text-[#94A3B8]">
+                <h3 className={`text-base font-bold font-sans ${isDark ? "text-white" : "text-slate-900"}`}>
+                  Edit Data Modul
+                </h3>
+                <p className={`text-xs font-sans ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
                   Perbarui rincian modul atau sesuaikan posisi modul
                 </p>
               </div>
@@ -1452,14 +2183,22 @@ function EditModuleModal({ moduleData, meta, onClose, onSuccess }) {
             <button
               type="button"
               onClick={onClose}
-              className="w-8 h-8 rounded-lg text-[#94A3B8] hover:text-white hover:bg-[#1A2E4C] flex items-center justify-center transition-colors cursor-pointer"
+              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors cursor-pointer ${
+                isDark
+                  ? "text-[#94A3B8] hover:text-white hover:bg-[#1A2E4C]"
+                  : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+              }`}
             >
               <span className="material-symbols-outlined text-[20px]">close</span>
             </button>
           </div>
 
           {error && (
-            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2.5">
+            <div className={`p-3.5 rounded-xl border text-xs flex items-center gap-2.5 font-sans ${
+              isDark
+                ? "bg-rose-500/10 border-rose-500/30 text-rose-300"
+                : "bg-rose-50 border-rose-200 text-rose-600"
+            }`}>
               <span className="material-symbols-outlined text-[18px]">error</span>
               <span>{error}</span>
             </div>
@@ -1467,53 +2206,242 @@ function EditModuleModal({ moduleData, meta, onClose, onSuccess }) {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Perangkat */}
-              <div>
-                <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
+              {/* 1. PERANGKAT (NE) - Custom Container Box Dropdown */}
+              <div className="relative" ref={deviceDropdownRef}>
+                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                }`}>
                   Perangkat (NE) *
                 </label>
-                <select
-                  value={deviceId}
-                  onChange={(e) => setDeviceId(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white focus:outline-none focus:border-[#1677FF] cursor-pointer"
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDeviceDropdownOpen(!deviceDropdownOpen);
+                    setShowTypeSuggestions(false);
+                    setSerialDropdownOpen(false);
+                  }}
+                  className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center justify-between text-xs font-medium font-sans transition-all duration-200 cursor-pointer ${
+                    deviceDropdownOpen
+                      ? isDark
+                        ? "bg-[#0A182B] border-[#1677FF] ring-2 ring-[#1677FF]/25 text-[#E6EDF7]"
+                        : "bg-white border-[#1677FF] ring-2 ring-[#1677FF]/20 text-slate-900"
+                      : isDark
+                        ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF]/70 hover:bg-[#0A182B]"
+                        : "bg-slate-50 border-slate-200 text-slate-800 hover:border-blue-400 hover:bg-white"
+                  }`}
                 >
-                  <option value="" disabled>Pilih Perangkat</option>
-                  {meta.palu_devices.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.hostname} ({d.location})
-                    </option>
-                  ))}
-                </select>
+                  <div className="flex items-center gap-2.5 truncate pr-2">
+                    <span className={`material-symbols-outlined text-[19px] shrink-0 ${
+                      isDark ? "text-[#38BDF8]" : "text-blue-600"
+                    }`}>
+                      desktop_windows
+                    </span>
+                    <span
+                      className={`truncate ${
+                        selectedDeviceObj
+                          ? isDark ? "font-semibold text-white" : "font-semibold text-slate-900"
+                          : isDark ? "text-[#64748B]" : "text-slate-400"
+                      }`}
+                    >
+                      {selectedDeviceObj
+                        ? `${selectedDeviceObj.hostname} (${selectedDeviceObj.location})`
+                        : "Pilih Perangkat"}
+                    </span>
+                  </div>
+                  <span
+                    className={`material-symbols-outlined text-[19px] transition-transform duration-200 shrink-0 ${
+                      deviceDropdownOpen
+                        ? isDark ? "rotate-180 text-[#38BDF8]" : "rotate-180 text-blue-600"
+                        : isDark ? "text-[#94A3B8]" : "text-slate-400"
+                    }`}
+                  >
+                    expand_more
+                  </span>
+                </button>
+
+                {/* Custom Filter Dropdown Menu */}
+                {deviceDropdownOpen && (
+                  <div className={`absolute left-0 top-full mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-50 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-md font-sans animate-dropdown ${
+                    isDark
+                      ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7]"
+                      : "border-slate-200 bg-white text-slate-800"
+                  }`}>
+                    {meta.palu_devices && meta.palu_devices.length > 5 && (
+                      <div className={`px-1.5 pb-1.5 mb-1 border-b ${
+                        isDark ? "border-[#1A3358]" : "border-slate-100"
+                      }`}>
+                        <div className="relative">
+                          <span className={`material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-[15px] ${
+                            isDark ? "text-[#64748B]" : "text-slate-400"
+                          }`}>
+                            search
+                          </span>
+                          <input
+                            type="text"
+                            value={deviceSearchQuery}
+                            onChange={(e) => setDeviceSearchQuery(e.target.value)}
+                            placeholder="Cari perangkat..."
+                            className={`w-full h-8 pl-7 pr-2 rounded-lg border text-[11px] outline-none font-sans ${
+                              isDark
+                                ? "bg-[#071426] border-[#1E3A5F] text-white placeholder-[#64748B] focus:border-[#1677FF]"
+                                : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:bg-white"
+                            }`}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {filteredDevices.map((d) => {
+                      const isSelected = String(deviceId) === String(d.id);
+                      return (
+                        <button
+                          key={d.id}
+                          type="button"
+                          onClick={() => {
+                            setDeviceId(String(d.id));
+                            setDeviceDropdownOpen(false);
+                          }}
+                          className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium font-sans flex items-center justify-between transition-colors cursor-pointer ${
+                            isSelected
+                              ? "bg-[#1677FF] text-white font-semibold"
+                              : isDark
+                                ? "hover:bg-[#122846] text-[#CBD5E1]"
+                                : "hover:bg-blue-50 text-slate-700"
+                          }`}
+                        >
+                          <div className="flex flex-col truncate pr-2">
+                            <span className="font-semibold">{d.hostname}</span>
+                            <span
+                              className={`text-[10px] ${
+                                isSelected
+                                  ? "text-blue-100"
+                                  : isDark ? "text-[#64748B]" : "text-slate-400"
+                              }`}
+                            >
+                              {d.location}
+                            </span>
+                          </div>
+                          {isSelected && (
+                            <span className="material-symbols-outlined text-[16px] shrink-0">
+                              check
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
-              {/* 5. Unit Type dengan Autocomplete */}
-              <div className="relative">
-                <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
+              {/* 2. UNIT TYPE - Autocomplete Dropdown */}
+              <div className="relative" ref={typeDropdownRef}>
+                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                }`}>
                   Unit Type *
                 </label>
-                <input
-                  type="text"
-                  required
-                  autoComplete="off"
-                  placeholder="Ketik tipe modul..."
-                  value={unitType}
-                  onChange={(e) => {
-                    setUnitType(e.target.value);
+                <div
+                  onClick={() => {
                     setShowTypeSuggestions(true);
+                    setDeviceDropdownOpen(false);
+                    setSerialDropdownOpen(false);
+                    typeInputRef.current?.focus();
                   }}
-                  onFocus={() => setShowTypeSuggestions(true)}
-                  onBlur={() => setTimeout(() => setShowTypeSuggestions(false), 200)}
-                  className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white focus:outline-none focus:border-[#1677FF] font-mono"
-                />
+                  className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center justify-between text-xs font-medium font-sans transition-all duration-200 cursor-text ${
+                    showTypeSuggestions
+                      ? isDark
+                        ? "bg-[#0A182B] border-[#1677FF] ring-2 ring-[#1677FF]/25 text-[#E6EDF7]"
+                        : "bg-white border-[#1677FF] ring-2 ring-[#1677FF]/20 text-slate-900"
+                      : isDark
+                        ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF]/70 hover:bg-[#0A182B]"
+                        : "bg-slate-50 border-slate-200 text-slate-800 hover:border-blue-400 hover:bg-white"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 flex-1 min-w-0 pr-2">
+                    <span className={`material-symbols-outlined text-[19px] shrink-0 pointer-events-none ${
+                      isDark ? "text-[#38BDF8]" : "text-blue-600"
+                    }`}>
+                      category
+                    </span>
+                    <input
+                      ref={typeInputRef}
+                      type="text"
+                      required
+                      autoComplete="off"
+                      placeholder="Pilih tipe..."
+                      value={unitType}
+                      onChange={(e) => {
+                        setUnitType(e.target.value);
+                        if (!showTypeSuggestions) setShowTypeSuggestions(true);
+                      }}
+                      onFocus={() => {
+                        setShowTypeSuggestions(true);
+                        setDeviceDropdownOpen(false);
+                        setSerialDropdownOpen(false);
+                      }}
+                      className={`w-full bg-transparent outline-none text-xs font-medium font-sans ${
+                        isDark
+                          ? "text-white placeholder-[#64748B]"
+                          : "text-slate-900 placeholder-slate-400"
+                      }`}
+                    />
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    {unitType && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setUnitType("");
+                          setShowTypeSuggestions(true);
+                          typeInputRef.current?.focus();
+                        }}
+                        title="Hapus tipe"
+                        className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
+                          isDark
+                            ? "text-slate-400 hover:text-white hover:bg-slate-700"
+                            : "text-slate-400 hover:text-slate-700 hover:bg-slate-200"
+                        }`}
+                      >
+                        <span className="material-symbols-outlined text-[14px]">close</span>
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowTypeSuggestions(!showTypeSuggestions);
+                        setDeviceDropdownOpen(false);
+                        setSerialDropdownOpen(false);
+                        if (!showTypeSuggestions) {
+                          typeInputRef.current?.focus();
+                        }
+                      }}
+                      className="w-6 h-6 flex items-center justify-center cursor-pointer"
+                    >
+                      <span
+                        className={`material-symbols-outlined text-[19px] transition-transform duration-200 ${
+                          showTypeSuggestions
+                            ? isDark ? "rotate-180 text-[#38BDF8]" : "rotate-180 text-blue-600"
+                            : isDark ? "text-[#94A3B8]" : "text-slate-400"
+                        }`}
+                      >
+                        expand_more
+                      </span>
+                    </button>
+                  </div>
+                </div>
 
-                {/* Saran Autocomplete */}
+                {/* Floating Popup Suggestions Menu */}
                 {showTypeSuggestions && (
-                  <div className="absolute left-0 right-0 top-full mt-1 z-30 rounded-xl bg-[#0A182B] border border-[#1E3A5F] shadow-2xl max-h-48 overflow-y-auto custom-scrollbar p-1.5">
-                    {meta.module_types
-                      .filter((mt) =>
-                        mt.nama.toLowerCase().includes(unitType.toLowerCase())
-                      )
-                      .map((mt) => (
+                  <div className={`absolute left-0 top-full mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-50 max-h-56 overflow-y-auto custom-scrollbar backdrop-blur-md font-sans animate-dropdown ${
+                    isDark
+                      ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7]"
+                      : "border-slate-200 bg-white text-slate-800"
+                  }`}>
+                    {filteredModuleTypes.map((mt) => {
+                      const isSelected = unitType.toLowerCase() === mt.nama.toLowerCase();
+                      return (
                         <button
                           key={mt.id}
                           type="button"
@@ -1521,31 +2449,44 @@ function EditModuleModal({ moduleData, meta, onClose, onSuccess }) {
                             setUnitType(mt.nama);
                             setShowTypeSuggestions(false);
                           }}
-                          className="w-full text-left px-3 py-2 rounded-lg text-xs hover:bg-[#122846] text-[#CBD5E1] hover:text-[#38BDF8] flex items-center justify-between transition-colors font-mono cursor-pointer"
+                          className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium font-sans flex items-center justify-between transition-colors cursor-pointer ${
+                            isSelected
+                              ? "bg-[#1677FF] text-white font-semibold"
+                              : isDark
+                                ? "hover:bg-[#122846] text-[#CBD5E1] hover:text-[#38BDF8]"
+                                : "hover:bg-blue-50 text-slate-700 hover:text-blue-600"
+                          }`}
                         >
                           <span className="font-semibold">{mt.nama}</span>
                           {mt.vendor && (
-                            <span className="text-[10px] text-[#64748B] font-sans">
+                            <span className={`text-[10px] font-sans ${
+                              isDark ? "text-[#64748B]" : "text-slate-400"
+                            }`}>
                               {mt.vendor}
                             </span>
                           )}
                         </button>
-                      ))}
-                    {meta.module_types.filter((mt) =>
-                      mt.nama.toLowerCase().includes(unitType.toLowerCase())
-                    ).length === 0 && unitType.trim() && (
-                        <div className="px-3 py-2 text-[11px] text-[#64748B]">
-                          Gunakan nilai manual:{" "}
-                          <span className="text-white font-mono font-semibold">{unitType}</span>
-                        </div>
-                      )}
+                      );
+                    })}
+                    {filteredModuleTypes.length === 0 && unitType.trim() && (
+                      <div className={`px-3 py-2 text-[11px] font-sans ${
+                        isDark ? "text-[#64748B]" : "text-slate-500"
+                      }`}>
+                        Gunakan nilai manual:{" "}
+                        <span className={`font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>
+                          {unitType}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
 
-              {/* Serial Number */}
+              {/* 3. SERIAL NUMBER */}
               <div>
-                <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
+                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                }`}>
                   Serial Number *
                 </label>
                 <input
@@ -1553,26 +2494,38 @@ function EditModuleModal({ moduleData, meta, onClose, onSuccess }) {
                   required
                   value={serialNumber}
                   onChange={(e) => setSerialNumber(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white font-mono focus:outline-none focus:border-[#1677FF]"
+                  className={`w-full h-11 px-3.5 rounded-xl border text-xs font-medium focus:outline-none focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF] font-sans transition-all ${
+                    isDark
+                      ? "bg-[#071426] border-[#1E3A5F] text-white placeholder-[#64748B]"
+                      : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white"
+                  }`}
                 />
               </div>
 
-              {/* Unit Part Number */}
+              {/* 4. UNIT PART NUMBER */}
               <div>
-                <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
+                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                }`}>
                   Unit Part Number
                 </label>
                 <input
                   type="text"
                   value={unitPartNumber}
                   onChange={(e) => setUnitPartNumber(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white font-mono focus:outline-none focus:border-[#1677FF]"
+                  className={`w-full h-11 px-3.5 rounded-xl border text-xs font-medium focus:outline-none focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF] font-sans transition-all ${
+                    isDark
+                      ? "bg-[#071426] border-[#1E3A5F] text-white placeholder-[#64748B]"
+                      : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white"
+                  }`}
                 />
               </div>
 
-              {/* Slot */}
+              {/* 5. NOMOR SLOT */}
               <div>
-                <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
+                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                }`}>
                   Nomor Slot *
                 </label>
                 <input
@@ -1580,39 +2533,57 @@ function EditModuleModal({ moduleData, meta, onClose, onSuccess }) {
                   required
                   value={slot}
                   onChange={(e) => setSlot(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white font-mono focus:outline-none focus:border-[#1677FF]"
+                  className={`w-full h-11 px-3.5 rounded-xl border text-xs font-medium focus:outline-none focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF] font-sans transition-all ${
+                    isDark
+                      ? "bg-[#071426] border-[#1E3A5F] text-white placeholder-[#64748B]"
+                      : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white"
+                  }`}
                 />
               </div>
 
-              {/* Shelf */}
+              {/* 6. SHELF */}
               <div>
-                <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
+                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                }`}>
                   Shelf
                 </label>
                 <input
                   type="text"
                   value={shelf}
                   onChange={(e) => setShelf(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white font-mono focus:outline-none focus:border-[#1677FF]"
+                  className={`w-full h-11 px-3.5 rounded-xl border text-xs font-medium focus:outline-none focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF] font-sans transition-all ${
+                    isDark
+                      ? "bg-[#071426] border-[#1E3A5F] text-white placeholder-[#64748B]"
+                      : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white"
+                  }`}
                 />
               </div>
 
-              {/* Port */}
+              {/* 7. PORT */}
               <div>
-                <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
+                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                }`}>
                   Port
                 </label>
                 <input
                   type="text"
                   value={port}
                   onChange={(e) => setPort(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white font-mono focus:outline-none focus:border-[#1677FF]"
+                  className={`w-full h-11 px-3.5 rounded-xl border text-xs font-medium focus:outline-none focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF] font-sans transition-all ${
+                    isDark
+                      ? "bg-[#071426] border-[#1E3A5F] text-white placeholder-[#64748B]"
+                      : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white"
+                  }`}
                 />
               </div>
 
-              {/* 3. Date (Kalender type='date') */}
+              {/* 8. TANGGAL PASANG / DATE */}
               <div>
-                <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
+                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                }`}>
                   Tanggal Pasang / Date *
                 </label>
                 <input
@@ -1620,25 +2591,37 @@ function EditModuleModal({ moduleData, meta, onClose, onSuccess }) {
                   required
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl bg-[#071426] border border-[#1E3A5F] text-xs text-white font-mono focus:outline-none focus:border-[#1677FF] [color-scheme:dark] cursor-pointer"
+                  className={`w-full h-11 px-3.5 rounded-xl border text-xs font-medium focus:outline-none focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF] font-sans cursor-pointer transition-all ${
+                    isDark
+                      ? "bg-[#071426] border-[#1E3A5F] text-white [color-scheme:dark]"
+                      : "bg-slate-50 border-slate-200 text-slate-900 [color-scheme:light] focus:bg-white"
+                  }`}
                 />
               </div>
             </div>
 
             {/* Action buttons */}
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#1A2E4C]">
+            <div className={`flex items-center justify-end gap-3 pt-3 border-t ${
+              isDark ? "border-[#1A2E4C]" : "border-slate-100"
+            }`}>
               <button
                 type="button"
                 disabled={loading}
                 onClick={onClose}
-                className="px-4 py-2.5 rounded-xl border border-[#1E3A5F] text-[#CBD5E1] hover:bg-[#122846] text-xs font-semibold transition-colors cursor-pointer"
+                className={`h-11 px-5 rounded-xl border text-xs font-semibold font-sans transition-colors cursor-pointer ${
+                  isDark
+                    ? "border-[#1E3A5F] text-[#CBD5E1] hover:bg-[#122846]"
+                    : "border-slate-300 text-slate-700 hover:bg-slate-100"
+                }`}
               >
                 Batal
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-lg shadow-amber-950/30 transition-all cursor-pointer disabled:opacity-50"
+                className={`h-11 px-6 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs font-sans flex items-center gap-2 shadow-lg transition-all cursor-pointer disabled:opacity-50 ${
+                  isDark ? "shadow-amber-950/30" : "shadow-amber-500/20"
+                }`}
               >
                 {loading ? (
                   <>
@@ -1649,7 +2632,7 @@ function EditModuleModal({ moduleData, meta, onClose, onSuccess }) {
                   </>
                 ) : (
                   <>
-                    <span className="material-symbols-outlined text-[16px]">save</span>
+                    <span className="material-symbols-outlined text-[18px]">save</span>
                     <span>Simpan Perubahan</span>
                   </>
                 )}
@@ -1666,6 +2649,7 @@ function EditModuleModal({ moduleData, meta, onClose, onSuccess }) {
 // SUBCOMPONENT: DETAIL MODULE MODAL
 // ==============================================================
 function DetailModuleModal({ item, loading, onClose }) {
+  const { isDark } = useTheme();
   if (!item) return null;
 
   return (
@@ -1675,18 +2659,28 @@ function DetailModuleModal({ item, loading, onClose }) {
         onClick={onClose}
       >
         <div
-          className="bg-[#0D1F36] border border-[#1E3A5F] rounded-2xl w-full max-w-2xl p-6 shadow-2xl space-y-5 max-h-[92vh] overflow-y-auto custom-scrollbar"
+          className={`rounded-2xl w-full max-w-2xl p-6 shadow-2xl space-y-5 max-h-[92vh] overflow-y-auto custom-scrollbar font-sans border transition-colors ${
+            isDark
+              ? "bg-[#0D1F36] border-[#1E3A5F] text-[#E6EDF7]"
+              : "bg-white border-slate-200 text-slate-800 shadow-xl"
+          }`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between pb-3 border-b border-[#1A2E4C]">
+          <div className={`flex items-center justify-between pb-3 border-b ${
+            isDark ? "border-[#1A2E4C]" : "border-slate-100"
+          }`}>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#00E5FF]/15 border border-[#00E5FF]/30 flex items-center justify-center text-[#00E5FF]">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
+                isDark
+                  ? "bg-[#00E5FF]/15 border-[#00E5FF]/30 text-[#00E5FF]"
+                  : "bg-cyan-50 border-cyan-200 text-cyan-600"
+              }`}>
                 <span className="material-symbols-outlined text-[22px]">memory</span>
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-base font-bold text-white font-mono">
+                  <h3 className={`text-base font-bold font-mono ${isDark ? "text-white" : "text-slate-900"}`}>
                     {item.serial_number}
                   </h3>
                   <span
@@ -1700,7 +2694,7 @@ function DetailModuleModal({ item, loading, onClose }) {
                     {item.kondisi || "AKTIF"}
                   </span>
                 </div>
-                <p className="text-xs text-[#94A3B8]">
+                <p className={`text-xs font-sans ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
                   Informasi detail spesifikasi dan posisi modul pada perangkat
                 </p>
               </div>
@@ -1708,14 +2702,18 @@ function DetailModuleModal({ item, loading, onClose }) {
             <button
               type="button"
               onClick={onClose}
-              className="w-8 h-8 rounded-lg text-[#94A3B8] hover:text-white hover:bg-[#1A2E4C] flex items-center justify-center transition-colors cursor-pointer"
+              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors cursor-pointer ${
+                isDark
+                  ? "text-[#94A3B8] hover:text-white hover:bg-[#1A2E4C]"
+                  : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+              }`}
             >
               <span className="material-symbols-outlined text-[20px]">close</span>
             </button>
           </div>
 
           {loading ? (
-            <div className="py-12 text-center text-[#94A3B8]">
+            <div className={`py-12 text-center ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
               <span className="material-symbols-outlined text-4xl animate-spin text-[#1677FF]">
                 progress_activity
               </span>
@@ -1725,41 +2723,83 @@ function DetailModuleModal({ item, loading, onClose }) {
             <div className="space-y-4">
               {/* Grid Informasi Modul */}
               <div>
-                <h4 className="text-[11px] font-bold text-[#38BDF8] uppercase tracking-wider mb-2.5">
+                <h4 className={`text-[11px] font-bold uppercase tracking-wider mb-2.5 font-sans ${
+                  isDark ? "text-[#38BDF8]" : "text-blue-600"
+                }`}>
                   Spesifikasi & Identitas Modul
                 </h4>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-[#071426] border border-[#1A2E4C] rounded-xl p-4 text-xs">
+                <div className={`grid grid-cols-2 sm:grid-cols-3 gap-3 rounded-xl p-4 text-xs font-sans border ${
+                  isDark
+                    ? "bg-[#071426] border-[#1A2E4C]"
+                    : "bg-slate-50 border-slate-200"
+                }`}>
                   <div>
-                    <span className="text-[#94A3B8] text-[11px] block">Unit Type</span>
-                    <span className="font-semibold text-white">{item.unit_type}</span>
+                    <span className={`text-[11px] block ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
+                      Unit Type
+                    </span>
+                    <span className={`font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>
+                      {item.unit_type}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-[#94A3B8] text-[11px] block">Unit Part Number</span>
-                    <span className="font-mono text-[#CBD5E1]">
+                    <span className={`text-[11px] block ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
+                      Kategori
+                    </span>
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 mt-0.5 rounded-full text-[10px] font-bold uppercase border ${
+                      item.category === "SFP"
+                        ? isDark
+                          ? "bg-[#0E3B33] text-[#34D399] border-[#059669]/40"
+                          : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                        : isDark
+                          ? "bg-[#25133E] text-[#C084FC] border-[#A855F7]/35"
+                          : "bg-purple-50 text-purple-700 border-purple-200"
+                    }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${item.category === "SFP" ? "bg-[#10B981]" : "bg-[#A855F7]"}`}></span>
+                      <span>{item.category || (item.port && item.port !== "-" ? "SFP" : "CARD")}</span>
+                    </span>
+                  </div>
+                  <div>
+                    <span className={`text-[11px] block ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
+                      Unit Part Number
+                    </span>
+                    <span className={`font-mono ${isDark ? "text-[#CBD5E1]" : "text-slate-600"}`}>
                       {item.unit_part_number || "-"}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[#94A3B8] text-[11px] block">Tanggal Asli</span>
-                    <span className="font-mono text-[#CBD5E1]">{item.date_str || "-"}</span>
+                    <span className={`text-[11px] block ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
+                      Tanggal Asli
+                    </span>
+                    <span className={`font-mono ${isDark ? "text-[#CBD5E1]" : "text-slate-600"}`}>
+                      {item.date_str || "-"}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-[#94A3B8] text-[11px] block">Perangkat Terpasang</span>
-                    <span className="font-semibold text-white">{item.ne_name}</span>
+                    <span className={`text-[11px] block ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
+                      Perangkat Terpasang
+                    </span>
+                    <span className={`font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>
+                      {item.ne_name}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-[#94A3B8] text-[11px] block">Lokasi STO</span>
-                    <span className="text-[#CBD5E1]">{item.location_name}</span>
+                    <span className={`text-[11px] block ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
+                      Lokasi STO
+                    </span>
+                    <span className={isDark ? "text-[#CBD5E1]" : "text-slate-700"}>
+                      {item.location_name}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-[#94A3B8] text-[11px] block">Posisi Slot</span>
-                    <span className="font-bold text-[#38BDF8]">
+                    <span className={`text-[11px] block ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
+                      Posisi Slot
+                    </span>
+                    <span className={`font-bold ${isDark ? "text-[#38BDF8]" : "text-blue-600"}`}>
                       Shelf {item.shelf || "1"} • Slot {item.slot} • Port {item.port || "-"}
                     </span>
                   </div>
                 </div>
               </div>
-
 
               <div className="flex justify-end pt-2">
                 <button

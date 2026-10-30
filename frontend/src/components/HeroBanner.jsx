@@ -1,41 +1,34 @@
 import React from "react";
 import { useTheme } from "../context/ThemeContext";
+import dashboardBannerImg from "../assets/dashboard_banner.jpg";
 
 export default function HeroBanner({ userName, userRole }) {
   const { isDark } = useTheme();
   const isTeknisi = userRole === "teknisi";
 
+  const bannerBackground = isDark
+    ? `linear-gradient(to right, #071426 0%, #071426 28%, rgba(7, 20, 38, 0.92) 38%, rgba(7, 20, 38, 0.45) 55%, transparent 72%), url(${dashboardBannerImg})`
+    : `linear-gradient(to right, #ffffff 0%, #ffffff 28%, rgba(255, 255, 255, 0.92) 38%, rgba(255, 255, 255, 0.45) 55%, transparent 72%), url(${dashboardBannerImg})`;
+
   return (
     <div
-      className={`relative rounded-2xl overflow-hidden shadow-lg border min-h-[120px] flex items-center justify-between transition-colors duration-300 ${
+      className={`relative overflow-hidden rounded-2xl px-6 h-[120px] min-h-[120px] max-h-[120px] flex items-center justify-between w-full !mt-0 select-none transition-colors duration-300 ${
         isDark
-          ? "border-[#1E3A5F] bg-[#071426]"
-          : "border-slate-200 bg-white"
+          ? "border border-[#1E3A5F] bg-[#071426] shadow-2xl"
+          : "border border-slate-200 bg-white shadow-md"
       }`}
+      style={{
+        marginTop: 0,
+        height: "120px",
+        minHeight: "120px",
+        maxHeight: "120px",
+        backgroundImage: bannerBackground,
+        backgroundPosition: "right center",
+        backgroundSize: "cover",
+        backgroundRepeat: "no-repeat",
+      }}
     >
-      <img
-        alt="Telecommunications Fiber Optic Infrastructure Data Center"
-        className="absolute inset-0 w-full h-full object-cover object-center"
-        src="https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&q=80&w=1200"
-      />
-
-      {/* Gradient Overlays */}
-      <div
-        className={`absolute inset-0 transition-opacity duration-300 ${
-          isDark
-            ? "bg-gradient-to-r from-[#071426] via-[#071426]/85 to-transparent"
-            : "bg-gradient-to-r from-white via-white/90 to-transparent"
-        }`}
-      ></div>
-
-      {/* Ambient Glow */}
-      <div
-        className={`absolute -top-12 -right-12 w-64 h-64 rounded-full blur-3xl pointer-events-none ${
-          isDark ? "bg-[#1677FF]/20" : "bg-[#1677FF]/15"
-        }`}
-      ></div>
-
-      <div className="relative z-10 px-6 py-5 flex-1 flex flex-col justify-center">
+      <div className="relative z-10 flex-1 flex flex-col justify-center">
         <div className="flex items-baseline gap-2">
           <span
             className={`text-xs font-normal ${
@@ -53,7 +46,7 @@ export default function HeroBanner({ userName, userRole }) {
           </span>
         </div>
         <p
-          className={`text-xs mt-1 max-w-xl font-normal leading-relaxed ${
+          className={`text-xs mt-1.5 max-w-xl font-normal leading-relaxed ${
             isDark ? "text-[#94A3B8]" : "text-slate-600"
           }`}
         >

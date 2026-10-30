@@ -14,3 +14,6 @@ frontend/node_modules/
 .env
 .env.*
 !.env.example
+
+# Database lokal
+instance/database.db

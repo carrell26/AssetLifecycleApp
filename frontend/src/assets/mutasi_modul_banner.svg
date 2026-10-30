@@ -1,0 +1,236 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-40 -30 520 235" width="100%" height="100%" fill="none" overflow="visible">
+  <defs>
+    <!-- Ultra-Smooth Radial Floor Shadows -->
+    <radialGradient id="mut-macro-shadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#010612" stop-opacity="0.80" />
+      <stop offset="40%" stop-color="#020B1B" stop-opacity="0.45" />
+      <stop offset="75%" stop-color="#041228" stop-opacity="0.12" />
+      <stop offset="100%" stop-color="#041228" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="mut-main-contact" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.95" />
+      <stop offset="30%" stop-color="#010714" stop-opacity="0.75" />
+      <stop offset="60%" stop-color="#020E22" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#041630" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="mut-sub-contact" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.88" />
+      <stop offset="35%" stop-color="#010714" stop-opacity="0.60" />
+      <stop offset="70%" stop-color="#031126" stop-opacity="0.20" />
+      <stop offset="100%" stop-color="#031126" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="mut-floor-cyan-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00E5FF" stop-opacity="0.35" />
+      <stop offset="35%" stop-color="#1677FF" stop-opacity="0.20" />
+      <stop offset="70%" stop-color="#0A2540" stop-opacity="0.05" />
+      <stop offset="100%" stop-color="#0A2540" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="mut-floating-shadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#010715" stop-opacity="0.75" />
+      <stop offset="45%" stop-color="#031229" stop-opacity="0.35" />
+      <stop offset="85%" stop-color="#041834" stop-opacity="0.08" />
+      <stop offset="100%" stop-color="#041834" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Glow Filters with zero edge-clipping -->
+    <filter id="mut-glow-cyan" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="3.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <filter id="mut-glow-emerald" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="4.0" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <!-- 3D Shading Gradients -->
+    <linearGradient id="ped-origin-top" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1E3A5F" />
+      <stop offset="100%" stop-color="#0F233D" />
+    </linearGradient>
+    <linearGradient id="ped-origin-left" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#112745" />
+      <stop offset="100%" stop-color="#081424" />
+    </linearGradient>
+    <linearGradient id="ped-origin-right" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#18365E" />
+      <stop offset="100%" stop-color="#0C1B30" />
+    </linearGradient>
+    <linearGradient id="ped-dest-top" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1B4D5C" />
+      <stop offset="100%" stop-color="#0E2F3D" />
+    </linearGradient>
+    <linearGradient id="ped-dest-left" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0E3342" />
+      <stop offset="100%" stop-color="#061A22" />
+    </linearGradient>
+    <linearGradient id="ped-dest-right" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#14465A" />
+      <stop offset="100%" stop-color="#092532" />
+    </linearGradient>
+    <linearGradient id="mod-metal-top" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="40%" stop-color="#1677FF" />
+      <stop offset="100%" stop-color="#094FB5" />
+    </linearGradient>
+    <linearGradient id="mod-metal-front" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0C3B7A" />
+      <stop offset="100%" stop-color="#051D40" />
+    </linearGradient>
+    <linearGradient id="mod-metal-side" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#134DA1" />
+      <stop offset="100%" stop-color="#0B2B5C" />
+    </linearGradient>
+    <linearGradient id="pcb-gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FDE047" />
+      <stop offset="50%" stop-color="#EAB308" />
+      <stop offset="100%" stop-color="#A16207" />
+    </linearGradient>
+    <linearGradient id="holo-beam" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.45" />
+      <stop offset="40%" stop-color="#00E5FF" stop-opacity="0.20" />
+      <stop offset="100%" stop-color="#00E5FF" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+
+  <!-- STAGE 0: AMBIENT SHADOWS & FLOOR GLOW -->
+  <g>
+    <ellipse cx="220" cy="158" rx="200" ry="34" fill="url(#mut-macro-shadow)" />
+    <ellipse cx="220" cy="152" rx="145" ry="26" fill="url(#mut-floor-cyan-glow)" />
+    <ellipse cx="220" cy="154" rx="55" ry="15" fill="url(#mut-main-contact)" />
+    <ellipse cx="220" cy="120" rx="38" ry="11" fill="url(#mut-floating-shadow)" />
+    <ellipse cx="105" cy="148" rx="48" ry="13" fill="url(#mut-sub-contact)" />
+    <ellipse cx="335" cy="148" rx="48" ry="13" fill="url(#mut-sub-contact)" />
+  </g>
+
+  <!-- STAGE 1: DYNAMIC TRANSFER CONDUITS (PERFECT SINGLE BÉZIER ARCS) -->
+  <g>
+    <!-- Upper Transfer Trajectory Arc (Seamless connection from Slot A arrow to Slot B arrow) -->
+    <path d="M 105 57 C 165 14, 275 14, 335 57" 
+          stroke="#00E5FF" stroke-width="2.2" stroke-dasharray="6 6" stroke-linecap="round" opacity="0.95" filter="url(#mut-glow-cyan)" />
+
+    <!-- Trajectory Energy Pulse Nodes (Mathematically positioned along Bézier arc) -->
+    <circle cx="150" cy="37" r="3" fill="#E0F2FE" filter="url(#mut-glow-cyan)" />
+    <circle cx="188" cy="28" r="3.5" fill="#FFFFFF" filter="url(#mut-glow-cyan)" />
+    <circle cx="252" cy="28" r="3.5" fill="#FFFFFF" filter="url(#mut-glow-cyan)" />
+    <circle cx="290" cy="37" r="3" fill="#E0F2FE" filter="url(#mut-glow-cyan)" />
+
+    <!-- Lower Reverse Verification Link Arc (Slot B -> Slot A) -->
+    <path d="M 335 102 C 280 144, 160 144, 105 102" 
+          stroke="#10B981" stroke-width="1.8" stroke-dasharray="5 5" stroke-linecap="round" opacity="0.8" filter="url(#mut-glow-emerald)" />
+
+    <!-- Verification Pulse Nodes -->
+    <circle cx="280" cy="127" r="2.5" fill="#34D399" filter="url(#mut-glow-emerald)" />
+    <circle cx="220" cy="134" r="3" fill="#34D399" filter="url(#mut-glow-emerald)" />
+    <circle cx="160" cy="127" r="2.5" fill="#34D399" filter="url(#mut-glow-emerald)" />
+  </g>
+
+  <!-- STAGE 2: LEFT PEDESTAL - SLOT A (POSISI ASAL) -->
+  <g transform="translate(65, 35)">
+    <!-- 3D Pedestal Chassis -->
+    <polygon points="40,82 80,62 40,42 0,62" fill="url(#ped-origin-top)" />
+    <polygon points="0,62 40,82 40,118 0,98" fill="url(#ped-origin-left)" />
+    <polygon points="40,82 80,62 80,98 40,118" fill="url(#ped-origin-right)" />
+
+    <!-- Highlight Edges -->
+    <path d="M 0 62 L 40 82 L 80 62" stroke="#38BDF8" stroke-width="1.2" stroke-opacity="0.6" />
+    <line x1="40" y1="82" x2="40" y2="118" stroke="#38BDF8" stroke-width="0.8" stroke-opacity="0.3" />
+
+    <!-- Slot Cavity -->
+    <polygon points="40,75 66,62 40,49 14,62" fill="#061222" stroke="#1E3A5F" stroke-width="1" />
+    <polygon points="40,71 60,61 40,51 20,61" fill="#020813" />
+
+    <!-- LED Status (Amber / Transmitting) -->
+    <circle cx="40" cy="58" r="2.5" fill="#F59E0B" filter="url(#mut-glow-cyan)" />
+
+    <!-- SLOT A Header Badge (Elevated with ample air gap) -->
+    <g transform="translate(18, -14)">
+      <rect x="0" y="0" width="44" height="18" rx="6" fill="#0A1E38" stroke="#38BDF8" stroke-width="1.2" stroke-opacity="0.8" />
+      <text x="22" y="12.5" font-family="system-ui, -apple-system, sans-serif" font-size="9" font-weight="700" fill="#38BDF8" text-anchor="middle" letter-spacing="0.5">SLOT A</text>
+    </g>
+
+    <!-- Upward Ejection Vector Arrow (from y=40 to y=22, exactly meeting arc at y=57 world) -->
+    <path d="M 40 40 L 40 22 M 36 28 L 40 22 L 44 28" 
+          stroke="#38BDF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#mut-glow-cyan)" />
+  </g>
+
+  <!-- STAGE 3: RIGHT PEDESTAL - SLOT B (POSISI TUJUAN) -->
+  <g transform="translate(295, 35)">
+    <!-- 3D Pedestal Chassis -->
+    <polygon points="40,82 80,62 40,42 0,62" fill="url(#ped-dest-top)" />
+    <polygon points="0,62 40,82 40,118 0,98" fill="url(#ped-dest-left)" />
+    <polygon points="40,82 80,62 80,98 40,118" fill="url(#ped-dest-right)" />
+
+    <!-- Highlight Edges -->
+    <path d="M 0 62 L 40 82 L 80 62" stroke="#34D399" stroke-width="1.2" stroke-opacity="0.6" />
+    <line x1="40" y1="82" x2="40" y2="118" stroke="#34D399" stroke-width="0.8" stroke-opacity="0.3" />
+
+    <!-- Slot Cavity -->
+    <polygon points="40,75 66,62 40,49 14,62" fill="#04161C" stroke="#0E3D4A" stroke-width="1" />
+    <polygon points="40,71 60,61 40,51 20,61" fill="#010C10" />
+
+    <!-- LED Status (Emerald / Receiving) -->
+    <circle cx="40" cy="58" r="2.5" fill="#10B981" filter="url(#mut-glow-emerald)" />
+
+    <!-- SLOT B Header Badge (Elevated with ample air gap) -->
+    <g transform="translate(18, -14)">
+      <rect x="0" y="0" width="44" height="18" rx="6" fill="#082A2E" stroke="#34D399" stroke-width="1.2" stroke-opacity="0.8" />
+      <text x="22" y="12.5" font-family="system-ui, -apple-system, sans-serif" font-size="9" font-weight="700" fill="#34D399" text-anchor="middle" letter-spacing="0.5">SLOT B</text>
+    </g>
+
+    <!-- Downward Insertion Vector Arrow (from y=22 to y=40, exactly meeting arc at y=57 world) -->
+    <path d="M 40 22 L 40 40 M 36 34 L 40 40 L 44 34" 
+          stroke="#34D399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#mut-glow-emerald)" />
+  </g>
+
+  <!-- STAGE 4: CENTERPIECE - FLOATING OPTICAL MODULE (3D HARDWARE TRANSCEIVER) -->
+  <g transform="translate(160, 20)">
+    <!-- Holographic Light Beam Column -->
+    <polygon points="60,35 105,58 60,82 15,58" fill="url(#holo-beam)" opacity="0.65" />
+
+    <!-- 3D Metallic Transceiver Casing -->
+    <!-- Top Face -->
+    <polygon points="60,25 110,48 60,72 10,48" fill="url(#mod-metal-top)" stroke="#7DD3FC" stroke-width="1.2" />
+
+    <!-- Front Left Face -->
+    <polygon points="10,48 60,72 60,94 10,70" fill="url(#mod-metal-front)" stroke="#1677FF" stroke-width="0.8" stroke-opacity="0.6" />
+
+    <!-- Front Right Face (with Dual LC Optical Ports) -->
+    <polygon points="60,72 110,48 110,70 60,94" fill="url(#mod-metal-side)" stroke="#1677FF" stroke-width="0.8" stroke-opacity="0.6" />
+
+    <!-- Optical Ports -->
+    <g fill="#020E22" stroke="#38BDF8" stroke-width="0.7">
+      <polygon points="72,75 84,69 84,77 72,83" />
+      <polygon points="88,67 100,61 100,69 88,75" />
+      <circle cx="78" cy="77" r="1.5" fill="#38BDF8" filter="url(#mut-glow-cyan)" />
+      <circle cx="94" cy="69" r="1.5" fill="#38BDF8" filter="url(#mut-glow-cyan)" />
+    </g>
+
+    <!-- Gold PCB Finger Contacts -->
+    <g fill="url(#pcb-gold)" stroke="#78350F" stroke-width="0.3">
+      <polygon points="18,63 24,66 24,70 18,67" />
+      <polygon points="27,67 33,70 33,74 27,71" />
+      <polygon points="36,71 42,74 42,78 36,75" />
+      <polygon points="45,75 51,78 51,82 45,79" />
+    </g>
+
+    <!-- Central Microprocessor Core (Isometric Diamond) -->
+    <g transform="translate(60, 48)">
+      <polygon points="0,-10 18,0 0,10 -18,0" fill="#0B1E38" stroke="#00E5FF" stroke-width="1" filter="url(#mut-glow-cyan)" />
+      <circle cx="0" cy="0" r="3" fill="#38BDF8" />
+      <!-- Neat isometric circuit traces -->
+      <path d="M -18 0 L -28 -5 M 18 0 L 28 -5 M 0 -10 L 0 -16" stroke="#38BDF8" stroke-width="0.8" stroke-opacity="0.7" />
+      <circle cx="-28" cy="-5" r="1.2" fill="#E0F2FE" />
+      <circle cx="28" cy="-5" r="1.2" fill="#E0F2FE" />
+      <circle cx="0" cy="-16" r="1.2" fill="#E0F2FE" />
+    </g>
+  </g>
+
+  <!-- STAGE 5: CENTRAL MUTATION / EXCHANGE BADGE (PINNACLE OF TRANSFER CONDUIT) -->
+  <g transform="translate(220, 24)">
+    <circle cx="0" cy="0" r="11" fill="#071930" stroke="#00E5FF" stroke-width="1.4" filter="url(#mut-glow-cyan)" />
+    <circle cx="0" cy="0" r="14" fill="none" stroke="#00E5FF" stroke-width="0.7" stroke-dasharray="3 3" opacity="0.6" />
+    <!-- Opposing Transfer / Mutation Arrows -->
+    <path d="M -4 -2 L 4 -2 M 1.5 -4.5 L 4 -2 L 1.5 0.5" stroke="#FFFFFF" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M 4 2 L -4 2 M -1.5 -0.5 L -4 2 L -1.5 4.5" stroke="#38BDF8" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+</svg>

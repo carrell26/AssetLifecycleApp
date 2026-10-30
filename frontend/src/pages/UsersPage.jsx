@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useTheme } from "../context/ThemeContext";
 import TablePagination from "../components/TablePagination";
 import ModalPortal from "../components/ModalPortal";
+import TableSortHeader from "../components/TableSortHeader";
 import kelolaUserBanner from "../assets/kelola_user_banner.svg";
 
 const DISTRICT_OPTIONS = [
@@ -186,7 +187,31 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
 
   useEffect(() => {
     fetchUsers();
+
+    // Auto-sync saat window fokus kembali agar pembaruan foto profil selalu terkini
+    const handleFocus = () => {
+      fetchUsers();
+    };
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
   }, []);
+
+  // Sinkronisasi otomatis secara instan jika currentUser mengganti foto profil via AvatarModal
+  useEffect(() => {
+    if (currentUser?.avatar_url) {
+      setUsers((prevUsers) =>
+        prevUsers.map((u) => {
+          const isCurrent =
+            (currentUser.id && u.user_id === currentUser.id) ||
+            (currentUser.user_id && u.user_id === currentUser.user_id);
+          if (isCurrent && u.avatar_url !== currentUser.avatar_url) {
+            return { ...u, avatar_url: currentUser.avatar_url };
+          }
+          return u;
+        })
+      );
+    }
+  }, [currentUser?.avatar_url]);
 
   // District options gabungan default dan data dari server
   const districtOptions = useMemo(() => {
@@ -982,15 +1007,20 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
       )}
 
       {/* ========================================================
-          MODE 2: TABEL DAFTAR PENGGUNA (SESUAI GAMBAR REFERENSI)
+          MODE 2: TABEL DAFTAR PENGGUNA (SESUAI STANDAR AUDIT LOG)
           ======================================================== */}
       {viewMode === "list" && (
         <div
-          className={`rounded-2xl border transition-colors duration-300 ${isDark ? "bg-[#061427] border-[#0d2746] shadow-xl" : "bg-white border-slate-200 shadow-sm"
+          className={`rounded-2xl border transition-all duration-300 overflow-visible w-full ${isDark
+            ? "border-[#162F52] bg-[#0A182B] shadow-2xl"
+            : "border-slate-200 bg-white shadow-sm"
             }`}
         >
-          {/* Bar Filter & Search */}
-          <div className="p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
+          {/* Controls Toolbar: Search & Dropdowns dengan Top Border Separator */}
+          <div
+            className={`p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4 border-b ${isDark ? "border-[#142D4C]" : "border-slate-100"
+              }`}
+          >
             {/* Search Input dengan ikon search dan tombol clear 'X' */}
             <div className="relative w-full md:max-w-md lg:max-w-lg">
               <span
@@ -1238,114 +1268,105 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
               <span>Tidak ada akun pengguna yang sesuai dengan filter pencarian.</span>
             </div>
           ) : (
-            /* Table */
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
+            /* Table Container - Rounded-t-xl Card Header Wrapper & Overflow-hidden (No Scrollbar) */
+            <div className="w-full overflow-hidden rounded-t-xl">
+              <table
+                id="usersTable"
+                className="w-full text-left border-collapse table-fixed"
+                style={{ tableLayout: "fixed", width: "100%" }}
+              >
+                <colgroup>
+                  <col style={{ width: "4%" }} />
+                  <col style={{ width: "27%" }} />
+                  <col style={{ width: "14%" }} />
+                  <col style={{ width: "12%" }} />
+                  <col style={{ width: "12%" }} />
+                  <col style={{ width: "16%" }} />
+                  <col style={{ width: "15%" }} />
+                </colgroup>
+                <thead className={`rounded-t-xl ${isDark ? "bg-[#071426]" : "bg-slate-50"}`}>
                   <tr
-                    className={`border-t border-b text-[11px] font-bold uppercase tracking-wider ${isDark
-                      ? "border-[#0f2747] bg-[#061427] text-[#5b7699]"
-                      : "border-slate-200 bg-slate-50 text-slate-600"
-                      }`}
+                    className={`border-b text-[11px] font-bold uppercase tracking-wider ${isDark
+                      ? "bg-[#071426] border-[#142D4C] text-[#94A3B8]"
+                      : "bg-slate-50 border-slate-200 text-slate-600"
+                      } rounded-t-xl`}
                   >
-                    {/* 1. NAMA & IDENTITAS (Tetap rata kiri) */}
-                    <th className="py-3 px-5 text-left">
-                      <button
-                        type="button"
-                        onClick={() => handleSort("name")}
-                        className={`flex items-center gap-1.5 uppercase font-bold text-[11px] tracking-wider transition-colors cursor-pointer ${isDark ? "hover:text-white" : "hover:text-slate-900"
-                          }`}
-                      >
-                        <span>NAMA & IDENTITAS</span>
-                        <span className="material-symbols-outlined text-[14px]">
-                          {sortConfig.key === "name"
-                            ? sortConfig.direction === "asc"
-                              ? "arrow_upward"
-                              : "arrow_downward"
-                            : "unfold_more"}
-                        </span>
-                      </button>
+                    {/* 0. # Index (DITENGAHKAN) */}
+                    <th className="py-3 px-2 text-center select-none rounded-tl-xl" style={{ width: "4%" }}>
+                      <span className={`font-extrabold uppercase tracking-wider text-[11px] block text-center ${isDark ? "text-[#38BDF8]" : "text-blue-600"}`}>
+                        #
+                      </span>
                     </th>
 
-                    {/* 2. ROLE */}
-                    <th className="py-3 px-4 text-left">
-                      <button
-                        type="button"
-                        onClick={() => handleSort("role")}
-                        className={`inline-flex items-center justify-start gap-1.5 uppercase font-bold text-[11px] tracking-wider transition-colors cursor-pointer ${isDark ? "hover:text-white" : "hover:text-slate-900"
-                          }`}
-                      >
-                        <span>ROLE</span>
-                        <span className="material-symbols-outlined text-[14px]">
-                          {sortConfig.key === "role"
-                            ? sortConfig.direction === "asc"
-                              ? "arrow_upward"
-                              : "arrow_downward"
-                            : "unfold_more"}
-                        </span>
-                      </button>
+                    {/* 1. NAMA & IDENTITAS (Rata Kiri) */}
+                    <th className="py-3 px-4 text-left select-none" style={{ width: "27%" }}>
+                      <TableSortHeader
+                        title="NAMA & IDENTITAS"
+                        sortKey="name"
+                        currentSort={sortConfig}
+                        onSort={handleSort}
+                        align="left"
+                        isDark={isDark}
+                      />
                     </th>
 
-                    {/* 3. DISTRICT */}
-                    <th className="py-3 px-4 text-left">
-                      <button
-                        type="button"
-                        onClick={() => handleSort("district")}
-                        className={`inline-flex items-center justify-start gap-1.5 uppercase font-bold text-[11px] tracking-wider transition-colors cursor-pointer ${isDark ? "hover:text-white" : "hover:text-slate-900"
-                          }`}
-                      >
-                        <span>DISTRICT</span>
-                        <span className="material-symbols-outlined text-[14px]">
-                          {sortConfig.key === "district"
-                            ? sortConfig.direction === "asc"
-                              ? "arrow_upward"
-                              : "arrow_downward"
-                            : "unfold_more"}
-                        </span>
-                      </button>
+                    {/* 2. ROLE (Rata Kiri) */}
+                    <th className="py-3 px-4 text-left select-none" style={{ width: "14%" }}>
+                      <TableSortHeader
+                        title="ROLE"
+                        sortKey="role"
+                        currentSort={sortConfig}
+                        onSort={handleSort}
+                        align="left"
+                        isDark={isDark}
+                      />
                     </th>
 
-                    {/* 4. STATUS (DITENGAHKAN) */}
-                    <th className="py-3 px-4 text-center">
-                      <button
-                        type="button"
-                        onClick={() => handleSort("status")}
-                        className={`inline-flex items-center justify-center gap-1.5 uppercase font-bold text-[11px] tracking-wider transition-colors mx-auto cursor-pointer ${isDark ? "hover:text-white" : "hover:text-slate-900"
-                          }`}
-                      >
-                        <span>STATUS</span>
-                        <span className="material-symbols-outlined text-[14px]">
-                          {sortConfig.key === "status"
-                            ? sortConfig.direction === "asc"
-                              ? "arrow_upward"
-                              : "arrow_downward"
-                            : "unfold_more"}
-                        </span>
-                      </button>
+                    {/* 3. DISTRICT (Rata Kiri) */}
+                    <th className="py-3 px-4 text-left select-none" style={{ width: "12%" }}>
+                      <TableSortHeader
+                        title="DISTRICT"
+                        sortKey="district"
+                        currentSort={sortConfig}
+                        onSort={handleSort}
+                        align="left"
+                        isDark={isDark}
+                      />
+                    </th>
+
+                    {/* 4. STATUS (DITENGAHKAN SECARA PRESISI DI ATAS BADGE STATUS) */}
+                    <th className="py-3 px-3 text-center select-none" style={{ width: "12%" }}>
+                      <div className="flex items-center justify-center w-full">
+                        <TableSortHeader
+                          title="STATUS"
+                          sortKey="status"
+                          currentSort={sortConfig}
+                          onSort={handleSort}
+                          align="center"
+                          isDark={isDark}
+                        />
+                      </div>
                     </th>
 
                     {/* 5. DIBUAT PADA (DITENGAHKAN) */}
-                    <th className="py-3 px-4 text-center">
-                      <button
-                        type="button"
-                        onClick={() => handleSort("created_at")}
-                        className={`inline-flex items-center justify-center gap-1.5 uppercase font-bold text-[11px] tracking-wider transition-colors mx-auto cursor-pointer ${isDark ? "hover:text-white" : "hover:text-slate-900"
-                          }`}
-                      >
-                        <span>DIBUAT PADA</span>
-                        <span className="material-symbols-outlined text-[14px]">
-                          {sortConfig.key === "created_at"
-                            ? sortConfig.direction === "asc"
-                              ? "arrow_upward"
-                              : "arrow_downward"
-                            : "unfold_more"}
-                        </span>
-                      </button>
+                    <th className="py-3 px-3 text-center select-none" style={{ width: "16%" }}>
+                      <div className="flex items-center justify-center w-full">
+                        <TableSortHeader
+                          title="DIBUAT PADA"
+                          sortKey="created_at"
+                          currentSort={sortConfig}
+                          onSort={handleSort}
+                          align="center"
+                          isDark={isDark}
+                        />
+                      </div>
                     </th>
 
                     {/* 6. AKSI (DITENGAHKAN) */}
-                    <th className="py-3 px-4 text-center">
-                      <span className="block text-center">AKSI</span>
+                    <th className="py-3 px-3 text-center select-none rounded-tr-xl" style={{ width: "15%" }}>
+                      <span className={`font-extrabold uppercase tracking-wider text-[11px] block text-center ${isDark ? "text-[#38BDF8]" : "text-blue-600"}`}>
+                        AKSI
+                      </span>
                     </th>
                   </tr>
                 </thead>
@@ -1354,10 +1375,12 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                   className={`divide-y text-xs ${isDark ? "divide-[#0d213b]" : "divide-slate-200"
                     }`}
                 >
-                  {paginatedUsers.map((u) => {
-                    const isSelf = currentUser && currentUser.id === u.user_id;
+                  {paginatedUsers.map((u, idx) => {
+                    const isSelf = currentUser && (currentUser.id === u.user_id || currentUser.user_id === u.user_id);
                     const avatarBg = getAvatarColor(u.name);
                     const initial = (u.name || "U").trim()[0].toUpperCase();
+                    const rowNum = (page - 1) * perPage + idx + 1;
+                    const avatarSrc = (isSelf && currentUser?.avatar_url) ? currentUser.avatar_url : u.avatar_url;
 
                     return (
                       <tr
@@ -1365,25 +1388,45 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                         className={`transition-colors ${isDark ? "hover:bg-[#0b213d]/60" : "hover:bg-slate-50/80 even:bg-slate-50/30"
                           }`}
                       >
+                        {/* 0. # Index */}
+                        <td className="py-3.5 px-2 text-center font-mono text-slate-400 dark:text-[#64748B] text-xs font-semibold">
+                          {rowNum}
+                        </td>
+
                         {/* 1. Nama & Identitas (Rata Kiri) */}
-                        <td className="py-3.5 px-5">
+                        <td className="py-3.5 px-4">
                           <div className="flex items-center gap-3">
-                            <div
-                              className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-sm text-white shrink-0 shadow-sm ${avatarBg}`}
-                            >
-                              {initial}
+                            <div className="relative shrink-0 w-9 h-9 sm:w-10 sm:h-10">
+                              {avatarSrc ? (
+                                <img
+                                  src={avatarSrc}
+                                  alt={u.name || "User Avatar"}
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = "none";
+                                    const fb = e.currentTarget.nextElementSibling;
+                                    if (fb) fb.style.display = "flex";
+                                  }}
+                                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover ring-2 ring-[#1677FF]/40 shadow-sm shrink-0 transition-transform duration-200 hover:scale-105"
+                                />
+                              ) : null}
+                              <div
+                                style={{ display: avatarSrc ? "none" : "flex" }}
+                                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full items-center justify-center font-bold text-sm text-white shrink-0 shadow-sm ${avatarBg}`}
+                              >
+                                {initial}
+                              </div>
                             </div>
                             <div className="min-w-0">
                               <div className="flex items-center gap-1.5">
                                 <span
-                                  className={`font-semibold text-[13px] truncate max-w-[190px] sm:max-w-[240px] ${isDark ? "text-white" : "text-slate-900"
+                                  className={`font-semibold text-[13px] truncate max-w-[170px] sm:max-w-[210px] ${isDark ? "text-white" : "text-slate-900"
                                     }`}
                                 >
                                   {u.name}
                                 </span>
                                 {isSelf && (
                                   <span
-                                    className={`px-1.5 py-0.2 rounded text-[10px] font-bold ${isDark
+                                    className={`px-1.5 py-0.2 rounded text-[10px] font-bold shrink-0 ${isDark
                                       ? "bg-[#1677FF]/20 text-[#38BDF8]"
                                       : "bg-blue-100 text-blue-700"
                                       }`}
@@ -1393,7 +1436,7 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                                 )}
                               </div>
                               <span
-                                className={`text-[11px] block truncate max-w-[190px] sm:max-w-[240px] mt-0.5 ${isDark ? "text-[#5d799b]" : "text-slate-500"
+                                className={`text-[11px] block truncate max-w-[170px] sm:max-w-[210px] mt-0.5 ${isDark ? "text-[#5d799b]" : "text-slate-500"
                                   }`}
                               >
                                 {u.email}
@@ -1459,9 +1502,9 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                           </div>
                         </td>
 
-                        {/* 4. Status (DITENGAHKAN) */}
-                        <td className="py-3.5 px-4 whitespace-nowrap text-center">
-                          <div className="flex items-center justify-center">
+                        {/* 4. Status (DITENGAHKAN SECARA PRESISI DI BAWAH JUDUL STATUS) */}
+                        <td className="py-3.5 px-3 whitespace-nowrap text-center">
+                          <div className="flex items-center justify-center w-full">
                             {u.status === "aktif" && (
                               <span
                                 className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${isDark
@@ -1499,9 +1542,9 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                         </td>
 
                         {/* 5. Dibuat Pada (DITENGAHKAN) */}
-                        <td className="py-3.5 px-4 whitespace-nowrap text-center">
+                        <td className="py-3.5 px-3 whitespace-nowrap text-center">
                           <span
-                            className={`text-xs font-mono ${isDark ? "text-[#6d88a9]" : "text-slate-600"
+                            className={`text-xs font-mono block text-center ${isDark ? "text-[#6d88a9]" : "text-slate-600"
                               }`}
                           >
                             {formatDateTime(u.created_at)}
@@ -1619,19 +1662,18 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
 
           {/* Table Pagination */}
           {!loading && sortedUsers.length > 0 && (
-            <div className="px-5 pb-4">
-              <TablePagination
-                page={page}
-                perPage={perPage}
-                totalCount={sortedUsers.length}
-                onPageChange={setPage}
-                onPerPageChange={(newPerPage) => {
-                  setPerPage(newPerPage);
-                  setPage(1);
-                }}
-                isDark={isDark}
-              />
-            </div>
+            <TablePagination
+              page={page}
+              perPage={perPage}
+              totalCount={sortedUsers.length}
+              itemLabel="pengguna"
+              onPageChange={setPage}
+              onPerPageChange={(newPerPage) => {
+                setPerPage(newPerPage);
+                setPage(1);
+              }}
+              isDark={isDark}
+            />
           )}
         </div>
       )}
@@ -1682,6 +1724,73 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
               </div>
 
               <div className="py-5 space-y-3.5 text-xs">
+                {/* Header Profile Avatar di Detail Modal */}
+                <div
+                  className={`p-3.5 rounded-xl border flex items-center gap-3.5 ${
+                    isDark ? "bg-[#0b1c33] border-[#162f52]" : "bg-slate-50 border-slate-200"
+                  }`}
+                >
+                  <div className="relative shrink-0 w-12 h-12">
+                    {detailUser.avatar_url ? (
+                      <img
+                        src={detailUser.avatar_url}
+                        alt={detailUser.name || "User Avatar"}
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                          const fb = e.currentTarget.nextElementSibling;
+                          if (fb) fb.style.display = "flex";
+                        }}
+                        className="w-12 h-12 rounded-full object-cover ring-2 ring-[#1677FF] shadow-md shrink-0"
+                      />
+                    ) : null}
+                    <div
+                      style={{ display: detailUser.avatar_url ? "none" : "flex" }}
+                      className={`w-12 h-12 rounded-full items-center justify-center font-bold text-base text-white shadow-md shrink-0 ${getAvatarColor(
+                        detailUser.name
+                      )}`}
+                    >
+                      {(detailUser.name || "U").trim()[0].toUpperCase()}
+                    </div>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h4 className="font-bold text-sm truncate">{detailUser.name}</h4>
+                    <p className={`text-[11px] truncate ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                      {detailUser.email}
+                    </p>
+                    <div className="mt-1 flex items-center gap-1.5">
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${
+                          detailUser.role === "admin"
+                            ? isDark
+                              ? "bg-purple-900/40 text-purple-300 border border-purple-700/50"
+                              : "bg-purple-100 text-purple-700"
+                            : detailUser.role === "teknisi"
+                            ? isDark
+                              ? "bg-cyan-900/40 text-cyan-300 border border-cyan-700/50"
+                              : "bg-cyan-100 text-cyan-700"
+                            : isDark
+                            ? "bg-blue-900/40 text-blue-300 border border-blue-700/50"
+                            : "bg-blue-100 text-blue-700"
+                        }`}
+                      >
+                        {detailUser.role === "karyawan_tif" ? "Karyawan TIF" : detailUser.role}
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-semibold capitalize ${
+                          detailUser.status === "aktif"
+                            ? isDark
+                              ? "bg-emerald-900/40 text-emerald-300"
+                              : "bg-emerald-100 text-emerald-700"
+                            : isDark
+                            ? "bg-amber-900/40 text-amber-300"
+                            : "bg-amber-100 text-amber-700"
+                        }`}
+                      >
+                        {detailUser.status}
+                      </span>
+                    </div>
+                  </div>
+                </div>
                 <div
                   className={`flex justify-between py-1.5 border-b ${isDark ? "border-slate-800/40" : "border-slate-100"
                     }`}

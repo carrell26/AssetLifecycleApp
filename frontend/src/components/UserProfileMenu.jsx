@@ -36,7 +36,7 @@ export default function UserProfileMenu({ user, onOpenAvatarModal, onOpenLogoutM
           <img
             src={avatarSrc}
             alt={user?.name || "User Avatar"}
-            className="w-9 h-9 rounded-full object-cover ring-2 shadow-sm ring-[#1677FF]"
+            className="w-9 h-9 rounded-full object-cover object-top ring-2 shadow-sm ring-[#1677FF]"
           />
           <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#071426]"></span>
         </div>
@@ -88,7 +88,7 @@ export default function UserProfileMenu({ user, onOpenAvatarModal, onOpenLogoutM
               <img
                 src={avatarSrc}
                 alt={user?.name}
-                className="w-12 h-12 rounded-full object-cover ring-2 shadow-md ring-[#1677FF]/40"
+                className="w-12 h-12 rounded-full object-cover object-top ring-2 shadow-md ring-[#1677FF]/40"
               />
               {/* Camera action button on avatar */}
               <button
@@ -207,7 +207,11 @@ export default function UserProfileMenu({ user, onOpenAvatarModal, onOpenLogoutM
                 setDropdownOpen(false);
                 onOpenLogoutModal?.();
               }}
-              className="btn-logout text-rose-500 bg-rose-500/10 hover:bg-rose-500 hover:text-white border border-rose-500/25 rounded-xl px-4 py-2 w-full flex items-center justify-center gap-2 font-medium text-xs transition duration-200 cursor-pointer shadow-sm active:scale-[0.98]"
+              className={`btn-logout rounded-xl px-4 py-2 w-full flex items-center justify-center gap-2 font-medium text-xs transition duration-200 cursor-pointer shadow-sm active:scale-[0.98] border ${
+                isDark
+                  ? "text-rose-400 bg-rose-500/10 hover:bg-rose-600 hover:text-white border-rose-500/25"
+                  : "text-rose-600 bg-rose-50 hover:bg-rose-600 hover:text-white border-rose-200"
+              }`}
             >
               <span className="material-symbols-outlined text-[16px]">
                 logout
