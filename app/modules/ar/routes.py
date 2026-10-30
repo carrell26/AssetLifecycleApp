@@ -10,11 +10,12 @@ CATATAN: ini pendekatan web-based, BUKAN Unity/Unreal Engine seperti yang
 diminta literal di RPS Sub-CPMK 5 -- dibangun sambil menunggu konfirmasi
 dosen apakah versi web ini bisa diterima untuk rekognisi MK AR/VR.
 """
+import os
 from io import BytesIO
 
 import qrcode
-from flask import Blueprint, render_template, url_for, send_file, request, jsonify
-from flask_login import login_required
+from flask import Blueprint, render_template, url_for, send_file, request, jsonify, current_app
+from flask_login import login_required, current_user
 
 from ...models import Device, SlotDefinition, ModulePosition, Module
 from ...utils.decorators import role_required
@@ -26,6 +27,10 @@ ar_bp = Blueprint("ar", __name__, url_prefix="/ar", template_folder="../../templ
 @login_required
 @role_required("admin", "karyawan_tif", "teknisi")
 def index():
+    react_template_path = os.path.join(current_app.root_path, "templates", "react_index.html")
+    if os.path.exists(react_template_path):
+        return render_template("react_index.html", current_user=current_user)
+
     devices = Device.query.order_by(Device.nama_perangkat).all()
     return render_template("ar/index.html", devices=devices)
 
@@ -34,7 +39,88 @@ def index():
 @login_required
 @role_required("admin", "karyawan_tif", "teknisi")
 def scan():
+    react_template_path = os.path.join(current_app.root_path, "templates", "react_index.html")
+    if os.path.exists(react_template_path):
+        return render_template("react_index.html", current_user=current_user)
+
     return render_template("ar/scan.html")
+
+
+@ar_bp.route("/api/devices")
+@login_required
+@role_required("admin", "karyawan_tif", "teknisi")
+def api_devices():
+    devices = Device.query.order_by(Device.nama_perangkat).all()
+    devices_data = []
+    for d in devices:
+        total_slots = SlotDefinition.query.filter_by(device_type_id=d.device_type_id).count()
+        devices_data.append({
+            "device_id": d.device_id,
+            "nama_perangkat": d.nama_perangkat,
+            "hostname": d.hostname or "-",
+            "serial_number": d.serial_number or "-",
+            "tipe": d.device_type.nama_tipe if d.device_type else "-",
+            "lokasi": d.location.nama_lokasi if d.location else "-",
+            "total_slot": total_slots
+        })
+    return jsonify({"devices": devices_data})
+
+
+@ar_bp.route("/api/lookup-module")
+@login_required
+@role_required("admin", "karyawan_tif", "teknisi")
+def api_lookup_module():
+    q = (request.args.get("q") or "").strip()
+    if not q:
+        return jsonify({"found": False, "message": "Kata kunci pencarian tidak boleh kosong."}), 400
+
+    module = Module.query.filter(Module.serial_number.ilike(q)).first()
+    if not module:
+        module = Module.query.filter(Module.serial_number.ilike(f"%{q}%")).first()
+
+    if not module:
+        return jsonify({
+            "found": False,
+            "reason": "not_found",
+            "message": f"Modul dengan Serial Number '{q}' tidak ditemukan di sistem."
+        })
+
+    pos = ModulePosition.query.filter_by(module_id=module.modul_id, status="aktif").first()
+    if not pos or not pos.device:
+        return jsonify({
+            "found": True,
+            "installed": False,
+            "module": {
+                "modul_id": module.modul_id,
+                "serial_number": module.serial_number,
+                "tipe": module.module_type.nama_tipe if module.module_type else "-",
+                "kondisi": module.kondisi
+            },
+            "message": f"Modul {module.serial_number} terdaftar (Kondisi: {module.kondisi}), namun sedang tidak terpasang pada perangkat manapun."
+        })
+
+    slot_def = pos.slot_definition
+    return jsonify({
+        "found": True,
+        "installed": True,
+        "module": {
+            "modul_id": module.modul_id,
+            "serial_number": module.serial_number,
+            "tipe": module.module_type.nama_tipe if module.module_type else "-",
+            "kondisi": module.kondisi
+        },
+        "device": {
+            "device_id": pos.device.device_id,
+            "nama_perangkat": pos.device.nama_perangkat,
+            "lokasi": pos.device.location.nama_lokasi if pos.device.location else "-"
+        },
+        "slot": {
+            "slot_definition_id": slot_def.slot_definition_id if slot_def else None,
+            "nomor_slot": slot_def.nomor_slot if slot_def else "-",
+            "nama_slot": slot_def.nama_slot if slot_def else "-"
+        },
+        "highlight_slot_id": slot_def.slot_definition_id if slot_def else None
+    })
 
 
 @ar_bp.route("/device/<int:device_id>")
@@ -274,4 +360,4 @@ def api_search():
         return jsonify({
             "found": False,
             "message": f"Mode pencarian '{search_type}' tidak valid. Gunakan 'sn' atau 'slot'."
-        }), 400
+        }), 400
