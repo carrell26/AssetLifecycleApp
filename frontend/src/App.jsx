@@ -5,8 +5,8 @@ import Header from "./components/Header";
 import HeroBanner from "./components/HeroBanner";
 import KpiCards from "./components/KpiCards";
 import DeviceDistributionChart from "./components/DeviceDistributionChart";
-import ModuleConditionChart from "./components/ModuleConditionChart";
-import MovementTrendChart from "./components/MovementTrendChart";
+import OpticalAssetComposition from "./components/OpticalAssetComposition";
+import RackSlotStatus from "./components/RackSlotStatus";
 import RecentActivities from "./components/RecentActivities";
 import AvatarModal from "./components/AvatarModal";
 import LogoutModal from "./components/LogoutModal";
@@ -42,7 +42,14 @@ export default function App() {
   const isAuditPage = path.startsWith("/audit");
 
   const { isDark } = useTheme();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem("cached_user");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
   const [stats, setStats] = useState(null);
   const [period, setPeriod] = useState("30d");
   const [loading, setLoading] = useState(true);
@@ -55,12 +62,18 @@ export default function App() {
     try {
       const res = await fetch("/api/me");
       if (res.status === 401) {
+        try {
+          localStorage.removeItem("cached_user");
+        } catch {}
         window.location.href = "/auth/login";
         return;
       }
       const data = await res.json();
       if (data.success) {
         setUser(data.user);
+        try {
+          localStorage.setItem("cached_user", JSON.stringify(data.user));
+        } catch {}
       }
     } catch (err) {
       console.error("Failed to load user profile:", err);
@@ -138,7 +151,13 @@ export default function App() {
   };
 
   const handleAvatarUpdated = (newAvatarUrl) => {
-    setUser((prev) => (prev ? { ...prev, avatar_url: newAvatarUrl } : prev));
+    setUser((prev) => {
+      const updated = prev ? { ...prev, avatar_url: newAvatarUrl } : prev;
+      try {
+        if (updated) localStorage.setItem("cached_user", JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
   };
 
   const isTeknisi = user?.role === "teknisi";
@@ -160,7 +179,7 @@ export default function App() {
           onSearchChange={setSearchValue}
           onOpenLogoutModal={() => setLogoutModalOpen(true)}
           onOpenAvatarModal={() => setAvatarModalOpen(true)}
-          showSearch={!isAuditPage && !isExportPage && !isImportPage && !isUsersPage}
+          showSearch={false}
         />
 
         {/* Main Content: Padding kanan terkompensasi dinamis (24px - lebar scrollbar) agar tepi kanan Card selalu rata presisi */}
@@ -251,17 +270,13 @@ export default function App() {
               {/* Welcome Banner */}
               <HeroBanner userName={user?.name} userRole={user?.role} />
 
-              {/* Dashboard Utama (KPI, Distribusi Perangkat, Kondisi Modul, Tren, Aktivitas Sistem) */}
+              {/* Dashboard Utama: 4 KPI Cards, Distribusi & Komposisi Optik, Status Rak STO, Aktivitas Terbaru */}
               <KpiCards kpi={stats?.kpi} />
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
                 <DeviceDistributionChart data={stats?.device_distribution} />
-                <ModuleConditionChart data={stats?.module_conditions} />
+                <OpticalAssetComposition data={stats?.optical_composition} />
               </div>
-              <MovementTrendChart
-                data={stats?.movement_trend}
-                currentPeriod={period}
-                onPeriodChange={handlePeriodChange}
-              />
+              <RackSlotStatus data={stats?.rack_status} />
               <RecentActivities activities={stats?.recent_activities} />
             </div>
           )}

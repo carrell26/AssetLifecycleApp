@@ -87,6 +87,79 @@
     padding: 0 !important;
     color: inherit !important;
   }
+
+  /* ========================================================
+     PAGINATION CONTROLS (SQUIRCLE CARD STYLE & CRISP BORDERS)
+     ======================================================== */
+  #paginationControls {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important; /* gap-2 */
+  }
+
+  #paginationControls button {
+    width: 2.25rem !important; /* w-9 (36px) */
+    height: 2.25rem !important; /* h-9 (36px) */
+    border-radius: 0.75rem !important; /* rounded-xl (12px) */
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 0.75rem !important; /* text-xs */
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s ease !important;
+    user-select: none !important;
+    cursor: pointer !important;
+  }
+
+  /* Inactive & Nav buttons (Light Mode) */
+  html:not(.dark) #paginationControls button.page-inactive,
+  html:not(.dark) #paginationControls button.page-nav,
+  html:not(.dark) #paginationControls button:not(.page-active) {
+    background-color: #ffffff !important;
+    border: 1px solid #CBD5E1 !important;
+    color: #1E293B !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  }
+  html:not(.dark) #paginationControls button.page-inactive:hover,
+  html:not(.dark) #paginationControls button.page-nav:not(:disabled):hover,
+  html:not(.dark) #paginationControls button:not(.page-active):not(:disabled):hover {
+    background-color: #f8fafc !important;
+    border-color: #1677FF !important;
+    color: #1677FF !important;
+  }
+
+  /* Inactive & Nav buttons (Dark Mode) */
+  html.dark #paginationControls button.page-inactive,
+  html.dark #paginationControls button.page-nav,
+  html.dark #paginationControls button:not(.page-active) {
+    background-color: #0A182B !important;
+    border: 1px solid #1E3A5F !important;
+    color: #CBD5E1 !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2) !important;
+  }
+  html.dark #paginationControls button.page-inactive:hover,
+  html.dark #paginationControls button.page-nav:not(:disabled):hover,
+  html.dark #paginationControls button:not(.page-active):not(:disabled):hover {
+    background-color: #122846 !important;
+    border-color: #1677FF !important;
+    color: #ffffff !important;
+  }
+
+  /* Active button (Both Modes) */
+  #paginationControls button.page-active {
+    background-color: #1677FF !important;
+    border: 1px solid transparent !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    box-shadow: 0 6px 16px rgba(22, 119, 255, 0.38) !important;
+  }
+
+  #paginationControls button:disabled {
+    opacity: 0.3 !important;
+    cursor: not-allowed !important;
+  }
 </style>
 
 <div class="space-y-6 !mt-0 w-full" id="auditPageContainer" style="margin-top: 0 !important;">
@@ -248,7 +321,7 @@
         <thead>
           <tr
             class="border-b border-slate-200 dark:border-[#142D4C] text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-[#94A3B8]">
-            <th class="py-3 px-4 text-center select-none" style="width: 4%;">#</th>
+            <th class="py-3 px-4 text-center select-none" style="width: 4%;">No</th>
             <th class="py-3 px-4 text-left cursor-pointer select-none" style="width: 14%;"
               onclick="handleSort('waktu')">
               <div class="flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white transition-colors">
@@ -525,6 +598,7 @@
       actor_name: {{ (e.actor.name if e.actor else "System") | tojson }},
       actor_role: {{ (e.actor.role if e.actor else "-") | tojson }},
       actor_email: {{ (e.actor.email if e.actor else "-") | tojson }},
+      actor_avatar_url: {{ (e.actor.avatar_url if e.actor else None) | tojson }},
       hash: {{ (e.hash or "") | tojson }},
       previous_hash: {{ (e.previous_hash or "GENESIS") | tojson }},
       data_snapshot: {{ (e.data_snapshot or "") | tojson }}
@@ -539,7 +613,7 @@
   let selectedRole = "all";
   let selectedAksi = "all";
   let selectedDateRange = "all";
-  let sortConfig = { key: "waktu", direction: "desc" };
+  let sortConfig = { key: null, direction: null };
   let currentPage = 1;
   let perPage = 15;
 
@@ -769,7 +843,7 @@
     return `<span class="inline-flex items-center justify-center px-3 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase bg-slate-100 dark:bg-[#1E293B] text-slate-600 dark:text-[#94A3B8] border border-slate-200 dark:border-[#334155] min-w-[76px]">${act}</span>`;
   }
 
-  // 9. Sorting Handler
+  // 9. Sorting Handler: 3-state cycle (Naik / asc -> Turun / desc -> Netral / null)
   function handleSort(key) {
     if (sortConfig.key === key) {
       if (sortConfig.direction === "asc") {
@@ -777,11 +851,14 @@
       } else if (sortConfig.direction === "desc") {
         sortConfig.key = null;
         sortConfig.direction = null;
+      } else {
+        sortConfig.direction = "asc";
       }
     } else {
       sortConfig.key = key;
       sortConfig.direction = "asc";
     }
+    currentPage = 1;
     updateSortIcons();
     renderTable();
   }
@@ -938,8 +1015,17 @@
 
             <!-- Oleh -->
             <td class="py-3 px-4 whitespace-nowrap">
-              <div class="inline-flex items-center gap-1.5 truncate">
-                <span class="material-symbols-outlined text-[16px] text-slate-400 dark:text-[#94A3B8] shrink-0">person</span>
+              <div class="inline-flex items-center gap-2 truncate">
+                ${item.actor_avatar_url ? `
+                  <img src="${item.actor_avatar_url}" alt="${item.actor_name || 'Oleh'}" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';" class="w-7 h-7 rounded-full object-cover object-top ring-1.5 ring-[#1677FF]/40 shadow-xs shrink-0 transition-transform duration-200 hover:scale-125 hover:z-20" />
+                  <div style="display:none;" class="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/40 text-[#1677FF] dark:text-[#38BDF8] border border-blue-200 dark:border-blue-700/50 items-center justify-center text-xs font-bold shrink-0">
+                    ${(item.actor_name && item.actor_name !== 'System') ? item.actor_name.trim()[0].toUpperCase() : 'S'}
+                  </div>
+                ` : `
+                  <div class="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/40 text-[#1677FF] dark:text-[#38BDF8] border border-blue-200 dark:border-blue-700/50 flex items-center justify-center text-[10px] font-bold shrink-0">
+                    ${(item.actor_name && item.actor_name !== 'System') ? item.actor_name.trim()[0].toUpperCase() : 'S'}
+                  </div>
+                `}
                 <span class="font-medium text-slate-800 dark:text-[#E6EDF7] truncate">${item.actor_name}</span>
               </div>
             </td>
@@ -989,10 +1075,10 @@
         type="button"
         ${currentPage <= 1 ? "disabled" : ""}
         onclick="changePage(${currentPage - 1})"
-        class="w-8 h-8 rounded-lg border border-slate-300 dark:border-[#1E3A5F] bg-slate-50 dark:bg-[#071426] text-slate-700 dark:text-[#CBD5E1] hover:bg-slate-100 dark:hover:bg-[#122846] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors cursor-pointer !m-0 !p-0"
+        class="page-nav ${currentPage <= 1 ? "opacity-30 cursor-not-allowed" : "cursor-pointer"}"
         title="Halaman Sebelumnya"
       >
-        <span class="material-symbols-outlined text-[17px]">chevron_left</span>
+        <span class="material-symbols-outlined text-[19px]">chevron_left</span>
       </button>
     `;
 
@@ -1015,10 +1101,7 @@
         <button
           type="button"
           onclick="changePage(${p})"
-          class="w-8 h-8 rounded-lg text-xs font-semibold flex items-center justify-center transition-colors cursor-pointer !m-0 !p-0 ${isActive
-          ? 'bg-blue-600 dark:bg-[#1677FF] text-white shadow-md shadow-blue-500/20'
-          : 'border border-slate-300 dark:border-[#1E3A5F] bg-slate-50 dark:bg-[#071426] text-slate-700 dark:text-[#CBD5E1] hover:bg-slate-100 dark:hover:bg-[#122846]'
-        }"
+          class="${isActive ? 'page-active' : 'page-inactive'} cursor-pointer"
         >
           ${p}
         </button>
@@ -1030,10 +1113,10 @@
         type="button"
         ${currentPage >= totalPages ? "disabled" : ""}
         onclick="changePage(${currentPage + 1})"
-        class="w-8 h-8 rounded-lg border border-slate-300 dark:border-[#1E3A5F] bg-slate-50 dark:bg-[#071426] text-slate-700 dark:text-[#CBD5E1] hover:bg-slate-100 dark:hover:bg-[#122846] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors cursor-pointer !m-0 !p-0"
+        class="page-nav ${currentPage >= totalPages ? "opacity-30 cursor-not-allowed" : "cursor-pointer"}"
         title="Halaman Selanjutnya"
       >
-        <span class="material-symbols-outlined text-[17px]">chevron_right</span>
+        <span class="material-symbols-outlined text-[19px]">chevron_right</span>
       </button>
     `;
 
@@ -1061,7 +1144,25 @@
     document.getElementById("modalTime").textContent = entry.created_at;
     document.getElementById("modalAksiBadge").innerHTML = getAksiBadge(entry.aksi);
     document.getElementById("modalTableRecord").textContent = `${entry.table_name} (ID: ${entry.record_id})`;
-    document.getElementById("modalActor").textContent = `${entry.actor_name} (${entry.actor_role})`;
+    
+    const actorContainer = document.getElementById("modalActor").parentElement;
+    if (entry.actor_avatar_url) {
+      actorContainer.innerHTML = `
+        <div class="flex items-center gap-2">
+          <img src="${entry.actor_avatar_url}" alt="${entry.actor_name}" onerror="this.style.display='none';" class="w-6 h-6 rounded-full object-cover ring-1 ring-[#1677FF] shrink-0" />
+          <span id="modalActor" class="text-xs font-semibold text-slate-900 dark:text-white truncate">${entry.actor_name} (${entry.actor_role})</span>
+        </div>
+      `;
+    } else {
+      actorContainer.innerHTML = `
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/40 text-[#1677FF] dark:text-[#38BDF8] border border-blue-200 dark:border-blue-700/50 flex items-center justify-center text-[10px] font-bold shrink-0">
+            ${(entry.actor_name && entry.actor_name !== 'System') ? entry.actor_name.trim()[0].toUpperCase() : 'S'}
+          </div>
+          <span id="modalActor" class="text-xs font-semibold text-slate-900 dark:text-white truncate">${entry.actor_name} (${entry.actor_role})</span>
+        </div>
+      `;
+    }
     document.getElementById("modalHashVal").textContent = entry.hash || "-";
     document.getElementById("modalPrevHashVal").textContent = entry.previous_hash || "GENESIS";
 
@@ -1236,6 +1337,7 @@
     }, 3500);
   }
 
+  updateSortIcons();
   renderTable();
 });
 </script>

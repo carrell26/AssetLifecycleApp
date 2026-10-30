@@ -191,10 +191,10 @@ def run_tests():
         assert res.status_code == 403, f"Harus 403, tapi dapat {res.status_code}"
         print(f"  OK: POST /modules/new oleh Teknisi ditolak -> {res.status_code} Forbidden")
 
-        # 13. POST /api/me/avatar
-        res = c_tek.post("/api/me/avatar", json={"image_data": "data:image/png;base64,AAA"})
-        assert res.status_code == 403, f"Harus 403, tapi dapat {res.status_code}"
-        print(f"  OK: POST /api/me/avatar oleh Teknisi ditolak -> {res.status_code} Forbidden")
+        # 13. POST /api/me/avatar (Teknisi dizinkan mengubah foto profilnya sendiri)
+        res = c_tek.post("/api/me/avatar", json={"image_data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="})
+        assert res.status_code == 200, f"Harus 200, tapi dapat {res.status_code}: {res.data}"
+        print(f"  OK: POST /api/me/avatar oleh Teknisi berhasil -> {res.status_code} OK")
 
         # 14. Akses menu terlarang: Import, Export, Audit, Admin
         assert c_tek.get("/import/").status_code == 403, "GET /import/ harus ditolak 403 bagi Teknisi"

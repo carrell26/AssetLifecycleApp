@@ -1,13 +1,37 @@
 <!doctype html>
-<html lang="id" class="dark">
+<html lang="id">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/static/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard - Sistem Manajemen Aset &amp; Modul Perangkat Telkom</title>
+    <!-- Instant Theme Initialization: eksekusi sinkron sebelum CSS/body diproses untuk mencegah kedip/wink FOUC -->
+    <script>
+      (function() {
+        try {
+          var p = window.location.pathname;
+          var isLogin = p.startsWith('/auth/login');
+          var root = document.documentElement;
+          if (isLogin) {
+            root.classList.remove('dark');
+            root.classList.add('light');
+          } else {
+            var saved = localStorage.getItem('asset-app-theme');
+            var theme = saved || 'dark';
+            if (theme === 'dark') {
+              root.classList.add('dark');
+              root.classList.remove('light');
+            } else {
+              root.classList.remove('dark');
+              root.classList.add('light');
+            }
+          }
+        } catch (e) {}
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
   </head>
   <body class="antialiased min-h-screen">

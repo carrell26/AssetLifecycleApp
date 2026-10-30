@@ -51,6 +51,22 @@ export default function LocationsPage({ user, searchValue, onSearchChange }) {
   const [selectedForDelete, setSelectedForDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
+  // Local search state synced with prop
+  const [localSearch, setLocalSearch] = useState(searchValue || "");
+
+  useEffect(() => {
+    if (searchValue !== undefined && searchValue !== localSearch) {
+      setLocalSearch(searchValue);
+      setPage(1);
+    }
+  }, [searchValue]);
+
+  const handleSearchChange = (val) => {
+    setLocalSearch(val);
+    setPage(1);
+    if (onSearchChange) onSearchChange(val);
+  };
+
   // Notification toast
   const [toast, setToast] = useState(null);
 
@@ -78,7 +94,7 @@ export default function LocationsPage({ user, searchValue, onSearchChange }) {
   };
 
   // Fetch locations from backend API
-  const fetchLocations = async (loc = selectedLocationFilter, q = searchValue) => {
+  const fetchLocations = async (loc = selectedLocationFilter, q = localSearch) => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -111,9 +127,9 @@ export default function LocationsPage({ user, searchValue, onSearchChange }) {
   };
 
   useEffect(() => {
-    fetchLocations(selectedLocationFilter, searchValue);
+    fetchLocations(selectedLocationFilter, localSearch);
     setPage(1);
-  }, [selectedLocationFilter, searchValue]);
+  }, [selectedLocationFilter, localSearch]);
 
   // Handle Column Sorting (asc -> desc -> none)
   const handleSort = (key) => {
@@ -326,173 +342,184 @@ export default function LocationsPage({ user, searchValue, onSearchChange }) {
       </div>
 
       {/* ============================================================ */}
-      {/* 2. PANEL TABEL LOKASI (MENGIKUTI MODEL HALAMAN MODUL)         */}
+      {/* 2. PANEL TABEL LOKASI (100% MENGIKUTI STYLE MUTASI MODUL)    */}
       {/* ============================================================ */}
       <div
-        className={`rounded-2xl border p-5 sm:p-6 transition-all duration-300 ${isDark
-          ? "bg-[#0D1F36] border-[#1A3358] shadow-[0_8px_24px_rgba(0,0,0,0.35)]"
-          : "bg-white border-slate-200 shadow-md"
+        className={`rounded-2xl border transition-all duration-300 overflow-visible w-full ${isDark
+          ? "border-[#162F52] bg-[#0A182B] shadow-2xl"
+          : "border-slate-200 bg-white shadow-sm"
           }`}
       >
-        {/* Controls Row: Dropdown filter di kiri (CENTERED), Tambah Lokasi di kanan */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pb-4">
-          {/* Left: Location Filter Dropdown dengan ikon dan teks CENTER tepat di tengah */}
-          <div className="relative w-full sm:w-64" ref={filterDropdownRef}>
-            <button
-              type="button"
-              onClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
-              className={`relative w-full h-11 px-9 rounded-xl border flex items-center justify-center text-xs font-medium transition-all cursor-pointer ${isDark
-                ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
-                : "bg-slate-50 border-slate-300 text-slate-800 hover:border-blue-500"
+        {/* Controls Toolbar: Search Bar di kiri, Dropdown Filter & Tambah Lokasi di kanan */}
+        <div
+          className={`px-6 py-4 sm:py-5 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 sm:gap-4 border-b ${isDark ? "border-[#142D4C]" : "border-slate-100"
+            }`}
+        >
+          {/* Left: Input Search Bar */}
+          <div className="relative flex-1 max-w-md">
+            <span
+              className={`absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px] pointer-events-none ${isDark ? "text-[#64748B]" : "text-slate-400"
                 }`}
             >
-              <div className="flex items-center justify-center gap-2 truncate">
-                <span className="material-symbols-outlined text-[19px] text-[#38BDF8] shrink-0">
-                  location_on
-                </span>
-                <span className="truncate font-semibold">
-                  {selectedLocationFilter || "Semua Lokasi"}
-                </span>
-              </div>
-              <span
-                className={`absolute right-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px] text-[#94A3B8] transition-transform duration-200 ${filterDropdownOpen ? "rotate-180" : ""
+              search
+            </span>
+            <input
+              type="text"
+              id="locationSearchInput"
+              value={localSearch}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              placeholder="Cari nama lokasi, district, atau alamat..."
+              className={`w-full h-11 pl-10 pr-9 rounded-xl border text-xs sm:text-sm outline-none transition-all duration-200 ease-in-out ${isDark
+                ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] placeholder-[#4d6686] focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF]"
+                : "bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:bg-white"
+                }`}
+            />
+            {localSearch && (
+              <button
+                type="button"
+                onClick={() => handleSearchChange("")}
+                className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors cursor-pointer ${isDark ? "text-[#64748B] hover:text-white" : "text-slate-400 hover:text-slate-700"
                   }`}
               >
-                expand_more
-              </span>
-            </button>
-
-            {/* Custom Filter Dropdown Menu */}
-            {filterDropdownOpen && (
-              <div
-                className={`absolute left-0 top-12 mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-30 max-h-64 overflow-y-auto custom-scrollbar backdrop-blur-md ${isDark
-                  ? "bg-[#0A182B]/95 border-[#1E3A5F] text-[#E6EDF7]"
-                  : "bg-white border-slate-200 text-slate-800"
-                  }`}
-              >
-                {/* Option: Semua Lokasi */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedLocationFilter("");
-                    setFilterDropdownOpen(false);
-                  }}
-                  className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${selectedLocationFilter === ""
-                    ? isDark
-                      ? "bg-[#1677FF] text-white"
-                      : "bg-blue-600 text-white"
-                    : isDark
-                      ? "hover:bg-[#122846] text-[#CBD5E1]"
-                      : "hover:bg-slate-100 text-slate-700"
-                    }`}
-                >
-                  <div className="flex flex-col">
-                    <span className="font-semibold">Semua Lokasi</span>
-                    <span
-                      className={`text-[10px] ${selectedLocationFilter === ""
-                        ? "text-blue-100"
-                        : isDark
-                          ? "text-[#64748B]"
-                          : "text-slate-400"
-                        }`}
-                    >
-                      Fokus STO Palu 1 &amp; STO Palu 2
-                    </span>
-                  </div>
-                  {selectedLocationFilter === "" && (
-                    <span className="material-symbols-outlined text-[16px]">
-                      check
-                    </span>
-                  )}
-                </button>
-
-                <div className="h-px bg-[#1A3358] my-1" />
-
-                {/* Option per STO Palu */}
-                {filterOptions.map((opt) => {
-                  const isSelected = selectedLocationFilter === opt.nama;
-                  return (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedLocationFilter(opt.nama);
-                        setFilterDropdownOpen(false);
-                      }}
-                      className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${isSelected
-                        ? isDark
-                          ? "bg-[#1677FF] text-white"
-                          : "bg-blue-600 text-white"
-                        : isDark
-                          ? "hover:bg-[#122846] text-[#CBD5E1]"
-                          : "hover:bg-slate-100 text-slate-700"
-                        }`}
-                    >
-                      <div className="flex flex-col truncate pr-2">
-                        <span className="font-semibold">{opt.nama}</span>
-                        <span
-                          className={`text-[10px] ${isSelected
-                            ? "text-blue-100"
-                            : isDark
-                              ? "text-[#64748B]"
-                              : "text-slate-400"
-                            }`}
-                        >
-                          Kota Palu
-                        </span>
-                      </div>
-                      {isSelected && (
-                        <span className="material-symbols-outlined text-[16px] shrink-0">
-                          check
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
+                <span className="material-symbols-outlined text-[16px]">close</span>
+              </button>
             )}
           </div>
 
-          {/* Right: Tombol Tambah Lokasi */}
-          {user?.role !== "teknisi" && (
-            <button
-              type="button"
-              onClick={() => setCreateModalOpen(true)}
-              className="h-11 px-5 rounded-xl bg-[#1677FF] hover:bg-[#0E65D9] text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-[#1677FF]/30 transition-all duration-200 hover:shadow-[#1677FF]/50 active:scale-[0.98] cursor-pointer shrink-0"
-            >
-              <span className="material-symbols-outlined text-[19px]">add</span>
-              <span>Tambah Lokasi</span>
-            </button>
-          )}
+          {/* Right: Location Filter Dropdown & Tombol Tambah Lokasi */}
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Filter Dropdown: Semua Lokasi (Container box panjangnya menyesuaikan isi konten) */}
+            <div className="relative min-w-[170px]" ref={filterDropdownRef}>
+              <button
+                type="button"
+                onClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
+                className={`relative w-full h-11 px-4 rounded-xl border flex items-center justify-between gap-3 text-xs font-medium transition-all cursor-pointer ${isDark
+                  ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
+                  : "bg-slate-50 border-slate-300 text-slate-800 hover:border-blue-500"
+                  }`}
+              >
+                <div className="flex items-center gap-2 truncate">
+                  <span className="material-symbols-outlined text-[18px] text-[#38BDF8] shrink-0">
+                    location_on
+                  </span>
+                  <span className="truncate font-semibold">
+                    {selectedLocationFilter || "Semua Lokasi"}
+                  </span>
+                </div>
+                <span
+                  className={`material-symbols-outlined text-[18px] text-[#94A3B8] transition-transform duration-200 shrink-0 ${filterDropdownOpen ? "rotate-180" : ""
+                    }`}
+                >
+                  expand_more
+                </span>
+              </button>
+
+              {/* Custom Filter Dropdown Menu */}
+              {filterDropdownOpen && (
+                <div
+                  className={`absolute left-0 top-12 mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-30 max-h-64 overflow-y-auto custom-scrollbar backdrop-blur-md ${isDark
+                    ? "bg-[#0A182B]/95 border-[#1E3A5F] text-[#E6EDF7]"
+                    : "bg-white border-slate-200 text-slate-800"
+                    }`}
+                >
+                  {/* Option: Semua Lokasi (Tanpa sublabel fokus STO) */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedLocationFilter("");
+                      setFilterDropdownOpen(false);
+                    }}
+                    className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${selectedLocationFilter === ""
+                      ? isDark
+                        ? "bg-[#1677FF] text-white font-semibold"
+                        : "bg-blue-600 text-white font-semibold"
+                      : isDark
+                        ? "hover:bg-[#122846] text-[#CBD5E1]"
+                        : "hover:bg-slate-100 text-slate-700"
+                      }`}
+                  >
+                    <span>Semua Lokasi</span>
+                    {selectedLocationFilter === "" && (
+                      <span className="material-symbols-outlined text-[16px] shrink-0">
+                        check
+                      </span>
+                    )}
+                  </button>
+
+                  <div className={`h-px my-1 ${isDark ? "bg-[#1A3358]" : "bg-slate-100"}`} />
+
+                  {/* Option per Lokasi */}
+                  {filterOptions.map((opt) => {
+                    const isSelected = selectedLocationFilter === opt.nama;
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedLocationFilter(opt.nama);
+                          setFilterDropdownOpen(false);
+                        }}
+                        className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${isSelected
+                          ? isDark
+                            ? "bg-[#1677FF] text-white font-semibold"
+                            : "bg-blue-600 text-white font-semibold"
+                          : isDark
+                            ? "hover:bg-[#122846] text-[#CBD5E1]"
+                            : "hover:bg-slate-100 text-slate-700"
+                          }`}
+                      >
+                        <span className="truncate pr-2">{opt.nama}</span>
+                        {isSelected && (
+                          <span className="material-symbols-outlined text-[16px] shrink-0">
+                            check
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Tombol Tambah Lokasi */}
+            {user?.role !== "teknisi" && (
+              <button
+                type="button"
+                onClick={() => setCreateModalOpen(true)}
+                className="h-11 px-5 rounded-xl bg-[#1677FF] hover:bg-[#0E65D9] text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-[#1677FF]/30 transition-all duration-200 hover:shadow-[#1677FF]/50 active:scale-[0.98] cursor-pointer shrink-0"
+              >
+                <span className="material-symbols-outlined text-[19px]">add</span>
+                <span>Tambah Lokasi</span>
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Sub-header: Total baris info banner (Ukuran tetap tanpa pergeseran layout) */}
-        <div className="flex items-center gap-2 pt-1 pb-4 text-xs font-medium text-[#38BDF8]">
-          <span className="material-symbols-outlined text-[17px] text-[#00E5FF]">
-            info
-          </span>
-          <span>
-            Total data ditampilkan:{" "}
-            <strong className={isDark ? "text-white font-bold" : "text-slate-900 font-bold"}>
-              {totalItems}
-            </strong>{" "}
-            baris (Fokus inventaris STO PALU 1 &amp; STO PALU 2)
-          </span>
-        </div>
-
-        {/* Tabel Lokasi: Model visual mengikuti halaman Modul */}
-        <div className={`overflow-x-auto custom-scrollbar rounded-xl border ${isDark ? "border-[#162F52]" : "border-slate-200"}`}>
-          <table className="w-full text-left border-collapse min-w-[950px] table-fixed">
+        {/* Tabel Lokasi: 100% Mengikuti Standar Mutasi Modul & Audit Log */}
+        <div className="overflow-x-auto custom-scrollbar">
+          <table
+            id="locationsTable"
+            className="w-full text-left border-collapse min-w-[950px] table-fixed"
+            style={{ tableLayout: "fixed", width: "100%" }}
+          >
             <colgroup>
-              <col style={{ width: '22%' }} /> {/* 1. NAMA LOKASI */}
-              <col style={{ width: '16%' }} /> {/* 2. DISTRICT */}
-              <col style={{ width: '28%' }} /> {/* 3. ALAMAT */}
+              <col style={{ width: '20%' }} /> {/* 1. NAMA LOKASI */}
+              <col style={{ width: '13%' }} /> {/* 2. DISTRICT */}
+              <col style={{ width: '35%' }} /> {/* 3. ALAMAT */}
               <col style={{ width: '18%' }} /> {/* 4. LATITUDE, LONGITUDE */}
-              <col style={{ width: '16%' }} /> {/* 5. AKSI */}
+              <col style={{ width: '14%' }} /> {/* 5. AKSI */}
             </colgroup>
-            <thead>
-              <tr className={`border-b ${isDark ? "bg-[#09172A] border-[#18355C]" : "bg-slate-50 border-slate-200"}`}>
-                <th className="py-3.5 px-4 text-[11px] font-extrabold uppercase tracking-wider text-left">
+            <thead className={`rounded-t-xl ${isDark ? "bg-[#071426]" : "bg-slate-50"}`}>
+              <tr
+                className={`border-b text-[11px] font-bold uppercase tracking-wider ${isDark
+                  ? "bg-[#071426] border-[#142D4C] text-[#94A3B8]"
+                  : "bg-slate-50 border-slate-200 text-slate-600"
+                  } rounded-t-xl`}
+              >
+                <th
+                  className="py-3.5 pl-6 pr-4 text-left select-none rounded-tl-xl"
+                  style={{ width: "20%" }}
+                >
                   <TableSortHeader
                     title="NAMA LOKASI"
                     sortKey="nama_lokasi"
@@ -501,17 +528,23 @@ export default function LocationsPage({ user, searchValue, onSearchChange }) {
                     isDark={isDark}
                   />
                 </th>
-                <th className="py-3.5 px-4 text-[11px] font-extrabold uppercase tracking-wider text-center">
+                <th
+                  className="py-3.5 px-4 text-left select-none"
+                  style={{ width: "13%" }}
+                >
                   <TableSortHeader
                     title="DISTRICT"
                     sortKey="district"
                     currentSort={sortConfig}
                     onSort={handleSort}
-                    align="center"
+                    align="left"
                     isDark={isDark}
                   />
                 </th>
-                <th className="py-3.5 px-4 text-[11px] font-extrabold uppercase tracking-wider text-left">
+                <th
+                  className="py-3.5 px-4 text-left select-none"
+                  style={{ width: "35%" }}
+                >
                   <TableSortHeader
                     title="ALAMAT"
                     sortKey="alamat"
@@ -520,23 +553,30 @@ export default function LocationsPage({ user, searchValue, onSearchChange }) {
                     isDark={isDark}
                   />
                 </th>
-                <th className="py-3.5 px-4 text-[11px] font-extrabold uppercase tracking-wider text-center">
+                <th
+                  className="py-3.5 px-4 text-left select-none"
+                  style={{ width: "18%" }}
+                >
                   <TableSortHeader
                     title="LATITUDE, LONGITUDE"
                     sortKey="lat_lon_str"
                     currentSort={sortConfig}
                     onSort={handleSort}
-                    align="center"
+                    align="left"
                     isDark={isDark}
                   />
                 </th>
-                <th className={`py-3.5 px-3 text-[11px] font-extrabold uppercase tracking-wider text-center ${isDark ? "text-[#38BDF8]" : "text-blue-600"
-                  }`}>
-                  AKSI
+                <th
+                  className="py-3.5 pl-3 pr-6 text-center select-none rounded-tr-xl"
+                  style={{ width: "14%" }}
+                >
+                  <span className={`font-extrabold uppercase tracking-wider text-[11px] ${isDark ? "text-[#38BDF8]" : "text-blue-600"}`}>
+                    AKSI
+                  </span>
                 </th>
               </tr>
             </thead>
-            <tbody className={`divide-y text-xs ${isDark ? "divide-[#132845]" : "divide-slate-200"}`}>
+            <tbody className={`divide-y text-xs ${isDark ? "divide-[#0F2238]" : "divide-slate-100"}`}>
               {loading ? (
                 <tr>
                   <td colSpan="5" className={`py-16 text-center ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
@@ -568,13 +608,13 @@ export default function LocationsPage({ user, searchValue, onSearchChange }) {
                 paginatedLocations.map((item) => (
                   <tr
                     key={item.id}
-                    className={`transition-colors group ${isDark
-                      ? "hover:bg-[#102444]/60"
-                      : "hover:bg-slate-50/80 even:bg-slate-50/40"
+                    className={`transition-colors border-b ${isDark
+                      ? "border-[#0F2238] hover:bg-[#0D2138]/80 text-[#E6EDF7]"
+                      : "border-slate-100 hover:bg-slate-50/80 text-slate-800"
                       }`}
                   >
                     {/* 1. NAMA LOKASI */}
-                    <td className={`py-3 px-4 font-semibold whitespace-nowrap ${isDark ? "text-[#E6EDF7]" : "text-slate-800"
+                    <td className={`py-3.5 pl-6 pr-4 font-semibold whitespace-nowrap ${isDark ? "text-[#E6EDF7]" : "text-slate-800"
                       }`}>
                       <div className="flex items-center gap-2.5">
                         <div className={`w-5 h-5 rounded-md flex items-center justify-center text-[13px] shrink-0 border ${isDark
@@ -593,7 +633,7 @@ export default function LocationsPage({ user, searchValue, onSearchChange }) {
                     </td>
 
                     {/* 2. DISTRICT */}
-                    <td className="py-3 px-4 whitespace-nowrap text-center">
+                    <td className="py-3.5 px-4 whitespace-nowrap text-left">
                       <span className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${isDark
                         ? "bg-[#0C2548] border-[#1A4378] text-[#38BDF8]"
                         : "bg-blue-50 border-blue-200 text-blue-700"
@@ -603,13 +643,16 @@ export default function LocationsPage({ user, searchValue, onSearchChange }) {
                     </td>
 
                     {/* 3. ALAMAT */}
-                    <td className={`py-3 px-4 max-w-sm truncate ${isDark ? "text-[#CBD5E1]" : "text-slate-700"
-                      }`}>
+                    <td
+                      className={`py-3.5 px-4 truncate ${isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                        }`}
+                      title={item.alamat || "-"}
+                    >
                       {item.alamat || "-"}
                     </td>
 
                     {/* 4. LATITUDE, LONGITUDE */}
-                    <td className="py-3 px-4 text-center whitespace-nowrap">
+                    <td className="py-3.5 px-4 whitespace-nowrap text-left">
                       <span className={`inline-flex items-center justify-center px-2 py-0.5 rounded-md border font-bold text-xs font-mono ${isDark
                         ? "bg-[#0D2F54] border-[#174F88] text-[#38BDF8]"
                         : "bg-sky-50 border-sky-200 text-sky-700"
@@ -619,7 +662,7 @@ export default function LocationsPage({ user, searchValue, onSearchChange }) {
                     </td>
 
                     {/* 5. AKSI */}
-                    <td className="py-3 px-3 whitespace-nowrap text-center">
+                    <td className="py-3.5 pl-3 pr-6 whitespace-nowrap text-center">
                       <div className="flex items-center justify-center gap-1.5 flex-nowrap shrink-0">
                         {/* Detail */}
                         <button
@@ -683,6 +726,7 @@ export default function LocationsPage({ user, searchValue, onSearchChange }) {
           page={safePage}
           perPage={perPage}
           totalCount={totalItems}
+          itemLabel="lokasi"
           onPageChange={(newPage) => setPage(newPage)}
           onPerPageChange={(newPerPage) => {
             setPerPage(newPerPage);

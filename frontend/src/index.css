@@ -37,7 +37,6 @@
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-page);
     color: var(--text-primary);
-    transition: background-color 0.3s ease, color 0.3s ease;
     overflow-x: hidden;
   }
 
@@ -139,6 +138,7 @@ main::-webkit-scrollbar-thumb:hover,
     opacity: 0;
     transform: translate3d(28px, 0, 0) scale(0.96);
   }
+
   to {
     opacity: 1;
     transform: translate3d(0, 0, 0) scale(1);
@@ -152,10 +152,10 @@ main::-webkit-scrollbar-thumb:hover,
 /* ============================================================
    INPUT AUTOFILL (DARK & LIGHT)
    ============================================================ */
-html.dark input:-webkit-autofill,
-html.dark input:-webkit-autofill:hover,
-html.dark input:-webkit-autofill:focus,
-html.dark input:-webkit-autofill:active {
+html.dark input:not(.login-input):-webkit-autofill,
+html.dark input:not(.login-input):-webkit-autofill:hover,
+html.dark input:not(.login-input):-webkit-autofill:focus,
+html.dark input:not(.login-input):-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 1000px #0D1F36 inset !important;
   -webkit-text-fill-color: #E6EDF7 !important;
   caret-color: #E6EDF7 !important;
@@ -166,9 +166,19 @@ html.dark input:-webkit-autofill:active {
 html:not(.dark) input:-webkit-autofill,
 html:not(.dark) input:-webkit-autofill:hover,
 html:not(.dark) input:-webkit-autofill:focus,
-html:not(.dark) input:-webkit-autofill:active {
+html:not(.dark) input:-webkit-autofill:active,
+input.login-input:-webkit-autofill,
+input.login-input:-webkit-autofill:hover,
+input.login-input:-webkit-autofill:focus,
+input.login-input:-webkit-autofill:active,
+html.dark input.login-input:-webkit-autofill,
+html.dark input.login-input:-webkit-autofill:hover,
+html.dark input.login-input:-webkit-autofill:focus,
+html.dark input.login-input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 1000px #FFFFFF inset !important;
+  box-shadow: 0 0 0 1000px #FFFFFF inset !important;
   -webkit-text-fill-color: #0F172A !important;
+  color: #0F172A !important;
   caret-color: #0F172A !important;
   border-color: #CBD5E1 !important;
   transition: background-color 5000s ease-in-out 0s;
@@ -654,11 +664,27 @@ html:not(.dark) {
 }
 
 /* ============================================================
-   AUDIT TABLE: HEADER UNIFORMITY & ZERO TRANSITION LAG
+   TABLE HEADER STANDARDIZATION (AUDIT, USERS, MODULE MOVEMENTS, LOCATIONS, MODULES, DEVICES)
+   SOLID DARK BG, BORDER SEPARATOR & ROUNDED TOP CORNERS
    ============================================================ */
 #auditTable thead,
 #auditTable thead tr,
-#auditTable thead th {
+#auditTable thead th,
+#moduleMovementTable thead,
+#moduleMovementTable thead tr,
+#moduleMovementTable thead th,
+#usersTable thead,
+#usersTable thead tr,
+#usersTable thead th,
+#locationsTable thead,
+#locationsTable thead tr,
+#locationsTable thead th,
+#modulesTable thead,
+#modulesTable thead tr,
+#modulesTable thead th,
+#devicesTable thead,
+#devicesTable thead tr,
+#devicesTable thead th {
   background-color: #f8fafc !important;
   background-image: none !important;
   transition: none !important;
@@ -666,8 +692,72 @@ html:not(.dark) {
 
 html.dark #auditTable thead,
 html.dark #auditTable thead tr,
-html.dark #auditTable thead th {
+html.dark #auditTable thead th,
+html.dark #moduleMovementTable thead,
+html.dark #moduleMovementTable thead tr,
+html.dark #moduleMovementTable thead th,
+html.dark #usersTable thead,
+html.dark #usersTable thead tr,
+html.dark #usersTable thead th,
+html.dark #locationsTable thead,
+html.dark #locationsTable thead tr,
+html.dark #locationsTable thead th,
+html.dark #modulesTable thead,
+html.dark #modulesTable thead tr,
+html.dark #modulesTable thead th,
+html.dark #devicesTable thead,
+html.dark #devicesTable thead tr,
+html.dark #devicesTable thead th {
   background-color: #071426 !important;
   background-image: none !important;
   transition: none !important;
 }
+
+/* Sudut melengkung atas pada th pertama dan th terakhir */
+#auditTable thead th:first-child,
+#moduleMovementTable thead th:first-child,
+#usersTable thead th:first-child,
+#locationsTable thead th:first-child,
+#modulesTable thead th:first-child,
+#devicesTable thead th:first-child {
+  border-top-left-radius: 0.75rem !important;
+}
+
+#auditTable thead th:last-child,
+#moduleMovementTable thead th:last-child,
+#usersTable thead th:last-child,
+#locationsTable thead th:last-child,
+#modulesTable thead th:last-child,
+#devicesTable thead th:last-child {
+  border-top-right-radius: 0.75rem !important;
+}
+
+html.dark #auditTable thead tr,
+html.dark #moduleMovementTable thead tr,
+html.dark #usersTable thead tr,
+html.dark #locationsTable thead tr,
+html.dark #modulesTable thead tr,
+html.dark #devicesTable thead tr {
+  border-bottom: 1px solid #142D4C !important;
+}
+
+/* ============================================================
+   SMOOTH DROPDOWN MENU ANIMATION
+   Natural slide-down + gentle fade-in (200ms cubic-bezier)
+   ============================================================ */
+@keyframes dropdownSlideFade {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-dropdown {
+  animation: dropdownSlideFade 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: top center;
+  will-change: transform, opacity;
+}

@@ -40,6 +40,22 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (data.success) {
+        if (data.user) {
+          try {
+            localStorage.setItem("cached_user", JSON.stringify(data.user));
+          } catch {}
+        }
+        // Aktifkan tema tersimpan sebelum redirect agar transisi ke dashboard tanpa kedip/wink
+        try {
+          const savedTheme = localStorage.getItem("asset-app-theme") || "dark";
+          if (savedTheme === "dark") {
+            document.documentElement.classList.add("dark");
+            document.documentElement.classList.remove("light");
+          } else {
+            document.documentElement.classList.remove("dark");
+            document.documentElement.classList.add("light");
+          }
+        } catch {}
         window.location.href = data.redirect || "/";
       } else {
         setError(data.message || "Email atau kata sandi salah.");
@@ -59,32 +75,69 @@ export default function LoginPage() {
     }
   };
 
+  useEffect(() => {
+    // Halaman login khusus: Hapus dark mode dari elemen root HTML secara permanen
+    const root = document.documentElement;
+    root.classList.remove("dark");
+    root.classList.add("light");
+
+    // Kunci background body ke warna dasar #050e1a agar halaman login independen dari mode dark/light web
+    const prevBodyBg = document.body.style.backgroundColor;
+    document.body.style.backgroundColor = "#050e1a";
+    return () => {
+      document.body.style.backgroundColor = prevBodyBg;
+    };
+  }, []);
+
   return (
     <div style={styles.wrapper}>
-      {/* CSS internal: override autofill & checkbox agar tidak menjadi putih, dan hapus border default input */}
+      {/* CSS internal: input putih bersih permanen, tidak terpengaruh dark mode apapun */}
       <style>{`
-        input:-webkit-autofill,
-        input:-webkit-autofill:hover,
-        input:-webkit-autofill:focus,
-        input:-webkit-autofill:active {
-          -webkit-box-shadow: 0 0 0 1000px #0D1F36 inset !important;
-          -webkit-text-fill-color: #E6EDF7 !important;
-          caret-color: #E6EDF7 !important;
-          border: 1px solid #162B48 !important;
+        html.dark input.login-input:-webkit-autofill,
+        html.dark input.login-input:-webkit-autofill:hover,
+        html.dark input.login-input:-webkit-autofill:focus,
+        html.dark input.login-input:-webkit-autofill:active,
+        html input.login-input:-webkit-autofill,
+        html input.login-input:-webkit-autofill:hover,
+        html input.login-input:-webkit-autofill:focus,
+        html input.login-input:-webkit-autofill:active,
+        input.login-input:-webkit-autofill,
+        input.login-input:-webkit-autofill:hover,
+        input.login-input:-webkit-autofill:focus,
+        input.login-input:-webkit-autofill:active {
+          -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+          box-shadow: 0 0 0 1000px #ffffff inset !important;
+          -webkit-text-fill-color: #0f172a !important;
+          color: #0f172a !important;
+          caret-color: #0f172a !important;
+          border: 1px solid #cbd5e1 !important;
+          background-color: #ffffff !important;
           transition: background-color 5000s ease-in-out 0s;
         }
-        .login-dark-input {
-          border: 1px solid #162B48 !important;
+        html.dark .login-input,
+        html .login-input,
+        .login-input {
+          background-color: #ffffff !important;
+          color: #0f172a !important;
+          -webkit-text-fill-color: #0f172a !important;
+          border: 1px solid #cbd5e1 !important;
           outline: none !important;
           transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
         }
-        .login-dark-input::placeholder {
-          color: #475569;
+        html.dark .login-input::placeholder,
+        html .login-input::placeholder,
+        .login-input::placeholder {
+          color: #94a3b8 !important;
+          -webkit-text-fill-color: #94a3b8 !important;
         }
-        .login-dark-input:hover {
-          border-color: #203A5F !important;
+        html.dark .login-input:hover,
+        html .login-input:hover,
+        .login-input:hover {
+          border-color: #94a3b8 !important;
         }
-        .login-dark-input:focus {
+        html.dark .login-input:focus,
+        html .login-input:focus,
+        .login-input:focus {
           border-color: #1677FF !important;
           box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.25) !important;
         }
@@ -93,8 +146,8 @@ export default function LoginPage() {
           -webkit-appearance: none;
           width: 16px;
           height: 16px;
-          background-color: #0D1F36;
-          border: none !important;
+          background-color: #0b1a2e;
+          border: 1px solid #1e3a5f !important;
           border-radius: 4px;
           cursor: pointer;
           display: inline-flex;
@@ -107,9 +160,11 @@ export default function LoginPage() {
         }
         .login-custom-checkbox:hover {
           box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.25);
+          border-color: #1677FF !important;
         }
         .login-custom-checkbox:checked {
           background-color: #1677FF;
+          border-color: #1677FF !important;
         }
         .login-custom-checkbox:checked::after {
           content: "";
@@ -166,13 +221,13 @@ export default function LoginPage() {
                   required
                   autoFocus
                   autoComplete="email"
-                  className="login-dark-input"
+                  className="login-input"
                   style={styles.input}
                 />
               </div>
             </div>
 
-            {/* Password - Tanpa border */}
+            {/* Password */}
             <div style={styles.formGroup}>
               <label style={styles.label} htmlFor="password">
                 Password
@@ -189,7 +244,7 @@ export default function LoginPage() {
                   placeholder="Masukkan password"
                   required
                   autoComplete="current-password"
-                  className="login-dark-input"
+                  className="login-input"
                   style={styles.input}
                 />
                 <button
@@ -476,22 +531,22 @@ const styles = {
     left: 13,
     top: "50%",
     transform: "translateY(-50%)",
-    color: "#475569",
+    color: "#64748B",
     fontSize: 18,
     pointerEvents: "none",
     userSelect: "none",
   },
-  // Border input email & password: gelap, halus, dan elegan
+  // Input email & password: latar putih bersih sesuai screenshot referensi, teks gelap kontras
   input: {
     width: "100%",
     height: 44,
-    backgroundColor: "#0D1F36",
-    border: "1px solid #162B48",
+    backgroundColor: "#ffffff",
+    border: "1px solid #CBD5E1",
     borderRadius: 10,
     padding: "0 42px 0 40px",
     fontFamily: "'Inter', sans-serif",
     fontSize: 13,
-    color: "#E6EDF7",
+    color: "#0F172A",
     outline: "none",
     boxSizing: "border-box",
     transition: "border-color 0.2s ease, box-shadow 0.2s ease",
@@ -504,7 +559,7 @@ const styles = {
     background: "none",
     border: "none",
     cursor: "pointer",
-    color: "#475569",
+    color: "#64748B",
     display: "flex",
     alignItems: "center",
     padding: 0,

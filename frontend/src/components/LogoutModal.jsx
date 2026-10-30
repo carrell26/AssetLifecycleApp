@@ -10,6 +10,9 @@ export default function LogoutModal({ isOpen, onClose, user }) {
   const handleLogout = async () => {
     setLoading(true);
     try {
+      try {
+        localStorage.removeItem("cached_user");
+      } catch {}
       const res = await fetch("/api/auth/logout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -59,10 +62,10 @@ export default function LogoutModal({ isOpen, onClose, user }) {
           <button
             type="button"
             onClick={onClose}
-            className={`px-4 py-2 rounded-xl text-xs font-medium border cursor-pointer ${
+            className={`px-4 py-2 rounded-xl text-xs font-semibold border cursor-pointer transition-colors ${
               isDark
-                ? "border-slate-700 text-slate-300 hover:bg-slate-800"
-                : "border-slate-200 text-slate-600 hover:bg-slate-100"
+                ? "border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
+                : "border-slate-200 text-slate-700 hover:bg-slate-100 hover:text-slate-900"
             }`}
           >
             Batal

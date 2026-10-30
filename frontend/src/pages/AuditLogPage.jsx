@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useTheme } from "../context/ThemeContext";
 import TableSortHeader from "../components/TableSortHeader";
+import TablePagination from "../components/TablePagination";
 import ModalPortal from "../components/ModalPortal";
 import auditBannerGraphic from "../assets/audit_banner_graphic.svg";
 
@@ -21,7 +22,7 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
   const [selectedRole, setSelectedRole] = useState("all");
   const [selectedAksi, setSelectedAksi] = useState("all");
   const [selectedDateRange, setSelectedDateRange] = useState("all");
-  const [sortConfig, setSortConfig] = useState({ key: "waktu", direction: "desc" });
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -70,6 +71,19 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
   };
 
   // Fetch audit data if not already pre-populated
+  const fetchAuditLogs = () => {
+    fetch("/api/audit-logs")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.success && Array.isArray(data.entries)) {
+          setEntries(data.entries);
+        } else if (Array.isArray(data)) {
+          setEntries(data);
+        }
+      })
+      .catch((err) => console.error("Error fetching audit logs:", err));
+  };
+
   useEffect(() => {
     if (!entries || entries.length === 0) {
       setLoading(true);
@@ -85,6 +99,12 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
         .catch((err) => console.error("Error fetching audit logs:", err))
         .finally(() => setLoading(false));
     }
+
+    const handleFocus = () => {
+      fetchAuditLogs();
+    };
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
   }, []);
 
   // Close dropdowns on click outside
@@ -167,12 +187,13 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
     { value: "30d", label: "30 Hari Terakhir" },
   ];
 
-  // Sorting handler
+  // Sorting handler - 3-state cycle: Naik (asc) -> Turun (desc) -> Netral (null)
   const handleSort = (key) => {
     setSortConfig((prev) => {
       if (prev.key === key) {
         if (prev.direction === "asc") return { key, direction: "desc" };
         if (prev.direction === "desc") return { key: null, direction: null };
+        return { key, direction: "asc" };
       }
       return { key, direction: "asc" };
     });
@@ -275,34 +296,64 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
     const act = (action || "").toUpperCase();
     if (act.includes("CREATE")) {
       return (
-        <span className="inline-flex items-center justify-center px-3 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase bg-emerald-50 dark:bg-[#0E5C43] text-emerald-700 dark:text-[#34D399] border border-emerald-200 dark:border-[#059669]/40 min-w-[76px]">
+        <span
+          className={`inline-flex items-center justify-center px-3 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase min-w-[76px] ${
+            isDark
+              ? "bg-emerald-500/15 text-[#34D399] border border-emerald-500/30"
+              : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+          }`}
+        >
           CREATE
         </span>
       );
     }
     if (act.includes("UPDATE")) {
       return (
-        <span className="inline-flex items-center justify-center px-3 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase bg-blue-50 dark:bg-[#1D4ED8] text-blue-700 dark:text-[#93C5FD] border border-blue-200 dark:border-[#2563EB]/40 min-w-[76px]">
+        <span
+          className={`inline-flex items-center justify-center px-3 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase min-w-[76px] ${
+            isDark
+              ? "bg-[#1677FF]/15 text-[#38BDF8] border border-[#1677FF]/30"
+              : "bg-blue-50 text-blue-700 border border-blue-200"
+          }`}
+        >
           UPDATE
         </span>
       );
     }
     if (act.includes("DELETE")) {
       return (
-        <span className="inline-flex items-center justify-center px-3 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase bg-rose-50 dark:bg-[#991B1B] text-rose-700 dark:text-[#FCA5A5] border border-rose-200 dark:border-[#DC2626]/40 min-w-[76px]">
+        <span
+          className={`inline-flex items-center justify-center px-3 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase min-w-[76px] ${
+            isDark
+              ? "bg-rose-500/15 text-rose-300 border border-rose-500/30"
+              : "bg-rose-50 text-rose-700 border border-rose-200"
+          }`}
+        >
           DELETE
         </span>
       );
     }
     if (act.includes("APPROVE")) {
       return (
-        <span className="inline-flex items-center justify-center px-3 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase bg-purple-50 dark:bg-[#6D28D9] text-purple-700 dark:text-[#C4B5FD] border border-purple-200 dark:border-[#7C3AED]/40 min-w-[76px]">
+        <span
+          className={`inline-flex items-center justify-center px-3 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase min-w-[76px] ${
+            isDark
+              ? "bg-purple-500/15 text-purple-300 border border-purple-500/30"
+              : "bg-purple-50 text-purple-700 border border-purple-200"
+          }`}
+        >
           APPROVE
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center justify-center px-3 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase bg-slate-100 dark:bg-[#1E293B] text-slate-600 dark:text-[#94A3B8] border border-slate-200 dark:border-[#334155] min-w-[76px]">
+      <span
+        className={`inline-flex items-center justify-center px-3 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase min-w-[76px] ${
+          isDark
+            ? "bg-slate-500/15 text-[#94A3B8] border border-slate-500/30"
+            : "bg-slate-100 text-slate-600 border border-slate-200"
+        }`}
+      >
         {act}
       </span>
     );
@@ -350,8 +401,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
         style={{ height: "120px", minHeight: "120px", maxHeight: "120px" }}
       >
         {/* Glow ambient background circles */}
-        <div className="absolute -top-24 -left-24 w-72 h-72 bg-blue-500/10 dark:bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-cyan-500/10 dark:bg-cyan-600/10 rounded-full blur-3xl pointer-events-none" />
+        <div className={`absolute -top-24 -left-24 w-72 h-72 rounded-full blur-3xl pointer-events-none ${isDark ? "bg-blue-600/15" : "bg-blue-500/10"}`} />
+        <div className={`absolute -bottom-24 -right-24 w-72 h-72 rounded-full blur-3xl pointer-events-none ${isDark ? "bg-cyan-600/10" : "bg-cyan-500/10"}`} />
 
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-5 w-full">
           {/* Left: Verified Icon & Header Text */}
@@ -388,7 +439,10 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
             <img
               src={auditBannerGraphic}
               alt="Audit Hash Chain Ledger Nodes HD"
-              className="h-[108px] lg:h-[114px] w-auto max-h-[114px] object-contain drop-shadow-[0_8px_20px_rgba(22,119,255,0.25)] dark:drop-shadow-[0_0_28px_rgba(56,189,248,0.5)] transition-all duration-300 pointer-events-none select-none"
+              className={`h-[108px] lg:h-[114px] w-auto max-h-[114px] object-contain transition-all duration-300 pointer-events-none select-none ${isDark
+                ? "drop-shadow-[0_0_28px_rgba(56,189,248,0.5)]"
+                : "drop-shadow-[0_8px_20px_rgba(22,119,255,0.25)]"
+                }`}
             />
           </div>
 
@@ -468,20 +522,20 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
           {/* Right Side: 3 Filter Dropdowns with Elevated Box Card Menus */}
           <div className="flex flex-wrap items-center gap-3">
             {/* Filter Dropdown 1: Semua Role */}
-            <div className="relative w-[170px] shrink-0" ref={roleDropdownRef}>
+            <div className="relative min-w-[160px]" ref={roleDropdownRef}>
               <button
                 type="button"
                 onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
-                className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center justify-between text-xs font-medium transition-all cursor-pointer ${isDark
-                  ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
-                  : "border-slate-300 bg-slate-50 text-slate-800 hover:border-blue-500"
+                className={`relative w-full h-11 px-4 rounded-xl border flex items-center justify-between gap-3 text-xs font-medium transition-all cursor-pointer ${isDark
+                  ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
+                  : "bg-slate-50 border-slate-300 text-slate-800 hover:border-blue-500"
                   }`}
               >
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="material-symbols-outlined text-[18px] text-blue-500 dark:text-[#38BDF8] shrink-0">
+                <div className="flex items-center gap-2 truncate pr-2">
+                  <span className={`material-symbols-outlined text-[18px] shrink-0 ${isDark ? "text-[#38BDF8]" : "text-blue-600"}`}>
                     badge
                   </span>
-                  <span className="font-semibold truncate">
+                  <span className="truncate font-semibold">
                     {roleOptions.find((r) => r.value === selectedRole)?.label || "Semua Role"}
                   </span>
                 </div>
@@ -493,17 +547,13 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                 </span>
               </button>
 
-              {/* Elevated Box Card Menu */}
+              {/* Elevated Box Card Menu (Matching Devices Page) */}
               {roleDropdownOpen && (
                 <div
-                  className={`absolute left-0 top-12 mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-40 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-md ${isDark
-                    ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7]"
-                    : "border-slate-200 bg-white text-slate-800 shadow-xl"
+                  className={`absolute left-0 top-12 mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-40 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-md animate-dropdown ${isDark
+                    ? "bg-[#0A182B]/95 border-[#1E3A5F] text-[#E6EDF7]"
+                    : "bg-white border-slate-200 text-slate-800 shadow-xl"
                     }`}
-                  style={{
-                    backgroundColor: isDark ? "#0A182B" : "#FFFFFF",
-                    borderColor: isDark ? "#1E3A5F" : "#E2E8F0",
-                  }}
                 >
                   {roleOptions.map((opt, idx) => {
                     const isSelected = selectedRole === opt.value;
@@ -545,20 +595,20 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
             </div>
 
             {/* Filter Dropdown 2: Semua Aksi */}
-            <div className="relative w-[170px] shrink-0" ref={actionDropdownRef}>
+            <div className="relative min-w-[160px]" ref={actionDropdownRef}>
               <button
                 type="button"
                 onClick={() => setActionDropdownOpen(!actionDropdownOpen)}
-                className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center justify-between text-xs font-medium transition-all cursor-pointer ${isDark
-                  ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
-                  : "border-slate-300 bg-slate-50 text-slate-800 hover:border-blue-500"
+                className={`relative w-full h-11 px-4 rounded-xl border flex items-center justify-between gap-3 text-xs font-medium transition-all cursor-pointer ${isDark
+                  ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
+                  : "bg-slate-50 border-slate-300 text-slate-800 hover:border-blue-500"
                   }`}
               >
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="material-symbols-outlined text-[18px] text-blue-500 dark:text-[#38BDF8] shrink-0">
+                <div className="flex items-center gap-2 truncate pr-2">
+                  <span className={`material-symbols-outlined text-[18px] shrink-0 ${isDark ? "text-[#38BDF8]" : "text-blue-600"}`}>
                     bolt
                   </span>
-                  <span className="font-semibold truncate">
+                  <span className="truncate font-semibold">
                     {actionOptions.find((a) => a.value === selectedAksi)?.label || "Semua Aksi"}
                   </span>
                 </div>
@@ -570,17 +620,13 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                 </span>
               </button>
 
-              {/* Elevated Box Card Menu */}
+              {/* Elevated Box Card Menu (Matching Devices Page) */}
               {actionDropdownOpen && (
                 <div
-                  className={`absolute left-0 top-12 mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-40 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-md ${isDark
-                    ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7]"
-                    : "border-slate-200 bg-white text-slate-800 shadow-xl"
+                  className={`absolute left-0 top-12 mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-40 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-md animate-dropdown ${isDark
+                    ? "bg-[#0A182B]/95 border-[#1E3A5F] text-[#E6EDF7]"
+                    : "bg-white border-slate-200 text-slate-800 shadow-xl"
                     }`}
-                  style={{
-                    backgroundColor: isDark ? "#0A182B" : "#FFFFFF",
-                    borderColor: isDark ? "#1E3A5F" : "#E2E8F0",
-                  }}
                 >
                   {actionOptions.map((opt, idx) => {
                     const isSelected = selectedAksi === opt.value;
@@ -607,7 +653,7 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                               : "hover:bg-slate-100 text-slate-700"
                             }`}
                         >
-                          <span>{opt.label}</span>
+                          <span className="truncate pr-2">{opt.label}</span>
                           {isSelected && (
                             <span className="material-symbols-outlined text-[16px] shrink-0">
                               check
@@ -622,20 +668,20 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
             </div>
 
             {/* Filter Dropdown 3: Semua Waktu */}
-            <div className="relative w-[190px] shrink-0" ref={dateDropdownRef}>
+            <div className="relative min-w-[170px]" ref={dateDropdownRef}>
               <button
                 type="button"
                 onClick={() => setDateDropdownOpen(!dateDropdownOpen)}
-                className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center justify-between text-xs font-medium transition-all cursor-pointer ${isDark
-                  ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
-                  : "border-slate-300 bg-slate-50 text-slate-800 hover:border-blue-500"
+                className={`relative w-full h-11 px-4 rounded-xl border flex items-center justify-between gap-3 text-xs font-medium transition-all cursor-pointer ${isDark
+                  ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
+                  : "bg-slate-50 border-slate-300 text-slate-800 hover:border-blue-500"
                   }`}
               >
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="material-symbols-outlined text-[18px] text-blue-500 dark:text-[#38BDF8] shrink-0">
+                <div className="flex items-center gap-2 truncate pr-2">
+                  <span className={`material-symbols-outlined text-[18px] shrink-0 ${isDark ? "text-[#38BDF8]" : "text-blue-600"}`}>
                     calendar_month
                   </span>
-                  <span className="font-semibold truncate">
+                  <span className="truncate font-semibold">
                     {selectedDateRange === "all"
                       ? "Semua Waktu"
                       : dateOptions.find((d) => d.value === selectedDateRange)?.label ||
@@ -650,17 +696,13 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                 </span>
               </button>
 
-              {/* Elevated Box Card Menu */}
+              {/* Elevated Box Card Menu (Matching Devices Page) */}
               {dateDropdownOpen && (
                 <div
-                  className={`absolute left-0 top-12 mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-40 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-md ${isDark
-                    ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7]"
-                    : "border-slate-200 bg-white text-slate-800 shadow-xl"
+                  className={`absolute left-0 top-12 mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-40 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-md animate-dropdown ${isDark
+                    ? "bg-[#0A182B]/95 border-[#1E3A5F] text-[#E6EDF7]"
+                    : "bg-white border-slate-200 text-slate-800 shadow-xl"
                     }`}
-                  style={{
-                    backgroundColor: isDark ? "#0A182B" : "#FFFFFF",
-                    borderColor: isDark ? "#1E3A5F" : "#E2E8F0",
-                  }}
                 >
                   {dateOptions.map((opt, idx) => {
                     const isSelected = selectedDateRange === opt.value;
@@ -687,7 +729,7 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                               : "hover:bg-slate-100 text-slate-700"
                             }`}
                         >
-                          <span>{opt.label}</span>
+                          <span className="truncate pr-2">{opt.label}</span>
                           {isSelected && (
                             <span className="material-symbols-outlined text-[16px] shrink-0">
                               check
@@ -721,21 +763,25 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
               <col style={{ width: "16%" }} />
               <col style={{ width: "6%" }} />
             </colgroup>
-            <thead>
+            <thead className={`rounded-t-xl ${isDark ? "bg-[#071426]" : "bg-slate-50"}`}>
               <tr
                 className={`border-b text-[11px] font-bold uppercase tracking-wider ${isDark
-                  ? "border-[#142D4C] text-[#94A3B8]"
-                  : "border-slate-200 text-slate-600"
-                  }`}
+                  ? "bg-[#071426] border-[#142D4C] text-[#94A3B8]"
+                  : "bg-slate-50 border-slate-200 text-slate-600"
+                  } rounded-t-xl`}
               >
+                {/* No Index: Selaras Warna Biru & Sudut Kiri Melengkung */}
                 <th
-                  className="py-3 px-4 text-center select-none"
+                  className="py-3 px-4 text-center select-none rounded-tl-xl"
                   style={{ width: "4%" }}
                 >
-                  #
+                  <span className={`font-extrabold uppercase tracking-wider text-[11px] ${isDark ? "text-[#38BDF8]" : "text-blue-600"}`}>
+                    No
+                  </span>
                 </th>
                 <th
-                  className="py-3 px-4 text-left select-none"
+                  onClick={() => handleSort("waktu")}
+                  className="py-3 px-4 text-left select-none cursor-pointer"
                   style={{ width: "14%" }}
                 >
                   <TableSortHeader
@@ -748,7 +794,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                   />
                 </th>
                 <th
-                  className="py-3 px-4 text-left select-none"
+                  onClick={() => handleSort("aksi")}
+                  className="py-3 px-4 text-left select-none cursor-pointer"
                   style={{ width: "10%" }}
                 >
                   <TableSortHeader
@@ -761,7 +808,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                   />
                 </th>
                 <th
-                  className="py-3 px-4 text-left select-none"
+                  onClick={() => handleSort("tabel")}
+                  className="py-3 px-4 text-left select-none cursor-pointer"
                   style={{ width: "11%" }}
                 >
                   <TableSortHeader
@@ -776,7 +824,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
 
                 {/* RECORD ID: RATA KIRI & TERSUSUN HORIZONTAL */}
                 <th
-                  className="py-3 px-4 text-left whitespace-nowrap select-none"
+                  onClick={() => handleSort("record_id")}
+                  className="py-3 px-4 text-left whitespace-nowrap select-none cursor-pointer"
                   style={{ width: "12%" }}
                 >
                   <TableSortHeader
@@ -791,7 +840,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                 </th>
 
                 <th
-                  className="py-3 px-4 text-left select-none"
+                  onClick={() => handleSort("oleh")}
+                  className="py-3 px-4 text-left select-none cursor-pointer"
                   style={{ width: "12%" }}
                 >
                   <TableSortHeader
@@ -804,7 +854,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                   />
                 </th>
                 <th
-                  className="py-3 px-4 text-left select-none"
+                  onClick={() => handleSort("hash")}
+                  className="py-3 px-4 text-left select-none cursor-pointer"
                   style={{ width: "15%" }}
                 >
                   <TableSortHeader
@@ -817,7 +868,8 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                   />
                 </th>
                 <th
-                  className="py-3 px-4 text-left select-none"
+                  onClick={() => handleSort("previous_hash")}
+                  className="py-3 px-4 text-left select-none cursor-pointer"
                   style={{ width: "16%" }}
                 >
                   <TableSortHeader
@@ -830,7 +882,7 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                   />
                 </th>
                 <th
-                  className="py-3 px-4 text-center select-none"
+                  className="py-3 px-4 text-center select-none rounded-tr-xl"
                   style={{ width: "6%" }}
                 >
                   Detail
@@ -854,7 +906,7 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                 </tr>
               ) : paginatedEntries.length === 0 ? (
                 <tr>
-                  <td colSpan="9" className="py-16 text-center text-slate-400 dark:text-slate-500">
+                  <td colSpan="9" className={`py-16 text-center ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                     <div className="flex flex-col items-center justify-center gap-2">
                       <span className="material-symbols-outlined text-[36px]">search_off</span>
                       <span className="font-medium">
@@ -883,12 +935,12 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                         }`}
                     >
                       {/* # Index */}
-                      <td className="py-3 px-4 text-center font-mono text-slate-400 dark:text-[#64748B] text-xs font-semibold">
+                      <td className={`py-3 px-4 text-center font-mono text-xs font-semibold ${isDark ? "text-[#64748B]" : "text-slate-400"}`}>
                         {rowNum}
                       </td>
 
                       {/* Waktu */}
-                      <td className="py-3 px-4 font-mono text-xs text-slate-600 dark:text-[#CBD5E1] whitespace-nowrap">
+                      <td className={`py-3 px-4 font-mono text-xs whitespace-nowrap ${isDark ? "text-[#CBD5E1]" : "text-slate-600"}`}>
                         {item.created_at}
                       </td>
 
@@ -898,22 +950,51 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                       </td>
 
                       {/* Tabel */}
-                      <td className="py-3 px-4 font-mono text-xs text-slate-700 dark:text-[#CBD5E1] truncate" title={item.table_name}>
+                      <td className={`py-3 px-4 font-mono text-xs truncate ${isDark ? "text-[#CBD5E1]" : "text-slate-700"}`} title={item.table_name}>
                         {item.table_name}
                       </td>
 
                       {/* Record ID: RATA KIRI SESUAI INSTRUKSI (JANGAN DITENGAHIN) */}
-                      <td className="py-3 px-4 text-left font-mono text-xs text-blue-600 dark:text-[#38BDF8] font-semibold truncate">
+                      <td className={`py-3 px-4 text-left font-mono text-xs font-semibold truncate ${isDark ? "text-[#38BDF8]" : "text-blue-600"}`}>
                         {item.record_id}
                       </td>
 
                       {/* Oleh */}
                       <td className="py-3 px-4 whitespace-nowrap">
-                        <div className="inline-flex items-center gap-1.5 truncate">
-                          <span className="material-symbols-outlined text-[16px] text-slate-400 dark:text-[#94A3B8] shrink-0">
-                            person
-                          </span>
-                          <span className="font-medium text-slate-800 dark:text-[#E6EDF7] truncate">
+                        <div className="inline-flex items-center gap-2 truncate">
+                          {(() => {
+                            const isSelf = user && (user.name === item.actor_name || user.email === item.actor_email);
+                            const avatarSrc = (isSelf && user?.avatar_url) ? user.avatar_url : item.actor_avatar_url;
+                            const initial = (item.actor_name && item.actor_name !== "System")
+                              ? item.actor_name.trim()[0].toUpperCase()
+                              : "S";
+
+                            return (
+                              <>
+                                {avatarSrc ? (
+                                  <div className="relative group shrink-0">
+                                    <img
+                                      src={avatarSrc}
+                                      alt={item.actor_name || "Oleh"}
+                                      onError={(e) => {
+                                        e.currentTarget.style.display = "none";
+                                        const fb = e.currentTarget.parentElement?.nextElementSibling;
+                                        if (fb) fb.style.display = "flex";
+                                      }}
+                                      className="w-7 h-7 rounded-full object-cover object-top ring-1.5 ring-[#1677FF]/40 shadow-xs shrink-0 transition-transform duration-200 group-hover:scale-130 group-hover:z-20 group-hover:ring-2 group-hover:ring-[#1677FF]"
+                                    />
+                                  </div>
+                                ) : null}
+                                <div
+                                  style={{ display: avatarSrc ? "none" : "flex" }}
+                                  className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/40 text-[#1677FF] dark:text-[#38BDF8] border border-blue-200 dark:border-blue-700/50 items-center justify-center text-xs font-bold shrink-0"
+                                >
+                                  {initial}
+                                </div>
+                              </>
+                            );
+                          })()}
+                          <span className={`font-medium truncate ${isDark ? "text-[#E6EDF7]" : "text-slate-800"}`}>
                             {item.actor_name}
                           </span>
                         </div>
@@ -921,11 +1002,11 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
 
                       {/* Hash */}
                       <td
-                        className="py-3 px-4 font-mono text-xs text-slate-500 dark:text-[#94A3B8] whitespace-nowrap truncate"
+                        className={`py-3 px-4 font-mono text-xs whitespace-nowrap truncate ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}
                         title={item.hash}
                       >
                         <span
-                          className="cursor-pointer hover:text-blue-600 dark:hover:text-[#38BDF8] transition-colors"
+                          className={`cursor-pointer transition-colors ${isDark ? "hover:text-[#38BDF8]" : "hover:text-blue-600"}`}
                           onClick={() => setSelectedAuditDetail(item)}
                         >
                           {hashDisplay}
@@ -934,11 +1015,11 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
 
                       {/* Previous Hash */}
                       <td
-                        className="py-3 px-4 font-mono text-xs text-slate-500 dark:text-[#94A3B8] whitespace-nowrap truncate"
+                        className={`py-3 px-4 font-mono text-xs whitespace-nowrap truncate ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}
                         title={item.previous_hash}
                       >
                         <span
-                          className="cursor-pointer hover:text-blue-600 dark:hover:text-[#38BDF8] transition-colors"
+                          className={`cursor-pointer transition-colors ${isDark ? "hover:text-[#38BDF8]" : "hover:text-blue-600"}`}
                           onClick={() => setSelectedAuditDetail(item)}
                         >
                           {prevHashDisplay}
@@ -971,146 +1052,18 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
              PAGINATION & BARIS PER HALAMAN
              Consistent Card Box Dropdown (Matching Devices Page)
              ======================================================== */}
-        <div
-          className={`p-4 sm:p-5 border-t flex flex-col sm:flex-row items-center justify-between gap-4 text-xs ${isDark ? "border-[#142D4C] text-[#94A3B8]" : "border-slate-100 text-slate-500"
-            }`}
-        >
-          <div className="flex items-center gap-2 flex-wrap">
-            <span>Menampilkan baris</span>
-            <span className={`font-semibold ${isDark ? "text-white" : "text-slate-800"}`}>
-              {totalItems === 0 ? "0" : `${startIdx + 1} - ${Math.min(startIdx + perPage, totalItems)}`}
-            </span>
-            <span>dari</span>
-            <span className={`font-semibold ${isDark ? "text-white" : "text-slate-800"}`}>
-              {totalItems}
-            </span>
-            <span>data</span>
-
-            <span className={`mx-2 ${isDark ? "text-[#1E3A5F]" : "text-slate-300"}`}>|</span>
-
-            {/* Custom Pill Dropdown: Baris per halaman (Box Card Style) */}
-            <div className="flex items-center gap-2">
-              <span>Baris per halaman:</span>
-              <div className="relative" ref={perPageDropdownRef}>
-                <button
-                  type="button"
-                  onClick={() => setPerPageDropdownOpen(!perPageDropdownOpen)}
-                  className={`h-8 px-3 rounded-xl border flex items-center gap-1.5 text-xs font-semibold transition-all cursor-pointer shadow-sm ${isDark
-                    ? "border-[#1E3A5F] bg-[#071426] text-[#E6EDF7] hover:border-[#1677FF]"
-                    : "border-slate-300 bg-slate-50 text-slate-800 hover:border-blue-500"
-                    }`}
-                >
-                  <span>{perPage}</span>
-                  <span
-                    className={`material-symbols-outlined text-[16px] transition-transform duration-200 ${perPageDropdownOpen ? "rotate-180" : ""
-                      } ${isDark ? "text-[#94A3B8]" : "text-slate-400"}`}
-                  >
-                    expand_more
-                  </span>
-                </button>
-
-                {/* Box Card Dropdown Menu for Rows per Page */}
-                {perPageDropdownOpen && (
-                  <div
-                    className={`absolute left-0 bottom-full mb-1.5 w-24 rounded-xl border shadow-2xl p-1 z-40 overflow-hidden backdrop-blur-md ${isDark
-                      ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7]"
-                      : "border-slate-200 bg-white text-slate-800 shadow-xl"
-                      }`}
-                    style={{
-                      backgroundColor: isDark ? "#0A182B" : "#FFFFFF",
-                      borderColor: isDark ? "#1E3A5F" : "#E2E8F0",
-                    }}
-                  >
-                    {[10, 15, 25, 50, 100].map((num) => {
-                      const isSelected = perPage === num;
-                      return (
-                        <button
-                          key={num}
-                          type="button"
-                          onClick={() => {
-                            setPerPage(num);
-                            setPerPageDropdownOpen(false);
-                            setCurrentPage(1);
-                          }}
-                          className={`w-full px-3 py-1.5 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${isSelected
-                            ? isDark
-                              ? "bg-[#1677FF] text-white font-semibold"
-                              : "bg-blue-600 text-white font-semibold"
-                            : isDark
-                              ? "hover:bg-[#122846] text-[#CBD5E1]"
-                              : "hover:bg-slate-100 text-slate-700"
-                            }`}
-                        >
-                          <span>{num}</span>
-                          {isSelected && (
-                            <span className="material-symbols-outlined text-[15px] shrink-0">
-                              check
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Pagination Page Controls */}
-          <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              disabled={safePage <= 1}
-              onClick={() => setCurrentPage(Math.max(1, safePage - 1))}
-              title="Halaman Sebelumnya"
-              className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${isDark
-                ? "border-[#1E3A5F] bg-[#071426] text-[#CBD5E1] hover:bg-[#122846]"
-                : "border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100"
-                }`}
-            >
-              <span className="material-symbols-outlined text-[17px]">chevron_left</span>
-            </button>
-
-            {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .filter((p) => {
-                if (totalPages <= 5) return true;
-                if (safePage <= 3) return p <= 5;
-                if (safePage >= totalPages - 2) return p >= totalPages - 4;
-                return Math.abs(p - safePage) <= 2;
-              })
-              .map((p) => {
-                const isActive = p === safePage;
-                return (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => setCurrentPage(p)}
-                    className={`w-8 h-8 rounded-lg text-xs font-semibold flex items-center justify-center transition-colors cursor-pointer ${isActive
-                      ? "bg-blue-600 dark:bg-[#1677FF] text-white shadow-md shadow-blue-500/20"
-                      : isDark
-                        ? "border border-[#1E3A5F] bg-[#071426] text-[#CBD5E1] hover:bg-[#122846]"
-                        : "border border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100"
-                      }`}
-                  >
-                    {p}
-                  </button>
-                );
-              })}
-
-            <button
-              type="button"
-              disabled={safePage >= totalPages}
-              onClick={() => setCurrentPage(Math.min(totalPages, safePage + 1))}
-              title="Halaman Selanjutnya"
-              className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${isDark
-                ? "border-[#1E3A5F] bg-[#071426] text-[#CBD5E1] hover:bg-[#122846]"
-                : "border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100"
-                }`}
-            >
-              <span className="material-symbols-outlined text-[17px]">chevron_right</span>
-            </button>
-          </div>
-        </div>
+        <TablePagination
+          page={currentPage}
+          perPage={perPage}
+          totalCount={totalItems}
+          itemLabel="entri audit"
+          onPageChange={(p) => setCurrentPage(p)}
+          onPerPageChange={(num) => {
+            setPerPage(num);
+            setCurrentPage(1);
+          }}
+          isDark={isDark}
+        />
       </div>
 
       {/* ========================================================
@@ -1249,9 +1202,39 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                     >
                       Dilakukan Oleh
                     </span>
-                    <div className="flex-1 flex items-center mt-1">
+                    <div className="flex-1 flex items-center gap-2 mt-1 min-w-0">
+                      {(() => {
+                        const isSelf = user && (user.name === selectedAuditDetail.actor_name || user.email === selectedAuditDetail.actor_email);
+                        const avatarSrc = (isSelf && user?.avatar_url) ? user.avatar_url : selectedAuditDetail.actor_avatar_url;
+                        const initial = (selectedAuditDetail.actor_name && selectedAuditDetail.actor_name !== "System")
+                          ? selectedAuditDetail.actor_name.trim()[0].toUpperCase()
+                          : "S";
+
+                        return (
+                          <>
+                            {avatarSrc ? (
+                              <img
+                                src={avatarSrc}
+                                alt={selectedAuditDetail.actor_name || "Oleh"}
+                                onError={(e) => {
+                                  e.currentTarget.style.display = "none";
+                                  const fb = e.currentTarget.nextElementSibling;
+                                  if (fb) fb.style.display = "flex";
+                                }}
+                                className="w-9 h-9 rounded-full object-cover object-top ring-2 ring-[#1677FF] shadow-sm shrink-0"
+                              />
+                            ) : null}
+                            <div
+                              style={{ display: avatarSrc ? "none" : "flex" }}
+                              className="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/40 text-[#1677FF] dark:text-[#38BDF8] border border-blue-200 dark:border-blue-700/50 items-center justify-center text-xs font-bold shrink-0"
+                            >
+                              {initial}
+                            </div>
+                          </>
+                        );
+                      })()}
                       <span
-                        className={`text-xs font-semibold ${isDark ? "text-white" : "text-slate-900"
+                        className={`text-xs font-semibold truncate ${isDark ? "text-white" : "text-slate-900"
                           }`}
                       >
                         {selectedAuditDetail.actor_name} ({selectedAuditDetail.actor_role})
@@ -1284,7 +1267,7 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                           navigator.clipboard.writeText(selectedAuditDetail.hash || "");
                           alert("Hash berhasil disalin ke clipboard!");
                         }}
-                        className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer"
+                        className={`text-[11px] hover:underline flex items-center gap-1 cursor-pointer ${isDark ? "text-[#38BDF8]" : "text-blue-600"}`}
                       >
                         <span className="material-symbols-outlined text-[14px]">content_copy</span>
                         <span>Salin</span>
@@ -1293,7 +1276,7 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                     <p
                       className={`text-[11px] font-mono p-2.5 rounded-lg border break-all select-all !m-0 ${isDark
                         ? "bg-[#040C17] border-[#122846] text-[#A5B4FC]"
-                        : "bg-slate-100 border-slate-200 text-slate-800"
+                        : "bg-slate-50 border-slate-200 text-slate-800"
                         }`}
                     >
                       {selectedAuditDetail.hash || "-"}
@@ -1315,7 +1298,7 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                           navigator.clipboard.writeText(selectedAuditDetail.previous_hash || "");
                           alert("Previous hash berhasil disalin ke clipboard!");
                         }}
-                        className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer"
+                        className={`text-[11px] hover:underline flex items-center gap-1 cursor-pointer ${isDark ? "text-[#38BDF8]" : "text-blue-600"}`}
                       >
                         <span className="material-symbols-outlined text-[14px]">content_copy</span>
                         <span>Salin</span>
@@ -1324,7 +1307,7 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                     <p
                       className={`text-[11px] font-mono p-2.5 rounded-lg border break-all select-all !m-0 ${isDark
                         ? "bg-[#040C17] border-[#122846] text-[#94A3B8]"
-                        : "bg-slate-100 border-slate-200 text-slate-600"
+                        : "bg-slate-50 border-slate-200 text-slate-600"
                         }`}
                     >
                       {selectedAuditDetail.previous_hash || "GENESIS"}
@@ -1352,7 +1335,7 @@ export default function AuditLogPage({ user, searchValue, onSearchChange }) {
                   <pre
                     className={`p-3.5 rounded-xl border text-[11px] font-mono overflow-x-auto max-h-56 custom-scrollbar leading-relaxed !m-0 ${isDark
                       ? "bg-[#040C17] border-[#142D4C] text-[#38BDF8]"
-                      : "bg-slate-100 border-slate-200 text-blue-700"
+                      : "bg-slate-50 border-slate-200 text-slate-800"
                       }`}
                   >
                     {(() => {

@@ -7,6 +7,8 @@ export default function TablePagination({
   onPageChange,
   onPerPageChange,
   isDark = true,
+  className = "",
+  itemLabel = "data",
 }) {
   const [perPageOpen, setPerPageOpen] = useState(false);
   const perPageRef = useRef(null);
@@ -56,21 +58,33 @@ export default function TablePagination({
 
   return (
     <div
-      className={`flex flex-col sm:flex-row items-center justify-between gap-4 mt-5 pt-3 border-t text-xs ${
-        isDark ? "border-[#162F52] text-[#94A3B8]" : "border-slate-200 text-slate-500"
-      }`}
+      className={`p-4 sm:p-5 border-t flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-sans ${
+        isDark ? "border-[#142D4C] text-[#94A3B8]" : "border-slate-200 text-slate-500"
+      } ${className}`}
     >
       {/* Range Info & Per Page selector */}
       <div className="flex items-center gap-2 flex-wrap">
-        <span>Menampilkan baris</span>
-        <span className={`font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>
-          {startItem} - {endItem}
-        </span>
+        <span>Menampilkan</span>
+        {totalCount === 0 ? (
+          <span className={`font-semibold ${isDark ? "text-white" : "text-slate-800"}`}>
+            0
+          </span>
+        ) : (
+          <>
+            <span className={`font-semibold ${isDark ? "text-white" : "text-slate-800"}`}>
+              {startItem}
+            </span>
+            <span>-</span>
+            <span className={`font-semibold ${isDark ? "text-white" : "text-slate-800"}`}>
+              {endItem}
+            </span>
+          </>
+        )}
         <span>dari</span>
-        <span className={`font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>
+        <span className={`font-semibold ${isDark ? "text-white" : "text-slate-800"}`}>
           {totalCount}
         </span>
-        <span>data</span>
+        <span>{itemLabel}</span>
 
         <span className={`mx-2 ${isDark ? "text-[#1E3A5F]" : "text-slate-300"}`}>|</span>
 
@@ -81,10 +95,10 @@ export default function TablePagination({
             <button
               type="button"
               onClick={() => setPerPageOpen(!perPageOpen)}
-              className={`h-8 px-3 rounded-xl border flex items-center gap-1.5 text-xs font-semibold transition-all cursor-pointer shadow-sm ${
+              className={`h-9 px-3.5 rounded-xl border flex items-center gap-1.5 text-xs font-semibold transition-all cursor-pointer shadow-sm !m-0 ${
                 isDark
-                  ? "border-[#1E3A5F] bg-[#071426] text-[#E6EDF7] hover:border-[#1677FF]"
-                  : "border-slate-300 bg-slate-50 text-slate-800 hover:border-blue-500"
+                  ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7] hover:border-[#1677FF]"
+                  : "border-[#CBD5E1]/70 bg-white text-slate-700 hover:border-[#1677FF] hover:text-[#1677FF]"
               }`}
             >
               <span>{perPage}</span>
@@ -100,7 +114,7 @@ export default function TablePagination({
             {/* Box Card Dropdown Menu for Rows per Page */}
             {perPageOpen && (
               <div
-                className={`absolute left-0 bottom-full mb-1.5 w-24 rounded-xl border shadow-2xl p-1 z-40 overflow-hidden backdrop-blur-md ${
+                className={`absolute left-0 bottom-full mb-1.5 w-24 rounded-xl border shadow-2xl p-1 z-50 overflow-hidden backdrop-blur-md animate-dropdown ${
                   isDark
                     ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7]"
                     : "border-slate-200 bg-white text-slate-800 shadow-xl"
@@ -146,19 +160,21 @@ export default function TablePagination({
       </div>
 
       {/* Pagination page controls */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-2" id="paginationControls">
         <button
           type="button"
           disabled={safePage <= 1}
           onClick={() => onPageChange(Math.max(1, safePage - 1))}
           title="Halaman Sebelumnya"
-          className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+          className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer select-none !m-0 !p-0 ${
+            safePage <= 1 ? "opacity-30 cursor-not-allowed" : "active:scale-95"
+          } ${
             isDark
-              ? "bg-[#0A182B] border-[#1E3A5F] text-[#CBD5E1] hover:bg-[#122846]"
-              : "bg-white border-slate-200 text-slate-700 hover:bg-slate-100"
+              ? "bg-[#0A182B] border border-[#1E3A5F] text-[#CBD5E1] hover:bg-[#122846] hover:border-[#1677FF] hover:text-white shadow-sm"
+              : "bg-white border border-[#CBD5E1] text-slate-700 hover:bg-slate-50 hover:border-[#1677FF] hover:text-[#1677FF] shadow-sm"
           }`}
         >
-          <span className="material-symbols-outlined text-[17px]">chevron_left</span>
+          <span className="material-symbols-outlined text-[19px]">chevron_left</span>
         </button>
 
         {pageNumbers.map((p) => {
@@ -168,12 +184,14 @@ export default function TablePagination({
               key={p}
               type="button"
               onClick={() => onPageChange(p)}
-              className={`w-8 h-8 rounded-lg text-xs font-semibold flex items-center justify-center transition-colors cursor-pointer ${
+              className={`w-9 h-9 rounded-xl text-xs font-semibold flex items-center justify-center transition-all duration-200 cursor-pointer select-none !m-0 !p-0 ${
                 isActive
-                  ? "bg-[#1677FF] text-white shadow-md shadow-[#1677FF]/30 border border-[#1677FF]"
+                  ? isDark
+                    ? "bg-[#1677FF] text-white font-bold border border-transparent shadow-[0_6px_16px_rgba(22,119,255,0.45)]"
+                    : "bg-[#1677FF] text-white font-bold border border-transparent shadow-[0_6px_16px_rgba(22,119,255,0.38)]"
                   : isDark
-                  ? "bg-[#0A182B] border-[#1E3A5F] text-[#CBD5E1] hover:bg-[#122846]"
-                  : "bg-white border-slate-200 text-slate-700 hover:bg-slate-100"
+                    ? "bg-[#0A182B] border border-[#1E3A5F] text-[#CBD5E1] hover:bg-[#122846] hover:border-[#1677FF] hover:text-white shadow-sm active:scale-95"
+                    : "bg-white border border-[#CBD5E1] text-slate-800 hover:bg-slate-50 hover:border-[#1677FF] hover:text-[#1677FF] shadow-sm active:scale-95"
               }`}
             >
               {p}
@@ -185,14 +203,16 @@ export default function TablePagination({
           type="button"
           disabled={safePage >= totalPages}
           onClick={() => onPageChange(Math.min(totalPages, safePage + 1))}
-          title="Halaman Berikutnya"
-          className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+          title="Halaman Selanjutnya"
+          className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer select-none !m-0 !p-0 ${
+            safePage >= totalPages ? "opacity-30 cursor-not-allowed" : "active:scale-95"
+          } ${
             isDark
-              ? "bg-[#0A182B] border-[#1E3A5F] text-[#CBD5E1] hover:bg-[#122846]"
-              : "bg-white border-slate-200 text-slate-700 hover:bg-slate-100"
+              ? "bg-[#0A182B] border border-[#1E3A5F] text-[#CBD5E1] hover:bg-[#122846] hover:border-[#1677FF] hover:text-white shadow-sm"
+              : "bg-white border border-[#CBD5E1] text-slate-700 hover:bg-slate-50 hover:border-[#1677FF] hover:text-[#1677FF] shadow-sm"
           }`}
         >
-          <span className="material-symbols-outlined text-[17px]">chevron_right</span>
+          <span className="material-symbols-outlined text-[19px]">chevron_right</span>
         </button>
       </div>
     </div>
