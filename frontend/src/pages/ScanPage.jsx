@@ -803,7 +803,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
           </div>
 
           {/* Viewport Kamera Video dengan Cyberpunk Reticle Overlay */}
-          <div className="relative w-full rounded-xl overflow-hidden bg-black border-2 border-[#1E3A5F] flex items-center justify-center shadow-inner" style={{ aspectRatio: "1 / 1", maxHeight: "min(360px, 55vw)" }}>
+          <div className="relative w-full aspect-square max-h-[360px] rounded-xl overflow-hidden bg-black border-2 border-[#1E3A5F] flex items-center justify-center shadow-inner">
             <div id="ar-qr-reader" className="w-full h-full object-cover"></div>
 
             {/* Overlay AR Reticle */}
@@ -851,7 +851,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
             <label className={`block text-xs font-semibold mb-2 ${isDark ? "text-[#CBD5E1]" : "text-slate-700"}`}>
               Atau Pilih Rak Perangkat Langsung:
             </label>
-            <div className="flex gap-2 min-w-0 overflow-hidden">
+            <div className="flex gap-2 min-w-0">
               {/* Custom Dropdown Trigger & Panel */}
               <div className="relative flex-1 min-w-0" ref={deviceDropdownRef}>
                 <button
@@ -887,7 +887,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                 {/* Custom Filter Dropdown Menu (Konsisten dengan Gambar 1) */}
                 {deviceDropdownOpen && (
                   <div
-                    className={`absolute left-0 top-12 mt-1.5 w-full min-w-full rounded-xl border shadow-2xl p-1.5 z-50 max-h-64 overflow-y-auto custom-scrollbar backdrop-blur-md animate-dropdown ${
+                    className={`absolute left-0 bottom-full mb-1.5 w-full min-w-full rounded-xl border shadow-2xl p-1.5 z-50 max-h-64 overflow-y-auto custom-scrollbar backdrop-blur-md animate-dropdown ${
                       isDark
                         ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7]"
                         : "bg-white border-slate-200 text-slate-800 shadow-xl"
