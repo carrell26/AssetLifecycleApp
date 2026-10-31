@@ -42,6 +42,7 @@ def create_app(test_config=None):
     from .modules.export import export_bp
     from .modules.ar import ar_bp
     from .modules.api import api_bp
+    from .modules.warehouse import warehouse_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(device_bp)
@@ -51,6 +52,7 @@ def create_app(test_config=None):
     app.register_blueprint(export_bp)
     app.register_blueprint(ar_bp)
     app.register_blueprint(api_bp)
+    app.register_blueprint(warehouse_bp)
 
     # ==========================================
     # CLI: CREATE ADMIN
