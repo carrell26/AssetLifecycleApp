@@ -669,13 +669,14 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
       <div
         className={`relative overflow-hidden rounded-2xl border px-5 sm:px-6 h-[120px] min-h-[120px] max-h-[120px] flex items-center justify-between transition-all duration-300 shadow-sm !mt-0 shrink-0 ${
           isDark
-            ? "border-[#1E3A5F] bg-[#0A182B] shadow-2xl"
-            : "border-slate-200 bg-white shadow-sm"
+            ? "border-[#1E3A5F] bg-gradient-to-r from-[#071426] via-[#0D2341] to-[#0A182B] shadow-2xl shadow-blue-950/60"
+            : "border-blue-200 bg-gradient-to-r from-white via-blue-50 to-white shadow-md shadow-blue-100/80"
         }`}
         style={{ marginTop: 0, height: "120px", minHeight: "120px", maxHeight: "120px" }}
       >
-        <div className="absolute -top-24 -left-24 w-72 h-72 bg-blue-500/10 dark:bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-cyan-500/10 dark:bg-cyan-600/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-16 -left-16 w-80 h-80 bg-blue-500/30 dark:bg-blue-600/35 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-16 -right-16 w-80 h-80 bg-cyan-500/20 dark:bg-cyan-500/25 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 left-1/3 w-64 h-64 bg-indigo-500/15 dark:bg-indigo-500/20 rounded-full blur-2xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-5 w-full h-full">
           {/* Kiri: Icon Box + Teks */}
@@ -723,31 +724,17 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
 
 
 
-          {/* Kanan: Tombol Uji Usability SUS & Telemetri */}
+          {/* Kanan: Badge Jumlah Perangkat */}
           <div className="hidden sm:flex shrink-0 items-center gap-2.5">
-            <button
-              type="button"
-              onClick={() => setSusModalOpen(true)}
-              className={`px-3 py-2 rounded-xl text-xs font-semibold border flex items-center gap-1.5 transition-all shadow-sm ${
-                isDark
-                  ? "bg-[#071426] border-[#38BDF8]/40 text-[#38BDF8] hover:bg-[#122846]"
-                  : "bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
-              }`}
-              title="Evaluasi Kelayakan AR Berdasarkan Standar SUS (Matriks Rekognisi)"
-            >
-              <span className="material-symbols-outlined text-[16px]">rate_review</span>
-              <span className="hidden lg:inline">Uji Usability AR</span>
-              <span className="px-1.5 py-0.2 rounded-md bg-[#1677FF] text-white text-[10px] font-bold">
-                SUS {susScore}
-              </span>
-            </button>
-
             <div
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border ${
-                isDark ? "bg-[#0D1F36] border-[#1E3A5F] text-[#38BDF8]" : "bg-slate-100 border-slate-200 text-slate-800"
+              className={`px-4 py-2 rounded-xl text-xs font-semibold border flex items-center gap-2 ${
+                isDark
+                  ? "bg-[#0D1F36] border-[#1E3A5F] text-[#38BDF8]"
+                  : "bg-blue-50 border-blue-200 text-blue-700"
               }`}
             >
-              {devicesList.length} Perangkat
+              <span className="material-symbols-outlined text-[16px]">devices</span>
+              <span>{devicesList.length} Perangkat</span>
             </div>
           </div>
         </div>
