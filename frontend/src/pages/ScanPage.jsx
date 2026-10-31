@@ -52,6 +52,21 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
   const scannerRef = useRef(null);
   const fileInputRef = useRef(null);
   const viewport3DRef = useRef(null);
+
+  // Custom Dropdown State & Ref (Sesuai Desain Gambar 1)
+  const [deviceDropdownOpen, setDeviceDropdownOpen] = useState(false);
+  const deviceDropdownRef = useRef(null);
+
+  // Click outside listener untuk menutup custom dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (deviceDropdownRef.current && !deviceDropdownRef.current.contains(event.target)) {
+        setDeviceDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
   const isDragging3D = useRef(false);
   const dragStart = useRef({ x: 0, y: 0 });
 
@@ -623,7 +638,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
   };
 
   return (
-    <div className="flex flex-col space-y-6 w-full animate-fadeIn min-h-[calc(100vh-112px)] pb-2">
+    <div className="flex flex-col space-y-6 w-full animate-fadeIn min-h-[calc(100vh-112px)] pb-12">
       {/* Toast Notification */}
       {toast && (
         <div
@@ -871,47 +886,142 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
 
           </div>
 
-          {/* Fallback Dropdown: Pilih Perangkat Manual (Mentok di Dasar Card) */}
+          {/* Custom Filter Dropdown: Pilih Rak Perangkat Langsung (Sesuai Desain Gambar 1) */}
           <div className="mt-auto pt-4 border-t border-[#1A2E4C]/50">
             <label className={`block text-xs font-semibold mb-2 ${isDark ? "text-[#CBD5E1]" : "text-slate-700"}`}>
               Atau Pilih Rak Perangkat Langsung:
             </label>
             <div className="flex gap-2">
-              <select
-                value={currentDeviceId || ""}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val) loadDeviceContext(parseInt(val, 10));
-                }}
-                className={`flex-1 h-10 px-3 rounded-xl text-xs focus:outline-none transition-all ${
-                  isDark
-                    ? "bg-[#071426] border border-[#1E3A5F] text-white focus:border-[#1677FF]"
-                    : "bg-slate-50 border border-slate-300 text-slate-900 focus:border-[#1677FF]"
-                }`}
-              >
-                <option value="" disabled>
-                  -- Pilih Rak / Perangkat Telkom --
-                </option>
-                {devicesList.map((d) => (
-                  <option key={d.device_id} value={d.device_id}>
-                    {d.nama_perangkat} ({d.tipe} &bull; {d.lokasi})
-                  </option>
-                ))}
-              </select>
+              {/* Custom Dropdown Trigger & Panel */}
+              <div className="relative flex-1" ref={deviceDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setDeviceDropdownOpen(!deviceDropdownOpen)}
+                  className={`relative w-full h-11 px-4 rounded-xl border flex items-center justify-between gap-3 text-xs font-medium transition-all duration-200 cursor-pointer ${
+                    deviceDropdownOpen
+                      ? isDark
+                        ? "bg-[#0A182B] border-[#1677FF] ring-2 ring-[#1677FF]/25 text-[#E6EDF7]"
+                        : "bg-white border-[#1677FF] ring-2 ring-[#1677FF]/20 text-slate-900"
+                      : isDark
+                        ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
+                        : "bg-slate-50 border-slate-300 text-slate-800 hover:border-blue-500"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 truncate pr-2">
+                    <span className="material-symbols-outlined text-[18px] text-[#38BDF8] shrink-0">
+                      desktop_windows
+                    </span>
+                    <span className="truncate font-semibold">
+                      {currentDevice ? currentDevice.nama_perangkat : "Semua Perangkat"}
+                    </span>
+                  </div>
+                  <span
+                    className={`material-symbols-outlined text-[18px] text-[#94A3B8] transition-transform duration-200 shrink-0 ${
+                      deviceDropdownOpen ? "rotate-180" : ""
+                    }`}
+                  >
+                    expand_more
+                  </span>
+                </button>
+
+                {/* Custom Filter Dropdown Menu (Konsisten dengan Gambar 1) */}
+                {deviceDropdownOpen && (
+                  <div
+                    className={`absolute left-0 top-12 mt-1.5 w-full min-w-full rounded-xl border shadow-2xl p-1.5 z-50 max-h-64 overflow-y-auto custom-scrollbar backdrop-blur-md animate-dropdown ${
+                      isDark
+                        ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7]"
+                        : "bg-white border-slate-200 text-slate-800 shadow-xl"
+                    }`}
+                    style={{
+                      backgroundColor: isDark ? "#0A182B" : "#FFFFFF",
+                      borderColor: isDark ? "#1E3A5F" : "#E2E8F0",
+                    }}
+                  >
+                    {/* Option: Semua Perangkat (Default / Reset Pilihan) */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleScanAnotherDevice();
+                        setDeviceDropdownOpen(false);
+                      }}
+                      className={`w-full px-3 py-2.5 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
+                        !currentDeviceId
+                          ? isDark
+                            ? "bg-[#1677FF] text-white font-semibold"
+                            : "bg-blue-600 text-white font-semibold"
+                          : isDark
+                            ? "hover:bg-[#122846] text-[#CBD5E1]"
+                            : "hover:bg-slate-100 text-slate-700"
+                      }`}
+                    >
+                      <span>Semua Perangkat</span>
+                      {!currentDeviceId && (
+                        <span className="material-symbols-outlined text-[16px] shrink-0">check</span>
+                      )}
+                    </button>
+
+                    <div className={`h-px my-1 ${isDark ? "bg-[#1A3358]" : "bg-slate-100"}`} />
+
+                    {/* Device Options from DB */}
+                    {devicesList.map((dev) => {
+                      const isSelected = currentDeviceId === dev.device_id;
+                      return (
+                        <button
+                          key={dev.device_id}
+                          type="button"
+                          onClick={() => {
+                            loadDeviceContext(dev.device_id);
+                            setDeviceDropdownOpen(false);
+                          }}
+                          className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
+                            isSelected
+                              ? isDark
+                                ? "bg-[#1677FF] text-white font-semibold"
+                                : "bg-blue-600 text-white font-semibold"
+                              : isDark
+                                ? "hover:bg-[#122846] text-[#CBD5E1]"
+                                : "hover:bg-slate-100 text-slate-700"
+                          }`}
+                        >
+                          <div className="flex flex-col truncate pr-2">
+                            <span className="font-semibold">{dev.nama_perangkat}</span>
+                            <span
+                              className={`text-[10px] ${
+                                isSelected
+                                  ? "text-blue-100"
+                                  : isDark
+                                    ? "text-[#64748B]"
+                                    : "text-slate-400"
+                              }`}
+                            >
+                              {dev.lokasi}
+                            </span>
+                          </div>
+                          {isSelected && (
+                            <span className="material-symbols-outlined text-[16px] shrink-0">
+                              check
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
 
               {currentDeviceId && (
                 <button
                   type="button"
                   onClick={handleScanAnotherDevice}
                   title="Reset & Pindai Ulang"
-                  className={`px-3 py-2 rounded-xl text-xs font-semibold border flex items-center gap-1.5 transition-all ${
+                  className={`h-11 px-3.5 rounded-xl border flex items-center gap-1.5 text-xs font-semibold transition-all shrink-0 cursor-pointer ${
                     isDark
-                      ? "bg-[#071426] border-[#1E3A5F] text-[#38BDF8] hover:bg-[#122846]"
+                      ? "bg-[#0A182B] border-[#1E3A5F] text-[#38BDF8] hover:bg-[#122846] hover:border-[#1677FF]"
                       : "bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200"
                   }`}
                 >
                   <span className="material-symbols-outlined text-[16px]">restart_alt</span>
-                  <span>Scan Ulang</span>
+                  <span className="hidden sm:inline">Scan Ulang</span>
                 </button>
               )}
             </div>
