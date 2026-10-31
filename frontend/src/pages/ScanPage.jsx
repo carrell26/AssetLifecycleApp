@@ -721,34 +721,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
             </div>
           </div>
 
-          {/* Tengah: Ilustrasi Icon AR Animasi */}
-          <div className="hidden md:flex items-center justify-center flex-1 px-2 select-none pointer-events-none h-full overflow-hidden">
-            <div
-              className="relative flex items-center justify-center h-[108px] lg:h-[114px] w-auto"
-              style={{ filter: isDark ? "drop-shadow(0 0 28px rgba(0,229,255,0.45))" : "drop-shadow(0 8px 20px rgba(22,119,255,0.2))" }}
-            >
-              <div
-                className={`absolute w-[90px] h-[90px] rounded-full border-2 ${
-                  isDark ? "border-[#00E5FF]/20" : "border-blue-200/60"
-                } animate-spin`}
-                style={{ animationDuration: "12s" }}
-              />
-              <div
-                className={`absolute w-[68px] h-[68px] rounded-full border ${
-                  isDark ? "border-[#1677FF]/40" : "border-blue-300/50"
-                } animate-spin`}
-                style={{ animationDuration: "8s", animationDirection: "reverse" }}
-              />
-              <span
-                className={`material-symbols-outlined ${
-                  isDark ? "text-[#38BDF8]" : "text-blue-500"
-                }`}
-                style={{ fontSize: "52px" }}
-              >
-                view_in_ar
-              </span>
-            </div>
-          </div>
+
 
           {/* Kanan: Tombol Uji Usability SUS & Telemetri */}
           <div className="hidden sm:flex shrink-0 items-center gap-2.5">
