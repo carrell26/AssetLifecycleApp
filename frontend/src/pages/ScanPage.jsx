@@ -623,7 +623,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
   };
 
   return (
-    <div className="space-y-6 w-full animate-fadeIn pb-12">
+    <div className="flex flex-col space-y-6 w-full animate-fadeIn min-h-[calc(100vh-112px)] pb-2">
       {/* Toast Notification */}
       {toast && (
         <div
@@ -652,7 +652,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
       {/* HERO BANNER BERGAYA CYBER AR & TELKOM INFRASTRUCTURE     */}
       {/* ======================================================== */}
       <div
-        className={`relative overflow-hidden rounded-2xl border px-5 sm:px-6 h-[120px] min-h-[120px] max-h-[120px] flex items-center justify-between transition-all duration-300 shadow-sm !mt-0 ${
+        className={`relative overflow-hidden rounded-2xl border px-5 sm:px-6 h-[120px] min-h-[120px] max-h-[120px] flex items-center justify-between transition-all duration-300 shadow-sm !mt-0 shrink-0 ${
           isDark
             ? "border-[#1E3A5F] bg-[#0A182B] shadow-2xl"
             : "border-slate-200 bg-white shadow-sm"
@@ -768,16 +768,18 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
       {/* ======================================================== */}
       {/* GRID UTAMA: VIEWFINDER SCANNER (KIRI) & DIGITAL TWIN     */}
       {/* ======================================================== */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch min-h-[540px]">
         {/* ============================================== */}
         {/* KOLOM KIRI: KAMERA AR VIEWFINDER HUD (5 COL)   */}
         {/* ============================================== */}
         <div
-          className={`lg:col-span-5 rounded-2xl border p-5 shadow-lg transition-all duration-300 ${
+          className={`lg:col-span-5 rounded-2xl border p-5 shadow-lg transition-all duration-300 flex flex-col justify-between h-full ${
             isDark ? "bg-[#0D1F36] border-[#1E3A5F]" : "bg-white border-slate-200"
           }`}
         >
-          {/* Header Kontrol Scanner */}
+          {/* Wrapper Konten Atas Viewfinder */}
+          <div className="flex flex-col">
+            {/* Header Kontrol Scanner */}
           <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#1A2E4C]/60">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-[20px] text-[#38BDF8]">qr_code_scanner</span>
@@ -867,8 +869,10 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
             )}
           </div>
 
-          {/* Fallback Dropdown: Pilih Perangkat Manual */}
-          <div className="mt-5 pt-4 border-t border-[#1A2E4C]/50">
+          </div>
+
+          {/* Fallback Dropdown: Pilih Perangkat Manual (Mentok di Dasar Card) */}
+          <div className="mt-auto pt-4 border-t border-[#1A2E4C]/50">
             <label className={`block text-xs font-semibold mb-2 ${isDark ? "text-[#CBD5E1]" : "text-slate-700"}`}>
               Atau Pilih Rak Perangkat Langsung:
             </label>
@@ -918,19 +922,19 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
         {/* KOLOM KANAN: DIGITAL TWIN RAK & PETA SLOT AR (7 COL)     */}
         {/* ======================================================== */}
         <div
-          className={`lg:col-span-7 rounded-2xl border p-6 shadow-lg transition-all duration-300 ${
+          className={`lg:col-span-7 rounded-2xl border p-6 shadow-lg transition-all duration-300 flex flex-col h-full ${
             isDark ? "bg-[#0D1F36] border-[#1E3A5F]" : "bg-white border-slate-200"
           }`}
         >
           {loadingDevice ? (
-            <div className="py-24 text-center">
+            <div className="flex-1 flex flex-col items-center justify-center py-20 text-center my-auto">
               <span className="material-symbols-outlined text-[40px] text-[#38BDF8] animate-spin">progress_activity</span>
               <p className={`text-sm mt-3 font-semibold ${isDark ? "text-[#E6EDF7]" : "text-slate-800"}`}>
                 Memuat spesifikasi rak & peta slot chassis...
               </p>
             </div>
           ) : currentDevice ? (
-            <div className="space-y-5">
+            <div className="flex-1 flex flex-col justify-between space-y-5">
               {/* Metadata Perangkat Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#1A2E4C]/60 gap-3">
                 <div>
@@ -1234,7 +1238,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                     onMouseMove={handle3DMouseMove}
                     onMouseUp={handle3DMouseUp}
                     onMouseLeave={handle3DMouseUp}
-                    className="relative w-full h-[360px] rounded-2xl overflow-hidden border border-[#1E3A5F] bg-gradient-to-b from-[#050D1A] via-[#071426] to-[#0A182B] flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
+                    className="relative w-full flex-1 min-h-[360px] rounded-2xl overflow-hidden border border-[#1E3A5F] bg-gradient-to-b from-[#050D1A] via-[#071426] to-[#0A182B] flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
                     style={{ perspective: "1000px" }}
                   >
                     {/* Grid Background Ambient Wireframe */}
@@ -1364,7 +1368,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
 
                   {/* Grid Kontainer Slot 2D */}
                   <div
-                    className={`p-3 rounded-xl border max-h-[340px] overflow-y-auto custom-scrollbar grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 ${
+                    className={`p-3 rounded-xl border flex-1 min-h-[280px] max-h-[460px] overflow-y-auto custom-scrollbar grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 ${
                       isDark ? "bg-[#071426] border-[#1A2E4C]" : "bg-slate-100 border-slate-200"
                     }`}
                   >
@@ -1489,16 +1493,19 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
               )}
             </div>
           ) : (
-            <div className="py-20 text-center flex flex-col items-center justify-center space-y-3">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-[#071426] border border-[#1E3A5F] text-[#38BDF8] shadow-lg">
-                <span className="material-symbols-outlined text-[32px]">view_in_ar</span>
+            <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4 my-auto py-12">
+              <div className="w-20 h-20 rounded-2xl flex items-center justify-center bg-[#071426] border border-[#1E3A5F] text-[#38BDF8] shadow-xl relative group">
+                <div className="absolute inset-0 rounded-2xl bg-cyan-500/10 blur-xl pointer-events-none" />
+                <span className="material-symbols-outlined text-[40px] text-[#00E5FF]">view_in_ar</span>
               </div>
-              <h3 className={`text-base font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
-                Menunggu Pemindaian QR Perangkat / Lokasi
-              </h3>
-              <p className={`text-xs max-w-sm leading-relaxed ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
-                Pindai QR Code Ruang STO untuk memunculkan daftar perangkat, atau pilih nama perangkat secara langsung dari kolom sebelah kiri.
-              </p>
+              <div className="space-y-2 max-w-md">
+                <h3 className={`text-base sm:text-lg font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
+                  Menunggu Pemindaian QR Perangkat / Lokasi
+                </h3>
+                <p className={`text-xs sm:text-sm leading-relaxed ${isDark ? "text-[#94A3B8]" : "text-slate-400"}`}>
+                  Pindai QR Code Ruang STO untuk memunculkan daftar perangkat, atau pilih nama perangkat secara langsung dari kolom sebelah kiri.
+                </p>
+              </div>
             </div>
           )}
         </div>
