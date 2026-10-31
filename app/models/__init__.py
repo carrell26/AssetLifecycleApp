@@ -17,6 +17,16 @@ from .request_approval import RequestApproval
 from .module_movement import ModuleMovement
 from .audit_log import AuditLog
 from .data_import import DataImport
+from ..modules.warehouse.models import (
+    DimDate,
+    DimDevice,
+    DimModule,
+    DimLocation,
+    DimUser,
+    FactModuleMovement,
+    FactRequestFulfillment,
+    DwhEtlLog
+)
 
 __all__ = [
     "User",
@@ -32,4 +42,12 @@ __all__ = [
     "ModuleMovement",
     "AuditLog",
     "DataImport",
+    "DimDate",
+    "DimDevice",
+    "DimModule",
+    "DimLocation",
+    "DimUser",
+    "FactModuleMovement",
+    "FactRequestFulfillment",
+    "DwhEtlLog",
 ]
