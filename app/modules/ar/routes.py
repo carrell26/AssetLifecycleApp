@@ -449,16 +449,6 @@ def api_lookup_qr():
                 "nama_lokasi": loc.nama_lokasi
             })
 
-    # Cek kecocokan nama lokasi secara langsung
-    loc = Location.query.filter(Location.nama_lokasi.ilike(q)).first()
-    if loc and len(loc.devices) > 0:
-        return jsonify({
-            "found": True,
-            "type": "location",
-            "location_id": loc.location_id,
-            "nama_lokasi": loc.nama_lokasi
-        })
-
     # 2. Cek parameter device_id di URL
     dev_match = re.search(r'(?:device_id=|device/)(\d+)', q, re.IGNORECASE)
     if dev_match:
@@ -472,8 +462,56 @@ def api_lookup_qr():
                 "nama_perangkat": dev.nama_perangkat
             })
 
-    # 3. Cek Module Serial Number
+    # 3. Jika input berupa angka murni: cek Device ID terlebih dahulu, lalu Location ID
+    if q.isdigit():
+        num_id = int(q)
+        dev = Device.query.get(num_id)
+        if dev:
+            return jsonify({
+                "found": True,
+                "type": "device",
+                "device_id": dev.device_id,
+                "nama_perangkat": dev.nama_perangkat
+            })
+        loc = Location.query.get(num_id)
+        if loc and len(loc.devices) > 0:
+            return jsonify({
+                "found": True,
+                "type": "location",
+                "location_id": loc.location_id,
+                "nama_lokasi": loc.nama_lokasi
+            })
+
+    # 4. Cek Nama Perangkat atau Hostname (Exact atau Partial)
+    dev = Device.query.filter(Device.nama_perangkat.ilike(q)).first()
+    if not dev:
+        dev = Device.query.filter(Device.hostname.ilike(q)).first()
+    if not dev:
+        dev = Device.query.filter(Device.nama_perangkat.ilike(f"%{q}%")).first()
+    if dev:
+        return jsonify({
+            "found": True,
+            "type": "device",
+            "device_id": dev.device_id,
+            "nama_perangkat": dev.nama_perangkat
+        })
+
+    # 5. Cek Nama Lokasi (Exact atau Partial yang memiliki perangkat)
+    loc = Location.query.filter(Location.nama_lokasi.ilike(q)).first()
+    if not loc:
+        loc = Location.query.filter(Location.nama_lokasi.ilike(f"%{q}%")).first()
+    if loc and len(loc.devices) > 0:
+        return jsonify({
+            "found": True,
+            "type": "location",
+            "location_id": loc.location_id,
+            "nama_lokasi": loc.nama_lokasi
+        })
+
+    # 6. Cek Serial Number Modul (Exact atau Partial)
     module = Module.query.filter(Module.serial_number.ilike(q)).first()
+    if not module:
+        module = Module.query.filter(Module.serial_number.ilike(f"%{q}%")).first()
     if module:
         return jsonify({
             "found": True,
@@ -481,4 +519,8 @@ def api_lookup_qr():
             "serial_number": module.serial_number
         })
 
-    return jsonify({"found": False, "message": "Format QR tidak dikenali sebagai lokasi atau perangkat Telkom."})
+    return jsonify({
+        "found": False,
+        "raw_text": q,
+        "message": f"QR Terbaca: '{q}'. Format tidak dikenali sebagai perangkat Telkom."
+    })
