@@ -851,9 +851,9 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
             <label className={`block text-xs font-semibold mb-2 ${isDark ? "text-[#CBD5E1]" : "text-slate-700"}`}>
               Atau Pilih Rak Perangkat Langsung:
             </label>
-            <div className="flex gap-2">
+            <div className="flex gap-2 min-w-0 overflow-hidden">
               {/* Custom Dropdown Trigger & Panel */}
-              <div className="relative flex-1" ref={deviceDropdownRef}>
+              <div className="relative flex-1 min-w-0" ref={deviceDropdownRef}>
                 <button
                   type="button"
                   onClick={() => setDeviceDropdownOpen(!deviceDropdownOpen)}
@@ -1258,9 +1258,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                       <span className={`font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
                         3D Digital Twin Sub-Rack
                       </span>
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-[#38BDF8] font-mono">
-                        Sub-CPMK 2 & 3
-                      </span>
+
                     </div>
 
                     <div className="flex items-center gap-2">
