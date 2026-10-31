@@ -887,7 +887,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                 {/* Custom Filter Dropdown Menu (Konsisten dengan Gambar 1) */}
                 {deviceDropdownOpen && (
                   <div
-                    className={`absolute left-0 bottom-full mb-1.5 w-full min-w-full rounded-xl border shadow-2xl p-1.5 z-50 max-h-64 overflow-y-auto custom-scrollbar backdrop-blur-md animate-dropdown ${
+                    className={`absolute left-0 top-12 mt-1.5 w-full min-w-full rounded-xl border shadow-2xl p-1.5 z-50 max-h-64 overflow-y-auto custom-scrollbar backdrop-blur-md animate-dropdown ${
                       isDark
                         ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7]"
                         : "bg-white border-slate-200 text-slate-800 shadow-xl"
