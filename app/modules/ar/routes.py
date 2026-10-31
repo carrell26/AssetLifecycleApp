@@ -17,7 +17,7 @@ import qrcode
 from flask import Blueprint, render_template, url_for, send_file, request, jsonify, current_app
 from flask_login import login_required, current_user
 
-from ...models import Device, SlotDefinition, ModulePosition, Module
+from ...models import Device, SlotDefinition, ModulePosition, Module, Location
 from ...utils.decorators import role_required
 
 ar_bp = Blueprint("ar", __name__, url_prefix="/ar", template_folder="../../templates/ar")
@@ -361,3 +361,124 @@ def api_search():
             "found": False,
             "message": f"Mode pencarian '{search_type}' tidak valid. Gunakan 'sn' atau 'slot'."
         }), 400
+
+
+@ar_bp.route("/api/locations")
+@login_required
+@role_required("admin", "karyawan_tif", "teknisi")
+def api_locations():
+    locations = Location.query.order_by(Location.nama_lokasi).all()
+    results = []
+    for loc in locations:
+        dev_count = len(loc.devices)
+        if dev_count > 0:
+            results.append({
+                "location_id": loc.location_id,
+                "nama_lokasi": loc.nama_lokasi,
+                "district": loc.district or "-",
+                "alamat": loc.alamat or "-",
+                "total_devices": dev_count
+            })
+    return jsonify({"locations": results})
+
+
+@ar_bp.route("/api/location/<int:location_id>/devices")
+@login_required
+@role_required("admin", "karyawan_tif", "teknisi")
+def api_location_devices(location_id):
+    loc = Location.query.get_or_404(location_id)
+    devices_data = []
+    for d in loc.devices:
+        total_slots = SlotDefinition.query.filter_by(device_type_id=d.device_type_id).count()
+        occupied_slots = ModulePosition.query.filter_by(device_id=d.device_id, status="aktif").count()
+        empty_slots = max(0, total_slots - occupied_slots)
+        devices_data.append({
+            "device_id": d.device_id,
+            "nama_perangkat": d.nama_perangkat,
+            "hostname": d.hostname or "-",
+            "serial_number": d.serial_number or "-",
+            "tipe": d.device_type.nama_tipe if d.device_type else "-",
+            "total_slot": total_slots,
+            "occupied_slots": occupied_slots,
+            "empty_slots": empty_slots
+        })
+    return jsonify({
+        "location": {
+            "location_id": loc.location_id,
+            "nama_lokasi": loc.nama_lokasi,
+            "district": loc.district or "-",
+            "alamat": loc.alamat or "-",
+            "total_devices": len(devices_data)
+        },
+        "devices": devices_data
+    })
+
+
+@ar_bp.route("/location/<int:location_id>/qr.png")
+@login_required
+@role_required("admin", "karyawan_tif", "teknisi")
+def location_qr(location_id):
+    loc = Location.query.get_or_404(location_id)
+    target_url = url_for("ar.scan", location_id=location_id, _external=True)
+    img = qrcode.make(target_url)
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+    buffer.seek(0)
+    return send_file(buffer, mimetype="image/png")
+
+
+@ar_bp.route("/api/lookup-qr")
+@login_required
+@role_required("admin", "karyawan_tif", "teknisi")
+def api_lookup_qr():
+    import re
+    q = (request.args.get("q") or "").strip()
+    if not q:
+        return jsonify({"found": False, "message": "Query tidak boleh kosong"}), 400
+
+    # 1. Cek parameter location_id di query string atau teks URL
+    loc_match = re.search(r'(?:location_id=|loc-|lokasi[-_]?id=)(\d+)', q, re.IGNORECASE)
+    if loc_match:
+        loc_id = int(loc_match.group(1))
+        loc = Location.query.get(loc_id)
+        if loc:
+            return jsonify({
+                "found": True,
+                "type": "location",
+                "location_id": loc.location_id,
+                "nama_lokasi": loc.nama_lokasi
+            })
+
+    # Cek kecocokan nama lokasi secara langsung
+    loc = Location.query.filter(Location.nama_lokasi.ilike(q)).first()
+    if loc and len(loc.devices) > 0:
+        return jsonify({
+            "found": True,
+            "type": "location",
+            "location_id": loc.location_id,
+            "nama_lokasi": loc.nama_lokasi
+        })
+
+    # 2. Cek parameter device_id di URL
+    dev_match = re.search(r'(?:device_id=|device/)(\d+)', q, re.IGNORECASE)
+    if dev_match:
+        dev_id = int(dev_match.group(1))
+        dev = Device.query.get(dev_id)
+        if dev:
+            return jsonify({
+                "found": True,
+                "type": "device",
+                "device_id": dev.device_id,
+                "nama_perangkat": dev.nama_perangkat
+            })
+
+    # 3. Cek Module Serial Number
+    module = Module.query.filter(Module.serial_number.ilike(q)).first()
+    if module:
+        return jsonify({
+            "found": True,
+            "type": "module",
+            "serial_number": module.serial_number
+        })
+
+    return jsonify({"found": False, "message": "Format QR tidak dikenali sebagai lokasi atau perangkat Telkom."})
