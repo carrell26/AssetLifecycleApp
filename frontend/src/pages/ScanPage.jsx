@@ -803,7 +803,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
           </div>
 
           {/* Viewport Kamera Video dengan Cyberpunk Reticle Overlay */}
-          <div className="relative w-full aspect-square max-h-[360px] rounded-xl overflow-hidden bg-black border-2 border-[#1E3A5F] flex items-center justify-center shadow-inner">
+          <div className="relative w-full rounded-xl overflow-hidden bg-black border-2 border-[#1E3A5F] flex items-center justify-center shadow-inner" style={{ aspectRatio: "1 / 1", maxHeight: "min(360px, 55vw)" }}>
             <div id="ar-qr-reader" className="w-full h-full object-cover"></div>
 
             {/* Overlay AR Reticle */}
