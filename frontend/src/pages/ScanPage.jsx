@@ -867,76 +867,8 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
             )}
           </div>
 
-          {/* FITUR 1: SIMULASI SCAN LOKASI (POP-UP PEMILIHAN PERANGKAT) */}
-          <div className="mt-5 pt-4 border-t border-[#1A2E4C]/50">
-            <div className="flex items-center justify-between mb-2">
-              <label className={`block text-xs font-semibold ${isDark ? "text-[#CBD5E1]" : "text-slate-700"}`}>
-                📍 Simulasi Pindai QR Lokasi Ruang STO:
-              </label>
-              <span className="text-[10px] text-[#38BDF8] font-mono">Hierarki Spasial</span>
-            </div>
-            {/* Tombol Unduh Sampel QR JPEG untuk Pengujian */}
-            <div className="mb-3 p-2.5 rounded-xl border border-dashed border-[#1E3A5F] bg-[#071426]/40 text-[11px]">
-              <span className="font-semibold text-slate-300 block mb-1.5">
-                📥 Sampel QR Code (.JPG) untuk Dicoba:
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                <a
-                  href="/static/sample_qr_location_palu1.jpg"
-                  target="_blank"
-                  download="sample_qr_location_palu1.jpg"
-                  className="px-2 py-1 rounded bg-[#1677FF]/20 hover:bg-[#1677FF]/40 text-[#38BDF8] border border-[#1677FF]/40 flex items-center gap-1 transition-all"
-                >
-                  <span className="material-symbols-outlined text-[13px]">download</span>
-                  <span>QR Lokasi STO</span>
-                </a>
-                <a
-                  href="/static/sample_qr_device_16.jpg"
-                  target="_blank"
-                  download="sample_qr_device_16.jpg"
-                  className="px-2 py-1 rounded bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-300 border border-emerald-500/40 flex items-center gap-1 transition-all"
-                >
-                  <span className="material-symbols-outlined text-[13px]">download</span>
-                  <span>QR Rak Perangkat</span>
-                </a>
-                <a
-                  href="/static/sample_qr_modul_sn.jpg"
-                  target="_blank"
-                  download="sample_qr_modul_sn.jpg"
-                  className="px-2 py-1 rounded bg-purple-500/20 hover:bg-purple-500/40 text-purple-300 border border-purple-500/40 flex items-center gap-1 transition-all"
-                >
-                  <span className="material-symbols-outlined text-[13px]">download</span>
-                  <span>QR Modul (SN)</span>
-                </a>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              {locationsList.map((loc) => (
-                <button
-                  key={loc.location_id}
-                  type="button"
-                  onClick={() => openLocationDevicesModal(loc.location_id)}
-                  className={`p-2.5 rounded-xl border text-left text-xs transition-all flex items-center gap-2 ${
-                    isDark
-                      ? "bg-[#071426] border-[#1E3A5F] hover:border-[#38BDF8] text-white hover:bg-[#122846]"
-                      : "bg-slate-50 border-slate-300 hover:border-blue-500 text-slate-800 hover:bg-blue-50"
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-[18px] text-rose-400 shrink-0">
-                    location_on
-                  </span>
-                  <div className="overflow-hidden">
-                    <div className="font-bold truncate text-[11px]">{loc.nama_lokasi}</div>
-                    <div className="text-[10px] text-[#94A3B8]">{loc.total_devices} Perangkat</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Fallback Dropdown: Pilih Perangkat Manual */}
-          <div className="mt-4 pt-3 border-t border-[#1A2E4C]/40">
+          <div className="mt-5 pt-4 border-t border-[#1A2E4C]/50">
             <label className={`block text-xs font-semibold mb-2 ${isDark ? "text-[#CBD5E1]" : "text-slate-700"}`}>
               Atau Pilih Rak Perangkat Langsung:
             </label>
