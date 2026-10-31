@@ -316,24 +316,126 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
     }
   };
 
-  // Unggah foto QR dari file/galeri (Static Method scanFileV2)
+  // Decoder gambar multi-tier: mendukung penuh JPEG, JPG, PNG, WEBP, dan foto kamera resolusi tinggi
+  const decodeQrFromImageFile = async (file) => {
+    // ── TIER 1: Native BarcodeDetector (Tersedia di Chrome, Edge, Chromium Android) ──
+    // Hardware accelerated, native JPEG/JPG engine, tanpa ketergantungan DOM
+    if (typeof window !== "undefined" && "BarcodeDetector" in window) {
+      try {
+        const barcodeDetector = new window.BarcodeDetector({ formats: ["qr_code"] });
+        const bitmap = await createImageBitmap(file);
+        const detected = await barcodeDetector.detect(bitmap);
+        if (detected && detected.length > 0 && detected[0].rawValue) {
+          return detected[0].rawValue;
+        }
+      } catch (nativeErr) {
+        console.warn("Native BarcodeDetector coba fallback:", nativeErr);
+      }
+    }
+
+    // ── TIER 2: Dedicated Html5Qrcode Instance (Isolated DOM Element) ──
+    const fileReaderElementId = "ar-qr-file-dedicated-reader";
+    let fileHelperEl = document.getElementById(fileReaderElementId);
+    if (!fileHelperEl) {
+      fileHelperEl = document.createElement("div");
+      fileHelperEl.id = fileReaderElementId;
+      fileHelperEl.style.position = "absolute";
+      fileHelperEl.style.width = "200px";
+      fileHelperEl.style.height = "200px";
+      fileHelperEl.style.top = "-9999px";
+      fileHelperEl.style.left = "-9999px";
+      fileHelperEl.style.opacity = "0";
+      fileHelperEl.style.pointerEvents = "none";
+      document.body.appendChild(fileHelperEl);
+    }
+
+    const fileScanner = new Html5Qrcode(fileReaderElementId);
+
+    // Coba scan file asli terlebih dahulu
+    try {
+      const decodedText = await fileScanner.scanFile(file, false);
+      try { await fileScanner.clear(); } catch (e) {}
+      if (decodedText) return decodedText;
+    } catch (directErr) {
+      console.warn("Direct scan coba normalisasi canvas JPEG:", directErr);
+    }
+
+    // ── TIER 3: Canvas Downscaling & Contrast Normalization untuk Foto Smartphone (Resolusi Tinggi) ──
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const objUrl = URL.createObjectURL(file);
+
+      img.onload = async () => {
+        try {
+          URL.revokeObjectURL(objUrl);
+          const maxDim = 1200;
+          let w = img.width;
+          let h = img.height;
+
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
+
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, w, h);
+
+          canvas.toBlob(async (blob) => {
+            if (!blob) {
+              try { await fileScanner.clear(); } catch (e) {}
+              reject(new Error("Gagal memproses canvas gambar."));
+              return;
+            }
+            try {
+              const optFile = new File([blob], "normalized.jpg", { type: "image/jpeg" });
+              const resText = await fileScanner.scanFile(optFile, false);
+              try { await fileScanner.clear(); } catch (e) {}
+              resolve(resText);
+            } catch (canvasScanErr) {
+              try { await fileScanner.clear(); } catch (e) {}
+              reject(new Error("QR code tidak terdeteksi pada gambar JPEG ini."));
+            }
+          }, "image/jpeg", 0.92);
+        } catch (procErr) {
+          try { await fileScanner.clear(); } catch (e) {}
+          reject(procErr);
+        }
+      };
+
+      img.onerror = () => {
+        URL.revokeObjectURL(objUrl);
+        try { fileScanner.clear(); } catch (e) {}
+        reject(new Error("Format file gambar tidak dapat dibuka atau file rusak."));
+      };
+
+      img.src = objUrl;
+    });
+  };
+
+  // Unggah foto QR dari file/galeri (Mendukung penuh format JPEG, JPG, PNG, WEBP)
   const handleFileUpload = async (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
 
     try {
-      setCameraStatus("Menganalisis file gambar QR...");
-      const result = await Html5Qrcode.scanFileV2(file, false);
-      await onQrCodeSuccess(result.decodedText);
-    } catch (err) {
-      const errMsg = err && err.message ? err.message : String(err);
-      if (errMsg.toLowerCase().includes("no qr code") || errMsg.toLowerCase().includes("not found")) {
-        showToast("QR Code tidak ditemukan di gambar ini. Pastikan gambar cukup jelas dan berisi QR code.", "error");
-        setCameraStatus("QR Code tidak terdeteksi di file gambar. Coba foto dengan pencahayaan lebih baik.");
+      setCameraStatus("Menganalisis file gambar QR (JPEG/PNG)...");
+      const decodedText = await decodeQrFromImageFile(file);
+      if (decodedText) {
+        await onQrCodeSuccess(decodedText);
       } else {
-        showToast("Tidak dapat membaca file gambar. Format file harus JPG/PNG dan tidak boleh rusak.", "error");
-        setCameraStatus("Gagal membaca file gambar QR.");
+        throw new Error("QR code tidak terdeteksi.");
       }
+    } catch (err) {
+      showToast("QR Code tidak terdeteksi di gambar ini. Pastikan gambar JPEG/PNG jelas dan pola QR terlihat.", "error");
+      setCameraStatus("Gagal membaca QR dari file gambar.");
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
@@ -684,7 +786,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/jpg,image/png,image/webp,image/*"
                 onChange={handleFileUpload}
                 className="hidden"
               />
