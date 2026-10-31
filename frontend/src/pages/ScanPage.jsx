@@ -141,16 +141,31 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
         await scannerRef.current.stop();
       }
 
-      await scannerRef.current.start(
-        { facingMode: cameraFacing },
-        {
-          fps: 15,
-          qrbox: { width: 260, height: 260 },
-          aspectRatio: 1.0,
-        },
-        onQrCodeSuccess,
-        (errorMessage) => {}
-      );
+      try {
+        await scannerRef.current.start(
+          { facingMode: cameraFacing },
+          {
+            fps: 15,
+            qrbox: { width: 260, height: 260 },
+            aspectRatio: 1.0,
+          },
+          onQrCodeSuccess,
+          (errorMessage) => {}
+        );
+      } catch (constraintErr) {
+        // Fallback otomatis jika kamera belakang (environment) tidak tersedia di laptop
+        console.warn("Kamera spesifik tidak tersedia, beralih ke webcam default:", constraintErr);
+        await scannerRef.current.start(
+          { facingMode: "user" },
+          {
+            fps: 15,
+            qrbox: { width: 260, height: 260 },
+            aspectRatio: 1.0,
+          },
+          onQrCodeSuccess,
+          (errorMessage) => {}
+        );
+      }
 
       setScannerActive(true);
       setCameraStatus("Arahkan kamera ke QR Code lokasi ruangan atau rak perangkat...");
@@ -843,6 +858,42 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
               </label>
               <span className="text-[10px] text-[#38BDF8] font-mono">Hierarki Spasial</span>
             </div>
+            {/* Tombol Unduh Sampel QR JPEG untuk Pengujian */}
+            <div className="mb-3 p-2.5 rounded-xl border border-dashed border-[#1E3A5F] bg-[#071426]/40 text-[11px]">
+              <span className="font-semibold text-slate-300 block mb-1.5">
+                📥 Sampel QR Code (.JPG) untuk Dicoba:
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                <a
+                  href="/static/sample_qr_location_palu1.jpg"
+                  target="_blank"
+                  download="sample_qr_location_palu1.jpg"
+                  className="px-2 py-1 rounded bg-[#1677FF]/20 hover:bg-[#1677FF]/40 text-[#38BDF8] border border-[#1677FF]/40 flex items-center gap-1 transition-all"
+                >
+                  <span className="material-symbols-outlined text-[13px]">download</span>
+                  <span>QR Lokasi STO</span>
+                </a>
+                <a
+                  href="/static/sample_qr_device_16.jpg"
+                  target="_blank"
+                  download="sample_qr_device_16.jpg"
+                  className="px-2 py-1 rounded bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-300 border border-emerald-500/40 flex items-center gap-1 transition-all"
+                >
+                  <span className="material-symbols-outlined text-[13px]">download</span>
+                  <span>QR Rak Perangkat</span>
+                </a>
+                <a
+                  href="/static/sample_qr_modul_sn.jpg"
+                  target="_blank"
+                  download="sample_qr_modul_sn.jpg"
+                  className="px-2 py-1 rounded bg-purple-500/20 hover:bg-purple-500/40 text-purple-300 border border-purple-500/40 flex items-center gap-1 transition-all"
+                >
+                  <span className="material-symbols-outlined text-[13px]">download</span>
+                  <span>QR Modul (SN)</span>
+                </a>
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-2">
               {locationsList.map((loc) => (
                 <button
