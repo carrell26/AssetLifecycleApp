@@ -397,11 +397,28 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
             }
           }
 
+          // Tambahkan quiet zone (border putih) 28px agar finder pattern QR di sudut terbaca sempurna
+          const padding = 28;
           const canvas = document.createElement("canvas");
-          canvas.width = w;
-          canvas.height = h;
+          canvas.width = w + padding * 2;
+          canvas.height = h + padding * 2;
           const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0, w, h);
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, padding, padding, w, h);
+
+          // Coba deteksi langsung dari canvas dengan padding via BarcodeDetector
+          if (typeof window !== "undefined" && "BarcodeDetector" in window) {
+            try {
+              const detector = new window.BarcodeDetector({ formats: ["qr_code"] });
+              const codes = await detector.detect(canvas);
+              if (codes && codes.length > 0 && codes[0].rawValue) {
+                try { await fileScanner.clear(); } catch (e) {}
+                resolve(codes[0].rawValue);
+                return;
+              }
+            } catch (err) {}
+          }
 
           canvas.toBlob(async (blob) => {
             if (!blob) {
