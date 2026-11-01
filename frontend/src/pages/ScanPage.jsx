@@ -1516,55 +1516,33 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                     onTouchMove={handle3DTouchMove}
                     onTouchEnd={handle3DTouchEnd}
                     onTouchCancel={handle3DTouchEnd}
-                    className={`relative w-full min-h-[520px] rounded-2xl overflow-hidden border flex items-center justify-center cursor-grab active:cursor-grabbing select-none p-4 sm:p-8 transition-colors duration-300 ${
-                      isDark
-                        ? "border-[#1E3A5F] bg-gradient-to-b from-[#030712] via-[#071324] to-[#0A1A2F]"
-                        : "border-slate-300 bg-gradient-to-b from-[#F8FAFC] via-[#EEF2F6] to-[#E2E8F0] shadow-inner"
-                    }`}
+                    className="relative w-full min-h-[520px] rounded-2xl overflow-hidden border border-[#1E3A5F] bg-gradient-to-b from-[#030712] via-[#071324] to-[#0A1A2F] flex items-center justify-center cursor-grab active:cursor-grabbing select-none p-4 sm:p-8 shadow-2xl"
                     style={{ perspective: "1400px" }}
                   >
                     {/* Grid Background Ambient Wireframe */}
                     <div
-                      className={`absolute inset-0 pointer-events-none transition-opacity ${
-                        isDark ? "opacity-20" : "opacity-35"
-                      }`}
+                      className="absolute inset-0 pointer-events-none opacity-20"
                       style={{
-                        backgroundImage: isDark
-                          ? "radial-gradient(#00E5FF 1px, transparent 1px)"
-                          : "radial-gradient(#64748B 1.2px, transparent 1.2px)",
+                        backgroundImage: "radial-gradient(#00E5FF 1px, transparent 1px)",
                         backgroundSize: "28px 28px",
                       }}
                     />
 
                     {/* HUD Telemetry Overlay di Atas 3D */}
-                    <div className={`absolute top-3 left-3 right-3 flex items-center justify-between text-[10px] font-mono pointer-events-none z-30 transition-colors ${
-                      isDark ? "text-[#38BDF8]" : "text-sky-800"
-                    }`}>
-                      <div className={`flex items-center gap-2 px-2.5 py-1 rounded-md border backdrop-blur-sm shadow-sm ${
-                        isDark
-                          ? "bg-black/70 border-[#00E5FF]/20"
-                          : "bg-white/90 border-slate-300 text-slate-800"
-                      }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full animate-ping ${isDark ? "bg-[#00E5FF]" : "bg-sky-600"}`} />
+                    <div className="absolute top-3 left-3 right-3 flex items-center justify-between text-[10px] font-mono text-[#38BDF8] pointer-events-none z-30">
+                      <div className="flex items-center gap-2 bg-black/70 px-2.5 py-1 rounded-md border border-[#00E5FF]/20 backdrop-blur-sm">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-ping" />
                         <span className="font-bold">
                           {rotX === 0 && rotY === 0 ? "FRONTAL 3D CHASSIS (DEPTH: 350mm)" : "ISOMETRIC 3D CHASSIS (DEPTH: 350mm)"}
                         </span>
                       </div>
-                      <div className={`px-2.5 py-1 rounded-md border backdrop-blur-sm shadow-sm ${
-                        isDark
-                          ? "bg-black/70 border-[#00E5FF]/20 text-[#38BDF8]"
-                          : "bg-white/90 border-slate-300 text-slate-700"
-                      }`}>
+                      <div className="bg-black/70 px-2.5 py-1 rounded-md border border-[#00E5FF]/20 backdrop-blur-sm">
                         ROT: X {Math.round(rotX)}° | Y {Math.round(rotY)}° {imuActive && `| IMU: P${imuData.pitch} R${imuData.roll}`}
                       </div>
                     </div>
 
                     {/* Instruksi Drag di Bawah */}
-                    <div className={`absolute bottom-2.5 left-1/2 -translate-x-1/2 text-[10px] pointer-events-none z-30 px-3.5 py-1 rounded-full border backdrop-blur-sm shadow-sm transition-colors ${
-                      isDark
-                        ? "text-[#94A3B8] bg-black/60 border-slate-700/50"
-                        : "text-slate-700 bg-white/90 border-slate-300"
-                    }`}>
+                    <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 text-[10px] text-[#94A3B8] pointer-events-none z-30 bg-black/60 px-3.5 py-1 rounded-full border border-slate-700/50 backdrop-blur-sm">
                       {imuActive ? "📡 Miringkan smartphone untuk mengubah perspektif" : "🖱️ Tahan & geser untuk rotasi orbit 3D • Klik bilah slot untuk inspeksi"}
                     </div>
 
@@ -1582,7 +1560,6 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                         style={{
                           width: "clamp(340px, 94vw, 610px)",
                           transformStyle: "preserve-3d",
-                          filter: isDark ? "none" : "drop-shadow(0 25px 35px rgba(15, 23, 42, 0.28))",
                         }}
                       >
                         {/* ── 3D DEPTH WALLS (EXTRUSION) ANTI-GEPENG ── */}
@@ -1592,11 +1569,9 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                           style={{
                             transformOrigin: "top",
                             transform: "rotateX(90deg) translateY(-110px)",
-                            background: isDark
-                              ? "linear-gradient(to bottom, #1E293B, #0B1324)"
-                              : "linear-gradient(to bottom, #475569, #1E293B)",
-                            border: isDark ? "1px solid #334155" : "1px solid #64748B",
-                            boxShadow: isDark ? "inset 0 0 30px rgba(0,0,0,0.8)" : "inset 0 0 20px rgba(0,0,0,0.6)",
+                            background: "linear-gradient(to bottom, #1E293B, #0B1324)",
+                            border: "1px solid #334155",
+                            boxShadow: "inset 0 0 30px rgba(0,0,0,0.8)",
                           }}
                         >
                           <div className="w-full h-full p-2 flex items-center justify-around opacity-30">
@@ -1612,11 +1587,9 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                           style={{
                             transformOrigin: "bottom",
                             transform: "rotateX(-90deg) translateY(110px)",
-                            background: isDark
-                              ? "linear-gradient(to top, #0A0F1D, #020617)"
-                              : "linear-gradient(to top, #1E293B, #0F172A)",
-                            border: isDark ? "1px solid #1E293B" : "1px solid #334155",
-                            boxShadow: isDark ? "inset 0 0 30px rgba(0,0,0,0.9)" : "inset 0 0 20px rgba(0,0,0,0.7)",
+                            background: "linear-gradient(to top, #0A0F1D, #020617)",
+                            border: "1px solid #1E293B",
+                            boxShadow: "inset 0 0 30px rgba(0,0,0,0.9)",
                           }}
                         />
 
@@ -1626,11 +1599,9 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                           style={{
                             transformOrigin: "left",
                             transform: "rotateY(-90deg) translateX(-110px)",
-                            background: isDark
-                              ? "linear-gradient(to right, #0F172A, #1E293B)"
-                              : "linear-gradient(to right, #1E293B, #334155)",
-                            border: isDark ? "1px solid #334155" : "1px solid #475569",
-                            boxShadow: isDark ? "inset 0 0 30px rgba(0,0,0,0.85)" : "inset 0 0 20px rgba(0,0,0,0.65)",
+                            background: "linear-gradient(to right, #0F172A, #1E293B)",
+                            border: "1px solid #334155",
+                            boxShadow: "inset 0 0 30px rgba(0,0,0,0.85)",
                           }}
                         >
                           <div className="h-full w-full p-2 flex flex-col justify-between items-center opacity-70">
@@ -1648,11 +1619,9 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                           style={{
                             transformOrigin: "right",
                             transform: "rotateY(90deg) translateX(110px)",
-                            background: isDark
-                              ? "linear-gradient(to left, #0F172A, #1E293B)"
-                              : "linear-gradient(to left, #1E293B, #334155)",
-                            border: isDark ? "1px solid #334155" : "1px solid #475569",
-                            boxShadow: isDark ? "inset 0 0 30px rgba(0,0,0,0.85)" : "inset 0 0 20px rgba(0,0,0,0.65)",
+                            background: "linear-gradient(to left, #0F172A, #1E293B)",
+                            border: "1px solid #334155",
+                            boxShadow: "inset 0 0 30px rgba(0,0,0,0.85)",
                           }}
                         >
                           <div className="h-full w-full p-2 flex flex-col justify-between items-center opacity-70">
@@ -1669,9 +1638,9 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                           className="absolute inset-0 pointer-events-none rounded-xl"
                           style={{
                             transform: "translateZ(-110px)",
-                            background: isDark ? "#050B14" : "#0F172A",
-                            border: isDark ? "2px solid #1E293B" : "2px solid #334155",
-                            boxShadow: isDark ? "0 0 60px rgba(0,0,0,0.9)" : "0 0 40px rgba(0,0,0,0.5)",
+                            background: "#050B14",
+                            border: "2px solid #1E293B",
+                            boxShadow: "0 0 60px rgba(0,0,0,0.9)",
                           }}
                         />
 
@@ -1712,18 +1681,14 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
 
                         {/* ── FRONT FASCIA PANEL (MUKA DEPAN SASIS NOKIA PSS-24X) ── */}
                         <div
-                          className={`relative rounded-xl border-2 p-3 transition-colors ${
-                            isDark
-                              ? "border-[#1E3A5F] bg-[#0A1628]/95 shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
-                              : "border-slate-500 bg-[#0F1E36] shadow-[0_20px_50px_rgba(15,23,42,0.35)]"
-                          }`}
+                          className="relative rounded-xl border-2 border-[#1E3A5F] bg-[#0A1628]/95 shadow-[0_20px_50px_rgba(0,0,0,0.8)] p-3"
                           style={{
                             transformStyle: "preserve-3d",
                             transform: "translateZ(2px)",
                           }}
                         >
                           {/* TOP HEADER: BRAND, DANGER/CAUTION LABELS & FIBER TROUGH */}
-                          <div className={`border-b-2 pb-2 mb-2 ${isDark ? "border-[#1E3A5F]" : "border-slate-700"}`}>
+                          <div className="border-b-2 border-[#1E3A5F] pb-2 mb-2">
                             {/* Brand Row */}
                             <div className="flex items-center justify-between text-[11px] font-mono text-[#38BDF8] pb-1.5">
                               <div className="flex items-center gap-2">
