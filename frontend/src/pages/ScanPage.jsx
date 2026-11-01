@@ -2354,13 +2354,13 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                     </div>
 
                     <div className="flex flex-col justify-center min-w-0 flex-1 overflow-hidden">
-                      {/* Baris 1: Slot # + Badge + Posisi Baris */}
-                      <div className="font-bold text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
+                      {/* Baris 1: Slot # + Badge + Posisi Baris (Terkunci 1 Baris, Elipsis jika Sempit) */}
+                      <div className="font-bold text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 flex-nowrap whitespace-nowrap min-w-0 overflow-hidden">
                         <span className={`shrink-0 ${isDark ? "text-white" : "text-slate-900 font-extrabold"}`}>
                           Slot #{selectedSlotForAction.nomor_slot}
                         </span>
                         <span
-                          className={`shrink-0 text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full font-bold uppercase border tracking-wide shadow-sm flex items-center gap-1 ${
+                          className={`shrink-0 text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full font-bold uppercase border tracking-wide shadow-sm flex items-center gap-1 whitespace-nowrap ${
                             selectedSlotForAction.occupied
                               ? isDark
                                 ? "bg-rose-500/20 text-rose-300 border-rose-500/40"
@@ -2372,36 +2372,36 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                         >
                           {selectedSlotForAction.occupied ? "🔴 MODUL TERPASANG" : "🟢 SLOT KOSONG (READY)"}
                         </span>
-                        <span className={`shrink-0 text-[10px] sm:text-[11px] font-mono font-normal ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                        <span className={`truncate text-[10px] sm:text-[11px] font-mono font-normal ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                           {parseInt(String(selectedSlotForAction.nomor_slot).replace(/[^\d.]/g, ""), 10) <= 16
                             ? "(Baris Atas)"
                             : "(Baris Bawah)"}
                         </span>
                       </div>
 
-                      {/* Baris 2: Data SN, Tipe, Kondisi atau Keterangan Siap Pasang */}
-                      <div className={`text-[11px] sm:text-xs mt-0.5 flex items-center gap-x-2 min-w-0 overflow-hidden ${
-                        isDark ? "text-slate-300" : "text-slate-800 font-medium"
+                      {/* Baris 2: Data SN, Tipe, Kondisi (Terkunci 1 Baris, Elipsis (...) jika Sempit, Bukan Menjadi Baris Baru) */}
+                      <div className={`text-[11px] sm:text-xs mt-1 flex items-center min-w-0 overflow-hidden flex-nowrap whitespace-nowrap ${
+                        isDark ? "text-slate-300" : "text-slate-700 font-medium"
                       }`}>
                         {selectedSlotForAction.occupied ? (
-                          <div className="flex items-center gap-x-2 flex-wrap min-w-0">
-                            <span className="shrink-0 truncate">
+                          <div className="flex items-center gap-x-1.5 sm:gap-x-2 min-w-0 flex-nowrap whitespace-nowrap overflow-hidden">
+                            <span className="truncate min-w-0">
                               SN:{" "}
                               <strong className={`font-mono ${isDark ? "text-amber-300" : "text-amber-700 font-bold"}`}>
                                 {selectedSlotForAction.module?.serial_number || "-"}
                               </strong>
                             </span>
                             <span className="shrink-0 text-slate-400">•</span>
-                            <span className="shrink-0 truncate">
+                            <span className="truncate min-w-0">
                               Tipe: <strong className={isDark ? "text-white" : "text-slate-900 font-semibold"}>{selectedSlotForAction.module?.tipe || "-"}</strong>
                             </span>
                             <span className="shrink-0 text-slate-400">•</span>
-                            <span className="shrink-0">
+                            <span className="shrink-0 whitespace-nowrap">
                               Kondisi: <span className="uppercase font-semibold">{selectedSlotForAction.module?.kondisi || "AKTIF"}</span>
                             </span>
                           </div>
                         ) : (
-                          <p className={`truncate ${isDark ? "text-emerald-200" : "text-emerald-900 font-medium"}`}>
+                          <p className={`truncate whitespace-nowrap ${isDark ? "text-emerald-200" : "text-emerald-900 font-medium"}`}>
                             ✨ Slot kosong, siap dialokasikan untuk penempatan modul baru di STO.
                           </p>
                         )}
