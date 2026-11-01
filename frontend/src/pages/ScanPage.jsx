@@ -33,8 +33,8 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
 
   // State 3D Digital Twin Viewer & Sensor IMU
   const [rackViewMode, setRackViewMode] = useState("3d"); // Default '3d' Digital Twin Sub-Rack
-  const [rotX, setRotX] = useState(14); // Tilt vertikal isometrik (derajat)
-  const [rotY, setRotY] = useState(-22); // Rotasi horizontal isometrik (derajat)
+  const [rotX, setRotX] = useState(0); // Menghadap lurus ke depan secara default (0 derajat)
+  const [rotY, setRotY] = useState(0); // Menghadap lurus ke depan secara default (0 derajat)
   const [zoomLevel, setZoomLevel] = useState(1.0);
   const [imuActive, setImuActive] = useState(false);
   const [imuData, setImuData] = useState({ pitch: 0, roll: 0 });
@@ -560,6 +560,9 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
     setSearchResult(null);
     setSearchQuery("");
     setSelectedSlotForAction(null);
+    setRotX(0); // Selalu reset menghadap depan saat perangkat dimuat/di-scan
+    setRotY(0);
+    setZoomLevel(1.0);
 
     const newUrl = new URL(window.location);
     newUrl.searchParams.set("device_id", devId);
@@ -591,6 +594,9 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
     setSearchResult(null);
     setSearchQuery("");
     setSelectedSlotForAction(null);
+    setRotX(0);
+    setRotY(0);
+    setZoomLevel(1.0);
 
     const newUrl = new URL(window.location);
     newUrl.searchParams.delete("device_id");
@@ -620,6 +626,8 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
 
       if (data.found && data.highlight_slot_id) {
         setHighlightedSlotId(data.highlight_slot_id);
+        setRotX(0); // Pastikan menghadap depan saat modul/slot ditemukan
+        setRotY(0);
         const matchingSlot = slots.find((s) => s.slot_definition_id === data.highlight_slot_id);
         if (matchingSlot) {
           setSelectedSlotForAction(matchingSlot);
@@ -652,6 +660,8 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
     setSearchMode("slot");
     setSearchQuery(String(slot.nomor_slot));
     setHighlightedSlotId(slot.slot_definition_id);
+    setRotX(0);
+    setRotY(0);
 
     if (currentDeviceId) {
       fetch(
@@ -1384,6 +1394,18 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                       <div className="flex items-center gap-1 bg-[#050D1A] p-0.5 rounded-lg border border-[#1E3A5F]">
                         <button
                           type="button"
+                          onClick={() => { setRotX(0); setRotY(0); setZoomLevel(1.0); }}
+                          className={`px-2 py-1 rounded text-[10px] font-semibold transition-all ${
+                            rotX === 0 && rotY === 0
+                              ? "bg-[#1677FF] text-white shadow-sm"
+                              : "text-slate-400 hover:text-white"
+                          }`}
+                          title="Tampak Depan Lurus (Tegak)"
+                        >
+                          ⏹️ Depan
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => { setRotX(14); setRotY(-22); setZoomLevel(1.0); }}
                           className={`px-2 py-1 rounded text-[10px] font-semibold transition-all ${
                             rotX === 14 && rotY === -22
@@ -1393,18 +1415,6 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                           title="Tampak Sudut Isometrik 3D"
                         >
                           📐 Isometrik
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => { setRotX(0); setRotY(0); setZoomLevel(1.0); }}
-                          className={`px-2 py-1 rounded text-[10px] font-semibold transition-all ${
-                            rotX === 0 && rotY === 0
-                              ? "bg-[#1677FF] text-white shadow-sm"
-                              : "text-slate-400 hover:text-white"
-                          }`}
-                          title="Tampak Depan Tegak"
-                        >
-                          ⏹️ Depan
                         </button>
                         <button
                           type="button"
@@ -1452,9 +1462,9 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                         </button>
                         <button
                           type="button"
-                          onClick={() => { setRotX(14); setRotY(-22); setZoomLevel(1.0); }}
+                          onClick={() => { setRotX(0); setRotY(0); setZoomLevel(1.0); }}
                           className="p-1 rounded text-slate-300 hover:text-white"
-                          title="Reset Sudut & Zoom"
+                          title="Reset Tampak Depan & Zoom"
                         >
                           <span className="material-symbols-outlined text-[15px]">restart_alt</span>
                         </button>
@@ -1508,7 +1518,9 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                     <div className="absolute top-3 left-3 right-3 flex items-center justify-between text-[10px] font-mono text-[#38BDF8] pointer-events-none z-30">
                       <div className="flex items-center gap-2 bg-black/70 px-2.5 py-1 rounded-md border border-[#00E5FF]/20 backdrop-blur-sm">
                         <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-ping" />
-                        <span className="font-bold">ISOMETRIC 3D CHASSIS (DEPTH: 350mm)</span>
+                        <span className="font-bold">
+                          {rotX === 0 && rotY === 0 ? "FRONTAL 3D CHASSIS (DEPTH: 350mm)" : "ISOMETRIC 3D CHASSIS (DEPTH: 350mm)"}
+                        </span>
                       </div>
                       <div className="bg-black/70 px-2.5 py-1 rounded-md border border-[#00E5FF]/20 backdrop-blur-sm">
                         ROT: X {Math.round(rotX)}° | Y {Math.round(rotY)}° {imuActive && `| IMU: P${imuData.pitch} R${imuData.roll}`}
