@@ -1353,7 +1353,9 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                   {/* Toolbar Kontrol 3D */}
                   <div className="flex items-center justify-between flex-wrap gap-2 text-xs">
                     <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[18px] text-[#00E5FF]">view_in_ar</span>
+                      <span className={`material-symbols-outlined text-[18px] ${isDark ? "text-[#00E5FF]" : "text-[#1677FF]"}`}>
+                        view_in_ar
+                      </span>
                       <span className={`font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
                         3D Digital Twin Sub-Rack (Nokia 1830 PSS-24x)
                       </span>
@@ -1361,14 +1363,19 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
 
                     <div className="flex items-center gap-2 flex-wrap">
                       {/* Presets Sudut Pandang */}
-                      <div className="flex items-center gap-1 bg-[#050D1A] p-0.5 rounded-lg border border-[#1E3A5F]">
+                      <div className={`flex items-center gap-1 p-0.5 rounded-lg border transition-colors ${
+                        isDark ? "bg-[#050D1A] border-[#1E3A5F]" : "bg-slate-100 border-slate-300 shadow-sm"
+                      }`}>
                         <button
                           type="button"
                           onClick={() => { setRotX(0); setRotY(0); setZoomLevel(1.0); }}
-                          className={`px-2 py-1 rounded text-[10px] font-semibold transition-all ${rotX === 0 && rotY === 0
-                              ? "bg-[#1677FF] text-white shadow-sm"
-                              : "text-slate-400 hover:text-white"
-                            }`}
+                          className={`px-2 py-1 rounded text-[10px] font-semibold transition-all cursor-pointer ${
+                            rotX === 0 && rotY === 0
+                              ? "bg-[#1677FF] text-white shadow-sm font-bold"
+                              : isDark
+                                ? "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                                : "text-slate-600 hover:text-slate-900 hover:bg-white"
+                          }`}
                           title="Tampak Depan Lurus (Tegak)"
                         >
                           ⏹️ Depan
@@ -1376,10 +1383,13 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                         <button
                           type="button"
                           onClick={() => { setRotX(14); setRotY(-22); setZoomLevel(1.0); }}
-                          className={`px-2 py-1 rounded text-[10px] font-semibold transition-all ${rotX === 14 && rotY === -22
-                              ? "bg-[#1677FF] text-white shadow-sm"
-                              : "text-slate-400 hover:text-white"
-                            }`}
+                          className={`px-2 py-1 rounded text-[10px] font-semibold transition-all cursor-pointer ${
+                            rotX === 14 && rotY === -22
+                              ? "bg-[#1677FF] text-white shadow-sm font-bold"
+                              : isDark
+                                ? "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                                : "text-slate-600 hover:text-slate-900 hover:bg-white"
+                          }`}
                           title="Tampak Sudut Isometrik 3D"
                         >
                           📐 Isometrik
@@ -1387,10 +1397,13 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                         <button
                           type="button"
                           onClick={() => { setRotX(6); setRotY(-42); setZoomLevel(1.0); }}
-                          className={`px-2 py-1 rounded text-[10px] font-semibold transition-all ${rotY === -42
-                              ? "bg-[#1677FF] text-white shadow-sm"
-                              : "text-slate-400 hover:text-white"
-                            }`}
+                          className={`px-2 py-1 rounded text-[10px] font-semibold transition-all cursor-pointer ${
+                            rotY === -42
+                              ? "bg-[#1677FF] text-white shadow-sm font-bold"
+                              : isDark
+                                ? "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                                : "text-slate-600 hover:text-slate-900 hover:bg-white"
+                          }`}
                           title="Tampak Miring Kiri"
                         >
                           ◀️ Kiri
@@ -1398,10 +1411,13 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                         <button
                           type="button"
                           onClick={() => { setRotX(6); setRotY(42); setZoomLevel(1.0); }}
-                          className={`px-2 py-1 rounded text-[10px] font-semibold transition-all ${rotY === 42
-                              ? "bg-[#1677FF] text-white shadow-sm"
-                              : "text-slate-400 hover:text-white"
-                            }`}
+                          className={`px-2 py-1 rounded text-[10px] font-semibold transition-all cursor-pointer ${
+                            rotY === 42
+                              ? "bg-[#1677FF] text-white shadow-sm font-bold"
+                              : isDark
+                                ? "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                                : "text-slate-600 hover:text-slate-900 hover:bg-white"
+                          }`}
                           title="Tampak Miring Kanan"
                         >
                           ▶️ Kanan
@@ -1409,11 +1425,15 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                       </div>
 
                       {/* Zoom Controls */}
-                      <div className="flex items-center gap-1 bg-[#050D1A] p-0.5 rounded-lg border border-[#1E3A5F]">
+                      <div className={`flex items-center gap-1 p-0.5 rounded-lg border transition-colors ${
+                        isDark ? "bg-[#050D1A] border-[#1E3A5F]" : "bg-slate-100 border-slate-300 shadow-sm"
+                      }`}>
                         <button
                           type="button"
                           onClick={() => setZoomLevel((prev) => Math.min(1.4, prev + 0.1))}
-                          className="p-1 rounded text-slate-300 hover:text-white"
+                          className={`p-1 rounded cursor-pointer transition-colors ${
+                            isDark ? "text-slate-300 hover:text-white hover:bg-slate-800/60" : "text-slate-600 hover:text-slate-900 hover:bg-white"
+                          }`}
                           title="Perbesar Zoom"
                         >
                           <span className="material-symbols-outlined text-[15px]">zoom_in</span>
@@ -1421,7 +1441,9 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                         <button
                           type="button"
                           onClick={() => setZoomLevel((prev) => Math.max(0.65, prev - 0.1))}
-                          className="p-1 rounded text-slate-300 hover:text-white"
+                          className={`p-1 rounded cursor-pointer transition-colors ${
+                            isDark ? "text-slate-300 hover:text-white hover:bg-slate-800/60" : "text-slate-600 hover:text-slate-900 hover:bg-white"
+                          }`}
                           title="Perkecil Zoom"
                         >
                           <span className="material-symbols-outlined text-[15px]">zoom_out</span>
@@ -1429,7 +1451,9 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                         <button
                           type="button"
                           onClick={() => { setRotX(0); setRotY(0); setZoomLevel(1.0); }}
-                          className="p-1 rounded text-slate-300 hover:text-white"
+                          className={`p-1 rounded cursor-pointer transition-colors ${
+                            isDark ? "text-slate-300 hover:text-white hover:bg-slate-800/60" : "text-slate-600 hover:text-slate-900 hover:bg-white"
+                          }`}
                           title="Reset Tampak Depan & Zoom"
                         >
                           <span className="material-symbols-outlined text-[15px]">restart_alt</span>
@@ -1440,12 +1464,15 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                       <button
                         type="button"
                         onClick={() => setImuActive(!imuActive)}
-                        className={`px-2.5 py-1 rounded-lg border text-[11px] font-semibold flex items-center gap-1.5 transition-all ${imuActive
-                            ? "bg-emerald-500/20 border-emerald-500 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.4)]"
+                        className={`px-2.5 py-1 rounded-lg border text-[11px] font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                          imuActive
+                            ? isDark
+                              ? "bg-emerald-500/20 border-emerald-500 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.4)]"
+                              : "bg-emerald-50 border-emerald-500 text-emerald-700 font-bold shadow-sm shadow-emerald-500/20"
                             : isDark
-                              ? "bg-[#071426] border-[#1E3A5F] text-[#94A3B8] hover:text-white"
-                              : "bg-slate-100 border-slate-300 text-slate-700"
-                          }`}
+                              ? "bg-[#071426] border-[#1E3A5F] text-[#94A3B8] hover:text-white hover:bg-[#0D1F36]"
+                              : "bg-slate-100 border-slate-300 text-slate-700 hover:bg-white hover:text-slate-900 hover:border-slate-400 shadow-sm"
+                        }`}
                         title="Gunakan Sensor Gyroscope Smartphone (IMU Parallax)"
                       >
                         <span className="material-symbols-outlined text-[15px]">
