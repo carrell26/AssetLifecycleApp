@@ -1241,11 +1241,16 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
 
                 <form onSubmit={handleSearch} className="flex gap-2">
                   <div className="relative flex-1">
-                    <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[18px] text-[#64748B]">
+                    <span
+                      className={`material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[18px] pointer-events-none transition-colors ${
+                        isDark ? "text-[#4d6686]" : "text-slate-400"
+                      }`}
+                    >
                       search
                     </span>
                     <input
                       type="text"
+                      id="scanModuleSearchInput"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder={
@@ -1253,17 +1258,32 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                           ? "Masukkan nomor seri modul (cth: CFP2-001, SN-...)"
                           : "Masukkan nomor slot (cth: 1, 2, 5...)"
                       }
-                      className={`w-full h-11 pl-10 pr-4 rounded-xl text-xs transition-all focus:outline-none ${
+                      className={`w-full h-11 pl-10 pr-9 rounded-xl border text-xs sm:text-sm outline-none transition-all duration-200 ease-in-out ${
                         isDark
-                          ? "bg-[#071426] border border-[#1E3A5F] text-white focus:border-[#1677FF]"
-                          : "bg-slate-50 border border-slate-300 text-slate-900 focus:border-[#1677FF]"
+                          ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] placeholder-[#4d6686] focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF]"
+                          : "bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:bg-white"
                       }`}
                     />
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSearchQuery("");
+                          setSearchResult(null);
+                        }}
+                        title="Hapus pencarian"
+                        className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors cursor-pointer ${
+                          isDark ? "text-[#64748B] hover:text-white" : "text-slate-400 hover:text-slate-700"
+                        }`}
+                      >
+                        <span className="material-symbols-outlined text-[16px]">close</span>
+                      </button>
+                    )}
                   </div>
                   <button
                     type="submit"
                     disabled={searching || !searchQuery.trim()}
-                    className="h-11 px-5 rounded-xl font-semibold text-xs text-white bg-[#1677FF] hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md shadow-[#1677FF]/25 flex items-center gap-1.5"
+                    className="h-11 px-5 rounded-xl font-semibold text-xs text-white bg-[#1677FF] hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md shadow-[#1677FF]/25 flex items-center gap-1.5 cursor-pointer shrink-0"
                   >
                     {searching ? (
                       <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
@@ -1516,33 +1536,59 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                     onTouchMove={handle3DTouchMove}
                     onTouchEnd={handle3DTouchEnd}
                     onTouchCancel={handle3DTouchEnd}
-                    className="relative w-full min-h-[520px] rounded-2xl overflow-hidden border border-[#1E3A5F] bg-gradient-to-b from-[#030712] via-[#071324] to-[#0A1A2F] flex items-center justify-center cursor-grab active:cursor-grabbing select-none p-4 sm:p-8 shadow-2xl"
+                    className={`relative w-full min-h-[520px] rounded-2xl overflow-hidden border flex items-center justify-center cursor-grab active:cursor-grabbing select-none p-4 sm:p-8 transition-colors ${
+                      isDark
+                        ? "border-[#1E3A5F] bg-gradient-to-b from-[#030712] via-[#071324] to-[#0A1A2F] shadow-2xl"
+                        : "border-slate-200 bg-white shadow-sm"
+                    }`}
                     style={{ perspective: "1400px" }}
                   >
                     {/* Grid Background Ambient Wireframe */}
                     <div
-                      className="absolute inset-0 pointer-events-none opacity-20"
+                      className={`absolute inset-0 pointer-events-none transition-opacity ${
+                        isDark ? "opacity-20" : "opacity-35"
+                      }`}
                       style={{
-                        backgroundImage: "radial-gradient(#00E5FF 1px, transparent 1px)",
+                        backgroundImage: isDark
+                          ? "radial-gradient(#00E5FF 1px, transparent 1px)"
+                          : "radial-gradient(#94A3B8 1px, transparent 1px)",
                         backgroundSize: "28px 28px",
                       }}
                     />
 
                     {/* HUD Telemetry Overlay di Atas 3D */}
-                    <div className="absolute top-3 left-3 right-3 flex items-center justify-between text-[10px] font-mono text-[#38BDF8] pointer-events-none z-30">
-                      <div className="flex items-center gap-2 bg-black/70 px-2.5 py-1 rounded-md border border-[#00E5FF]/20 backdrop-blur-sm">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-ping" />
+                    <div className="absolute top-3 left-3 right-3 flex items-center justify-between text-[10px] font-mono pointer-events-none z-30">
+                      <div
+                        className={`flex items-center gap-2 px-2.5 py-1 rounded-md border backdrop-blur-sm shadow-sm transition-colors ${
+                          isDark
+                            ? "bg-black/70 border-[#00E5FF]/20 text-[#38BDF8]"
+                            : "bg-white/90 border-slate-200 text-slate-700"
+                        }`}
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full ${isDark ? "bg-[#00E5FF]" : "bg-blue-500"} animate-ping`} />
                         <span className="font-bold">
                           {rotX === 0 && rotY === 0 ? "FRONTAL 3D CHASSIS (DEPTH: 350mm)" : "ISOMETRIC 3D CHASSIS (DEPTH: 350mm)"}
                         </span>
                       </div>
-                      <div className="bg-black/70 px-2.5 py-1 rounded-md border border-[#00E5FF]/20 backdrop-blur-sm">
+                      <div
+                        className={`px-2.5 py-1 rounded-md border backdrop-blur-sm shadow-sm transition-colors ${
+                          isDark
+                            ? "bg-black/70 border-[#00E5FF]/20 text-[#38BDF8]"
+                            : "bg-white/90 border-slate-200 text-slate-700"
+                        }`}
+                      >
                         ROT: X {Math.round(rotX)}° | Y {Math.round(rotY)}° {imuActive && `| IMU: P${imuData.pitch} R${imuData.roll}`}
                       </div>
                     </div>
 
                     {/* Instruksi Drag di Bawah */}
-                    <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 text-[10px] text-[#94A3B8] pointer-events-none z-30 bg-black/60 px-3.5 py-1 rounded-full border border-slate-700/50 backdrop-blur-sm">
+                    <div
+                      className={`absolute bottom-2.5 left-1/2 -translate-x-1/2 text-[10px] pointer-events-none z-30 px-3.5 py-1 rounded-full border backdrop-blur-sm shadow-sm transition-colors ${
+                        isDark
+                          ? "text-[#94A3B8] bg-black/60 border-slate-700/50"
+                          : "text-slate-600 bg-white/90 border-slate-300"
+                      }`}
+                    >
                       {imuActive ? "📡 Miringkan smartphone untuk mengubah perspektif" : "🖱️ Tahan & geser untuk rotasi orbit 3D • Klik bilah slot untuk inspeksi"}
                     </div>
 
@@ -1560,6 +1606,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                         style={{
                           width: "clamp(340px, 94vw, 610px)",
                           transformStyle: "preserve-3d",
+                          filter: isDark ? "none" : "drop-shadow(0 25px 35px rgba(15, 23, 42, 0.40)) drop-shadow(0 10px 15px rgba(15, 23, 42, 0.20))",
                         }}
                       >
                         {/* ── 3D DEPTH WALLS (EXTRUSION) ANTI-GEPENG ── */}
