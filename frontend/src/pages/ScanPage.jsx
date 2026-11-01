@@ -2288,7 +2288,8 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
               {/* Call-to-Action Baris: Aksi Pemasangan / Mutasi Cepat (Struktur Komposisi Terkunci Saat Zoom-in/out) */}
               {selectedSlotForAction && (
                 <div
-                  className={`p-3.5 sm:p-4 rounded-xl border flex flex-row items-center justify-between gap-4 transition-all duration-300 shadow-xl overflow-x-auto custom-scrollbar flex-nowrap whitespace-nowrap ${selectedSlotForAction.occupied
+                  style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                  className={`p-3.5 sm:p-4 rounded-xl border flex flex-row items-center justify-between gap-4 transition-all duration-300 shadow-xl overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden flex-nowrap whitespace-nowrap ${selectedSlotForAction.occupied
                       ? isDark
                         ? "bg-gradient-to-r from-[#1B1226] via-[#1E1736] to-[#0A1628] border-purple-500/50 text-purple-200"
                         : "bg-purple-50 border-purple-300 text-purple-900 shadow-purple-500/10"
