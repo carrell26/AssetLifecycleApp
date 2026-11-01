@@ -1554,20 +1554,29 @@ function CreateDirectMutationModal({ onClose, onSuccess, initialData }) {
 
           {/* Banner Notifikasi Auto-Fill dari AR Scan */}
           {initialData && (
-            <div className="mt-4 p-3 rounded-xl bg-[#1677FF]/15 border border-[#1677FF]/30 text-[#38BDF8] text-xs flex items-center justify-between gap-3 animate-fadeIn">
+            <div className={`mt-4 p-3 rounded-xl border text-xs flex items-center justify-between gap-3 animate-fadeIn ${
+              isDark
+                ? "bg-[#1677FF]/15 border-[#1677FF]/30 text-[#38BDF8]"
+                : "bg-blue-50 border-blue-300 text-blue-800"
+            }`}>
               <div className="flex items-center gap-2.5 min-w-0">
-                <span className="material-symbols-outlined text-[20px] text-[#00E5FF] shrink-0">view_in_ar</span>
+                <span className={`material-symbols-outlined text-[20px] shrink-0 ${isDark ? "text-[#00E5FF]" : "text-blue-600"}`}>view_in_ar</span>
                 <span className="truncate">
                   Terisi otomatis dari <strong>AR Digital Twin</strong>: Modul{" "}
-                  <strong className="text-white font-mono">{initialData.sn || "Terpilih"}</strong>
+                  <strong className={`font-mono ${isDark ? "text-white" : "text-blue-900 bg-blue-100 px-1 py-0.5 rounded"}`}>{initialData.sn || "Terpilih"}</strong>
                   {initialData.slotNo && ` (Slot #${initialData.slotNo})`}. Silakan tentukan <strong>perangkat tujuan</strong> mutasi di bawah.
                 </span>
               </div>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#1677FF]/40 text-white shrink-0 border border-blue-400/30">
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 border ${
+                isDark
+                  ? "bg-[#1677FF]/40 text-white border-blue-400/30"
+                  : "bg-blue-600 text-white border-blue-700"
+              }`}>
                 Auto-Filled
               </span>
             </div>
           )}
+
 
           {loadingInitial ? (
             <div className="py-12 text-center text-xs text-[#38BDF8]">

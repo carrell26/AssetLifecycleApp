@@ -317,7 +317,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
             openLocationDevicesModal(lookupData.location_id);
             return;
           } else if (lookupData.type === "device") {
-            showToast(`Rak Perangkat #${lookupData.device_id} Terdeteksi!`, "success");
+            showToast(`✅ Perangkat "${lookupData.nama_perangkat}" ditemukan! Memuat peta slot...`, "success");
             await stopCamera();
             loadDeviceContext(lookupData.device_id);
             return;
@@ -334,7 +334,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
     // 2. Fallback regex Lokasi
     const locId = extractLocationIdFromText(raw);
     if (locId) {
-      showToast(`📍 QR Lokasi #${locId} Terdeteksi!`, "success");
+      showToast(`📍 QR Lokasi terdeteksi! Memuat daftar perangkat...`, "success");
       await stopCamera();
       openLocationDevicesModal(locId);
       return;
@@ -343,7 +343,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
     // 3. Fallback regex Perangkat
     const devId = extractDeviceIdFromText(raw);
     if (devId) {
-      showToast(`QR Perangkat #${devId} Terdeteksi!`, "success");
+      showToast(`✅ QR Perangkat terdeteksi! Memuat peta slot...`, "success");
       await stopCamera();
       loadDeviceContext(devId);
       return;
@@ -2255,12 +2255,12 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                       </span>
                     </div>
                     <div>
-                      <div className="font-bold text-sm flex items-center gap-2 flex-wrap">
-                        <span className={isDark ? "text-white" : "text-slate-900 font-extrabold"}>
+                      <div className="font-bold text-sm flex items-center gap-2 flex-wrap min-w-0">
+                        <span className={`shrink-0 ${isDark ? "text-white" : "text-slate-900 font-extrabold"}`}>
                           Slot #{selectedSlotForAction.nomor_slot}
                         </span>
                         <span
-                          className={`text-xs px-3 py-1 rounded-full font-black uppercase border tracking-wide shadow-sm ${
+                          className={`shrink-0 text-xs px-3 py-1 rounded-full font-black uppercase border tracking-wide shadow-sm ${
                             selectedSlotForAction.occupied
                               ? isDark
                                 ? "bg-rose-500/20 text-rose-300 border-rose-500/40"
@@ -2272,33 +2272,30 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                         >
                           {selectedSlotForAction.occupied ? "🔴 Modul Terpasang" : "🟢 Slot Kosong (Ready)"}
                         </span>
-                        <span className={`text-[11px] font-mono ${isDark ? "text-slate-400" : "text-slate-700 font-bold"}`}>
+                        <span className={`shrink-0 text-[11px] font-mono font-normal ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                           {parseInt(String(selectedSlotForAction.nomor_slot).replace(/[^\d.]/g, ""), 10) <= 16
                             ? "(Baris Atas)"
                             : "(Baris Bawah)"}
                         </span>
                       </div>
-                      <div className={`text-xs mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 ${
+                      <div className={`text-xs mt-1.5 flex flex-nowrap items-center gap-x-2 overflow-hidden ${
                         isDark ? "text-slate-300" : "text-slate-800 font-semibold"
                       }`}>
                         {selectedSlotForAction.occupied ? (
                           <>
-                            <span>
+                            <span className="shrink-0">
                               SN:{" "}
-                              <strong className={`font-mono text-sm ${isDark ? "text-amber-300" : "text-amber-700 font-black"}`}>
+                              <strong className={`font-mono ${isDark ? "text-amber-300" : "text-amber-700 font-black"}`}>
                                 {selectedSlotForAction.module?.serial_number || "-"}
                               </strong>
                             </span>
-                            <span>&bull;</span>
-                            <span>
+                            <span className="shrink-0">&nbsp;•</span>
+                            <span className="shrink-0">
                               Tipe: <strong className={isDark ? "text-white" : "text-slate-900 font-bold"}>{selectedSlotForAction.module?.tipe || "-"}</strong>
                             </span>
-                            <span>&bull;</span>
-                            <span>
-                              Kondisi:{" "}
-                              <span className="capitalize font-semibold">
-                                {selectedSlotForAction.module?.kondisi || "-"}
-                              </span>
+                            <span className="shrink-0">&nbsp;•</span>
+                            <span className="shrink-0">
+                              Kondisi: <span className="capitalize font-semibold">{selectedSlotForAction.module?.kondisi || "-"}</span>
                             </span>
                           </>
                         ) : (
@@ -2307,6 +2304,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                           </span>
                         )}
                       </div>
+
                     </div>
                   </div>
 

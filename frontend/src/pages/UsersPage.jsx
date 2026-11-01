@@ -2173,9 +2173,9 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                     >
                       <div className="flex items-center gap-2 truncate pr-2">
                         <span className={`w-2 h-2 rounded-full shrink-0 ${
-                          editForm.status === "aktif" ? "bg-emerald-400 shadow-[0_0_8px_#34D399]" :
-                          editForm.status === "pending" ? "bg-amber-400 shadow-[0_0_8px_#FBBF24]" :
-                          "bg-rose-400 shadow-[0_0_8px_#F43F5E]"
+                          editForm.status === "aktif" ? "bg-emerald-400" :
+                          editForm.status === "pending" ? "bg-amber-400" :
+                          "bg-rose-400"
                         }`} />
                         <span className="truncate font-semibold capitalize">
                           {EDIT_STATUS_OPTIONS.find((s) => s.value === editForm.status)?.label || "Pilih Status"}
