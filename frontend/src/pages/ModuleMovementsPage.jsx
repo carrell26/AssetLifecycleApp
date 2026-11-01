@@ -54,9 +54,54 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Modal State
-  const [moveModalOpen, setMoveModalOpen] = useState(false);
+  // Preset Mutasi dari URL Search Params (misal saat navigasi langsung dari tombol AR Scan)
+  const [presetMutation, setPresetMutation] = useState(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const openModal = params.get("open_modal") || params.get("popup");
+      const action = params.get("action");
+      const moduleId = params.get("module_id");
+      const sn = params.get("sn");
+      const devId = params.get("device_id");
+      const devName = params.get("device_name");
+      const locName = params.get("location_name");
+      const slotNo = params.get("slot_no");
+      const unitType = params.get("unit_type");
+      const kondisi = params.get("kondisi");
+
+      if (openModal || moduleId || sn || (action && devId)) {
+        return {
+          open: true,
+          action: action || "pindah",
+          moduleId: moduleId || "",
+          sn: sn || "",
+          unitType: unitType || "",
+          kondisi: kondisi || "AKTIF",
+          deviceId: devId || "",
+          deviceName: devName || "",
+          locationName: locName || "",
+          slotNo: slotNo || "",
+        };
+      }
+    } catch (e) {
+      console.error("Error reading URL search params for mutation:", e);
+    }
+    return null;
+  });
+
+  // Modal State: otomatis terbuka jika ada parameter preset dari AR Scan
+  const [moveModalOpen, setMoveModalOpen] = useState(() => !!presetMutation?.open);
   const [toastMessage, setToastMessage] = useState(null);
+
+  // Bersihkan search params dari URL agar refresh browser tidak membuka modal berulang
+  useEffect(() => {
+    if (presetMutation?.open) {
+      try {
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+      } catch (e) {}
+    }
+  }, [presetMutation]);
 
   // Detail Modal State (Kolom Aksi Ikon Mata)
   const [selectedMovementDetail, setSelectedMovementDetail] = useState(null);
@@ -1215,9 +1260,14 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
       {/* MODAL: CATAT MUTASI MODUL */}
       {moveModalOpen && (
         <CreateDirectMutationModal
-          onClose={() => setMoveModalOpen(false)}
+          initialData={presetMutation}
+          onClose={() => {
+            setMoveModalOpen(false);
+            setPresetMutation(null);
+          }}
           onSuccess={(msg) => {
             setMoveModalOpen(false);
+            setPresetMutation(null);
             showToast(msg);
             fetchMovements();
           }}
@@ -1230,16 +1280,26 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
 // ==============================================================
 // MODAL: FORM MUTASI MODUL LANGSUNG
 // ==============================================================
-function CreateDirectMutationModal({ onClose, onSuccess }) {
+function CreateDirectMutationModal({ onClose, onSuccess, initialData }) {
   const { isDark } = useTheme();
   const [modules, setModules] = useState([]);
   const [devices, setDevices] = useState([]);
   const [loadingInitial, setLoadingInitial] = useState(true);
 
-  // Form states
-  const [selectedModuleId, setSelectedModuleId] = useState("");
-  const [toDeviceId, setToDeviceId] = useState("");
-  const [toSlot, setToSlot] = useState("");
+  // Form states - jika dipanggil dari AR Scan, otomatis pre-fill modul dan asal
+  const [selectedModuleId, setSelectedModuleId] = useState(initialData?.moduleId || "");
+  const [toDeviceId, setToDeviceId] = useState(() => {
+    if (initialData?.action === "pasang" && initialData?.deviceId) {
+      return String(initialData.deviceId);
+    }
+    return "";
+  });
+  const [toSlot, setToSlot] = useState(() => {
+    if (initialData?.action === "pasang" && initialData?.slotNo) {
+      return String(initialData.slotNo);
+    }
+    return "";
+  });
   const [toShelf, setToShelf] = useState("1");
   const [toPort, setToPort] = useState("");
   const [mutationDate, setMutationDate] = useState(() => {
@@ -1249,7 +1309,15 @@ function CreateDirectMutationModal({ onClose, onSuccess }) {
     const dd = String(today.getDate()).padStart(2, "0");
     return `${yyyy}-${mm}-${dd}`;
   });
-  const [keterangan, setKeterangan] = useState("");
+  const [keterangan, setKeterangan] = useState(() => {
+    if (initialData?.deviceName && initialData?.slotNo) {
+      return `Mutasi modul dari ${initialData.deviceName} (Slot #${initialData.slotNo}) via AR Digital Twin`;
+    }
+    if (initialData?.slotNo) {
+      return `Mutasi modul dari Slot #${initialData.slotNo} via AR Digital Twin`;
+    }
+    return "";
+  });
 
   // Custom Dropdowns states & refs (mengikuti style Halaman Perangkat)
   const [moduleDropdownOpen, setModuleDropdownOpen] = useState(false);
@@ -1295,17 +1363,62 @@ function CreateDirectMutationModal({ onClose, onSuccess }) {
         setLoadingInitial(true);
         const [modRes, devRes] = await Promise.all([
           fetch("/api/modules?all=1"),
-          fetch("/api/devices"),
+          fetch("/api/devices?all=1"),
         ]);
         const modData = await modRes.json();
         const devData = await devRes.json();
 
+        let loadedMods = [];
         if (modData.success) {
-          setModules(modData.items || []);
+          loadedMods = modData.items || [];
         }
         if (devData.success) {
           setDevices(devData.items || []);
         }
+
+        // AUTO-SELECT MODUL JIKA ADA PRESET DARI AR SCAN
+        if (initialData) {
+          let matchedMod = null;
+          if (initialData.moduleId) {
+            matchedMod = loadedMods.find((m) => String(m.modul_id) === String(initialData.moduleId));
+          }
+          if (!matchedMod && initialData.sn) {
+            const cleanSn = String(initialData.sn).trim().toLowerCase();
+            matchedMod = loadedMods.find((m) => String(m.serial_number || "").trim().toLowerCase() === cleanSn);
+          }
+          if (!matchedMod && initialData.deviceId && initialData.slotNo) {
+            matchedMod = loadedMods.find((m) =>
+              String(m.device_id) === String(initialData.deviceId) &&
+              String(m.slot) === String(initialData.slotNo)
+            );
+          }
+
+          // Jika modul belum terdaftar di daftar API namun info dari AR scan valid, buat sintetis
+          if (!matchedMod && (initialData.moduleId || initialData.sn)) {
+            matchedMod = {
+              modul_id: Number(initialData.moduleId) || Date.now(),
+              serial_number: initialData.sn || `MOD-${initialData.moduleId}`,
+              unit_type: initialData.unitType || "Modul Fisik",
+              ne_name: initialData.deviceName || "Perangkat Asal",
+              location_name: initialData.locationName || "STO Palu",
+              slot: initialData.slotNo || "-",
+              shelf: "1",
+              port: "-",
+              kondisi: initialData.kondisi || "AKTIF",
+              device_id: initialData.deviceId,
+            };
+            loadedMods = [matchedMod, ...loadedMods];
+          }
+
+          if (matchedMod) {
+            setSelectedModuleId(String(matchedMod.modul_id));
+            setModuleSearchInput(
+              `${matchedMod.serial_number} — ${matchedMod.unit_type} (${matchedMod.ne_name || "Perangkat"}, Slot ${matchedMod.slot || "-"})`
+            );
+          }
+        }
+
+        setModules(loadedMods);
       } catch (err) {
         console.error("Load modal data error:", err);
         setError("Gagal memuat daftar modul atau perangkat.");
@@ -1314,7 +1427,7 @@ function CreateDirectMutationModal({ onClose, onSuccess }) {
       }
     }
     loadData();
-  }, []);
+  }, [initialData]);
 
   // Sync moduleSearchInput if selectedModuleId changes externally
   useEffect(() => {
@@ -1438,6 +1551,32 @@ function CreateDirectMutationModal({ onClose, onSuccess }) {
               <span>{error}</span>
             </div>
           )}
+
+          {/* Banner Notifikasi Auto-Fill dari AR Scan */}
+          {initialData && (
+            <div className={`mt-4 p-3 rounded-xl border text-xs flex items-center justify-between gap-3 animate-fadeIn ${
+              isDark
+                ? "bg-[#1677FF]/15 border-[#1677FF]/30 text-[#38BDF8]"
+                : "bg-blue-50 border-blue-300 text-blue-800"
+            }`}>
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span className={`material-symbols-outlined text-[20px] shrink-0 ${isDark ? "text-[#00E5FF]" : "text-blue-600"}`}>view_in_ar</span>
+                <span className="truncate">
+                  Terisi otomatis dari <strong>AR Digital Twin</strong>: Modul{" "}
+                  <strong className={`font-mono ${isDark ? "text-white" : "text-blue-900 bg-blue-100 px-1 py-0.5 rounded"}`}>{initialData.sn || "Terpilih"}</strong>
+                  {initialData.slotNo && ` (Slot #${initialData.slotNo})`}. Silakan tentukan <strong>perangkat tujuan</strong> mutasi di bawah.
+                </span>
+              </div>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 border ${
+                isDark
+                  ? "bg-[#1677FF]/40 text-white border-blue-400/30"
+                  : "bg-blue-600 text-white border-blue-700"
+              }`}>
+                Auto-Filled
+              </span>
+            </div>
+          )}
+
 
           {loadingInitial ? (
             <div className="py-12 text-center text-xs text-[#38BDF8]">

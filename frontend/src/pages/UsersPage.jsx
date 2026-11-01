@@ -23,6 +23,17 @@ const ROLE_FILTER_OPTIONS = [
   { value: "teknisi", label: "Teknisi" },
 ];
 
+const EDIT_ROLE_OPTIONS = [
+  { value: "karyawan_tif", label: "Karyawan TIF", icon: "badge" },
+  { value: "teknisi", label: "Teknisi", icon: "engineering" },
+];
+
+const EDIT_STATUS_OPTIONS = [
+  { value: "aktif", label: "Aktif", dotColor: "bg-emerald-400" },
+  { value: "pending", label: "Pending", dotColor: "bg-amber-400" },
+  { value: "nonaktif", label: "Nonaktif", dotColor: "bg-rose-400" },
+];
+
 // Helper warna avatar dinamis agar persis dengan palet referensi
 const getAvatarColor = (name = "") => {
   const n = (name || "").trim().toLowerCase();
@@ -75,9 +86,16 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
   const [districtDropdownOpen, setDistrictDropdownOpen] = useState(false);
   const [regDistrictDropdownOpen, setRegDistrictDropdownOpen] = useState(false);
+  const [editRoleDropdownOpen, setEditRoleDropdownOpen] = useState(false);
+  const [editStatusDropdownOpen, setEditStatusDropdownOpen] = useState(false);
+  const [editDistrictDropdownOpen, setEditDistrictDropdownOpen] = useState(false);
+
   const roleDropdownRef = useRef(null);
   const districtDropdownRef = useRef(null);
   const regDistrictDropdownRef = useRef(null);
+  const editRoleDropdownRef = useRef(null);
+  const editStatusDropdownRef = useRef(null);
+  const editDistrictDropdownRef = useRef(null);
 
   // Close dropdowns when clicked outside
   useEffect(() => {
@@ -99,6 +117,24 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
         !regDistrictDropdownRef.current.contains(e.target)
       ) {
         setRegDistrictDropdownOpen(false);
+      }
+      if (
+        editRoleDropdownRef.current &&
+        !editRoleDropdownRef.current.contains(e.target)
+      ) {
+        setEditRoleDropdownOpen(false);
+      }
+      if (
+        editStatusDropdownRef.current &&
+        !editStatusDropdownRef.current.contains(e.target)
+      ) {
+        setEditStatusDropdownOpen(false);
+      }
+      if (
+        editDistrictDropdownRef.current &&
+        !editDistrictDropdownRef.current.contains(e.target)
+      ) {
+        setEditDistrictDropdownOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -368,6 +404,9 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
       status: u.status,
     });
     setEditError("");
+    setEditRoleDropdownOpen(false);
+    setEditStatusDropdownOpen(false);
+    setEditDistrictDropdownOpen(false);
   };
 
   // Handle Edit Submit
@@ -1879,13 +1918,13 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
           >
             <div
               className={`w-full max-w-lg rounded-2xl border p-6 shadow-2xl transition-all ${isDark
-                ? "bg-[#061427] border-[#0d2746] text-[#E6EDF7]"
+                ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7]"
                 : "bg-white border-slate-200 text-slate-900"
                 }`}
               onClick={(e) => e.stopPropagation()}
             >
               <div
-                className={`flex items-center justify-between pb-4 border-b ${isDark ? "border-[#0f2747]" : "border-slate-100"
+                className={`flex items-center justify-between pb-4 border-b ${isDark ? "border-[#142D4C]" : "border-slate-100"
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -1905,8 +1944,14 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                   </div>
                 </div>
                 <button
-                  onClick={() => setEditUser(null)}
-                  className={`cursor-pointer transition-colors ${isDark ? "text-slate-400 hover:text-white" : "text-slate-400 hover:text-slate-700"
+                  type="button"
+                  onClick={() => {
+                    setEditUser(null);
+                    setEditRoleDropdownOpen(false);
+                    setEditStatusDropdownOpen(false);
+                    setEditDistrictDropdownOpen(false);
+                  }}
+                  className={`cursor-pointer transition-colors p-1 rounded-lg ${isDark ? "text-slate-400 hover:text-white hover:bg-[#071933]" : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
                     }`}
                 >
                   <span className="material-symbols-outlined text-[20px]">close</span>
@@ -1925,71 +1970,288 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                 </div>
               )}
 
-              <form onSubmit={handleEditSubmit} className="py-5 space-y-4 text-xs">
+              <form onSubmit={handleEditSubmit} className="py-5 space-y-4 text-xs overflow-visible">
+                {/* Nama Lengkap */}
                 <div>
-                  <label className={`block font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                  <label className={`block font-semibold mb-1.5 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                     Nama Lengkap *
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={editForm.name}
-                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl border outline-none text-xs sm:text-sm ${isDark
-                      ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
-                      : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500 focus:bg-white"
-                      }`}
-                  />
+                  <div className="relative">
+                    <span className="material-symbols-outlined text-[18px] text-[#38BDF8] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none select-none">
+                      person
+                    </span>
+                    <input
+                      type="text"
+                      required
+                      value={editForm.name}
+                      onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                      placeholder="Masukkan nama lengkap"
+                      className={`w-full h-11 pl-10 pr-3.5 rounded-xl border outline-none text-xs sm:text-sm font-medium transition-all ${isDark
+                        ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF]"
+                        : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500 focus:bg-white"
+                        }`}
+                    />
+                  </div>
                 </div>
 
+                {/* Email Akun */}
                 <div>
-                  <label className={`block font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                  <label className={`block font-semibold mb-1.5 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                     Email Akun *
                   </label>
-                  <input
-                    type="email"
-                    required
-                    value={editForm.email}
-                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl border outline-none text-xs sm:text-sm ${isDark
-                      ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
-                      : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500 focus:bg-white"
-                      }`}
-                  />
+                  <div className="relative">
+                    <span className="material-symbols-outlined text-[18px] text-[#38BDF8] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none select-none">
+                      mail
+                    </span>
+                    <input
+                      type="email"
+                      required
+                      value={editForm.email}
+                      onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                      placeholder="Masukkan email akun"
+                      className={`w-full h-11 pl-10 pr-3.5 rounded-xl border outline-none text-xs sm:text-sm font-medium transition-all ${isDark
+                        ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF]"
+                        : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500 focus:bg-white"
+                        }`}
+                    />
+                  </div>
                 </div>
 
+                {/* Grid 2 Kolom: Role Otorisasi & Status Akun */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className={`block font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                  {/* Dropdown 1: Role Otorisasi (Custom Box Container & Popup Menu) */}
+                  <div className="relative" ref={editRoleDropdownRef}>
+                    <label className={`block font-semibold mb-1.5 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                       Role Otorisasi *
                     </label>
-                    <select
-                      value={editForm.role}
-                      disabled={currentUser && currentUser.id === editUser.user_id}
-                      onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
-                      className={`w-full px-3.5 py-2.5 rounded-xl border outline-none text-xs sm:text-sm cursor-pointer ${isDark
-                        ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
-                        : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500"
-                        }`}
+                    <button
+                      type="button"
+                      id="edit-role-btn"
+                      disabled={editUser.role === "admin" || (currentUser && currentUser.id === editUser.user_id)}
+                      onClick={() => {
+                        setEditRoleDropdownOpen(!editRoleDropdownOpen);
+                        setEditStatusDropdownOpen(false);
+                        setEditDistrictDropdownOpen(false);
+                      }}
+                      className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center justify-between text-xs sm:text-sm font-medium transition-all outline-none ${
+                        (editUser.role === "admin" || (currentUser && currentUser.id === editUser.user_id))
+                          ? isDark
+                            ? "bg-[#051122]/60 border-[#0f2848] text-slate-400 cursor-not-allowed opacity-75"
+                            : "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-75"
+                          : editRoleDropdownOpen
+                          ? isDark
+                            ? "bg-[#0A182B] border-2 border-[#1677FF] text-[#E6EDF7] shadow-[0_0_12px_rgba(22,119,255,0.25)] cursor-pointer"
+                            : "bg-white border-2 border-blue-600 text-slate-900 shadow-sm cursor-pointer"
+                          : isDark
+                          ? "bg-[#051122] border-[#0f2848] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#071933] cursor-pointer"
+                          : "bg-slate-50 border-slate-300 text-slate-800 hover:border-blue-500 cursor-pointer"
+                      }`}
+                      title={
+                        currentUser && currentUser.id === editUser.user_id
+                          ? "Tidak dapat mengubah role akun sendiri yang sedang aktif"
+                          : editUser.role === "admin"
+                          ? "Role Super Admin tidak dapat diubah dari menu ini"
+                          : ""
+                      }
                     >
-                      <option value="admin">Super Admin</option>
+                      <div className="flex items-center gap-2 truncate pr-2">
+                        <span className="material-symbols-outlined text-[18px] text-[#38BDF8] shrink-0">
+                          {editForm.role === "admin"
+                            ? "security"
+                            : EDIT_ROLE_OPTIONS.find((r) => r.value === editForm.role)?.icon || "badge"}
+                        </span>
+                        <span className="truncate font-semibold">
+                          {editForm.role === "admin"
+                            ? "Super Admin"
+                            : EDIT_ROLE_OPTIONS.find((r) => r.value === editForm.role)?.label || "Pilih Role"}
+                        </span>
+                      </div>
+                      <span
+                        className={`material-symbols-outlined text-[18px] text-[#94A3B8] transition-transform duration-200 shrink-0 ${
+                          editRoleDropdownOpen ? "rotate-180" : ""
+                        }`}
+                      >
+                        expand_more
+                      </span>
+                    </button>
+
+                    {/* Pop-up Menu Filter Role */}
+                    {editRoleDropdownOpen && (
+                      <div
+                        className={`absolute left-0 right-0 top-full mt-1.5 rounded-xl border shadow-2xl p-1.5 z-50 backdrop-blur-md overflow-hidden ${
+                          isDark
+                            ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7]"
+                            : "bg-white border-slate-200 text-slate-800 shadow-xl"
+                        }`}
+                        style={{
+                          backgroundColor: isDark ? "#0A182B" : "#FFFFFF",
+                          borderColor: isDark ? "#1E3A5F" : "#E2E8F0",
+                        }}
+                      >
+                        <div className="max-h-60 overflow-y-auto custom-scrollbar">
+                          {EDIT_ROLE_OPTIONS.map((opt) => {
+                            const isSelected = editForm.role === opt.value;
+                            return (
+                              <button
+                                key={opt.value}
+                                type="button"
+                                onClick={() => {
+                                  setEditForm({ ...editForm, role: opt.value });
+                                  setEditRoleDropdownOpen(false);
+                                }}
+                                className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
+                                  isSelected
+                                    ? isDark
+                                      ? "bg-[#1677FF] text-white font-semibold shadow-sm"
+                                      : "bg-blue-600 text-white font-semibold shadow-sm"
+                                    : isDark
+                                    ? "hover:bg-[#122846] text-[#CBD5E1]"
+                                    : "hover:bg-slate-100 text-slate-700"
+                                }`}
+                              >
+                                <div className="flex items-center gap-2 truncate pr-2">
+                                  <span className={`material-symbols-outlined text-[16px] ${isSelected ? "text-white" : isDark ? "text-[#38BDF8]" : "text-blue-600"}`}>
+                                    {opt.icon}
+                                  </span>
+                                  <span className="truncate">{opt.label}</span>
+                                </div>
+                                {isSelected && (
+                                  <span className="material-symbols-outlined text-[16px] shrink-0">check</span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Hidden native select untuk compatibility */}
+                    <select
+                      id="edit-role"
+                      name="role"
+                      value={editForm.role}
+                      disabled={editUser.role === "admin" || (currentUser && currentUser.id === editUser.user_id)}
+                      onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                      className="sr-only"
+                      tabIndex={-1}
+                      aria-hidden="true"
+                    >
+                      {editForm.role === "admin" && <option value="admin">Super Admin</option>}
                       <option value="karyawan_tif">Karyawan TIF</option>
                       <option value="teknisi">Teknisi</option>
                     </select>
                   </div>
 
-                  <div>
-                    <label className={`block font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                  {/* Dropdown 2: Status Akun (Custom Box Container & Popup Menu) */}
+                  <div className="relative" ref={editStatusDropdownRef}>
+                    <label className={`block font-semibold mb-1.5 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                       Status Akun *
                     </label>
+                    <button
+                      type="button"
+                      id="edit-status-btn"
+                      disabled={currentUser && currentUser.id === editUser.user_id}
+                      onClick={() => {
+                        setEditStatusDropdownOpen(!editStatusDropdownOpen);
+                        setEditRoleDropdownOpen(false);
+                        setEditDistrictDropdownOpen(false);
+                      }}
+                      className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center justify-between text-xs sm:text-sm font-medium transition-all outline-none ${
+                        currentUser && currentUser.id === editUser.user_id
+                          ? isDark
+                            ? "bg-[#051122]/60 border-[#0f2848] text-slate-400 cursor-not-allowed opacity-75"
+                            : "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-75"
+                          : editStatusDropdownOpen
+                          ? isDark
+                            ? "bg-[#0A182B] border-2 border-[#1677FF] text-[#E6EDF7] shadow-[0_0_12px_rgba(22,119,255,0.25)] cursor-pointer"
+                            : "bg-white border-2 border-blue-600 text-slate-900 shadow-sm cursor-pointer"
+                          : isDark
+                          ? "bg-[#051122] border-[#0f2848] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#071933] cursor-pointer"
+                          : "bg-slate-50 border-slate-300 text-slate-800 hover:border-blue-500 cursor-pointer"
+                      }`}
+                      title={currentUser && currentUser.id === editUser.user_id ? "Tidak dapat menonaktifkan akun sendiri yang sedang aktif" : ""}
+                    >
+                      <div className="flex items-center gap-2 truncate pr-2">
+                        <span className={`w-2 h-2 rounded-full shrink-0 ${
+                          editForm.status === "aktif" ? "bg-emerald-400" :
+                          editForm.status === "pending" ? "bg-amber-400" :
+                          "bg-rose-400"
+                        }`} />
+                        <span className="truncate font-semibold capitalize">
+                          {EDIT_STATUS_OPTIONS.find((s) => s.value === editForm.status)?.label || "Pilih Status"}
+                        </span>
+                      </div>
+                      <span
+                        className={`material-symbols-outlined text-[18px] text-[#94A3B8] transition-transform duration-200 shrink-0 ${
+                          editStatusDropdownOpen ? "rotate-180" : ""
+                        }`}
+                      >
+                        expand_more
+                      </span>
+                    </button>
+
+                    {/* Pop-up Menu Filter Status */}
+                    {editStatusDropdownOpen && (
+                      <div
+                        className={`absolute left-0 right-0 top-full mt-1.5 rounded-xl border shadow-2xl p-1.5 z-50 backdrop-blur-md overflow-hidden ${
+                          isDark
+                            ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7]"
+                            : "bg-white border-slate-200 text-slate-800 shadow-xl"
+                        }`}
+                        style={{
+                          backgroundColor: isDark ? "#0A182B" : "#FFFFFF",
+                          borderColor: isDark ? "#1E3A5F" : "#E2E8F0",
+                        }}
+                      >
+                        <div className="max-h-60 overflow-y-auto custom-scrollbar">
+                          {EDIT_STATUS_OPTIONS.map((opt) => {
+                            const isSelected = editForm.status === opt.value;
+                            return (
+                              <button
+                                key={opt.value}
+                                type="button"
+                                onClick={() => {
+                                  setEditForm({ ...editForm, status: opt.value });
+                                  setEditStatusDropdownOpen(false);
+                                }}
+                                className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
+                                  isSelected
+                                    ? isDark
+                                      ? "bg-[#1677FF] text-white font-semibold shadow-sm"
+                                      : "bg-blue-600 text-white font-semibold shadow-sm"
+                                    : isDark
+                                    ? "hover:bg-[#122846] text-[#CBD5E1]"
+                                    : "hover:bg-slate-100 text-slate-700"
+                                }`}
+                              >
+                                <div className="flex items-center gap-2 truncate pr-2">
+                                  <span className={`w-2 h-2 rounded-full shrink-0 ${
+                                    opt.value === "aktif" ? "bg-emerald-400" :
+                                    opt.value === "pending" ? "bg-amber-400" :
+                                    "bg-rose-400"
+                                  }`} />
+                                  <span className="truncate">{opt.label}</span>
+                                </div>
+                                {isSelected && (
+                                  <span className="material-symbols-outlined text-[16px] shrink-0">check</span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Hidden native select untuk compatibility */}
                     <select
+                      id="edit-status"
+                      name="status"
                       value={editForm.status}
                       disabled={currentUser && currentUser.id === editUser.user_id}
                       onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                      className={`w-full px-3.5 py-2.5 rounded-xl border outline-none text-xs sm:text-sm cursor-pointer ${isDark
-                        ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
-                        : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500"
-                        }`}
+                      className="sr-only"
+                      tabIndex={-1}
+                      aria-hidden="true"
                     >
                       <option value="aktif">Aktif</option>
                       <option value="pending">Pending</option>
@@ -1998,38 +2260,124 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                   </div>
                 </div>
 
-                <div>
-                  <label className={`block font-semibold mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                {/* Dropdown 3: District Penugasan (Custom Box Container & Popup Menu) */}
+                <div className="relative" ref={editDistrictDropdownRef}>
+                  <label className={`block font-semibold mb-1.5 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                     District Penugasan *
                   </label>
+                  <button
+                    type="button"
+                    id="edit-district-btn"
+                    onClick={() => {
+                      setEditDistrictDropdownOpen(!editDistrictDropdownOpen);
+                      setEditRoleDropdownOpen(false);
+                      setEditStatusDropdownOpen(false);
+                    }}
+                    className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center justify-between text-xs sm:text-sm font-medium transition-all cursor-pointer outline-none ${
+                      editDistrictDropdownOpen
+                        ? isDark
+                          ? "bg-[#0A182B] border-2 border-[#1677FF] text-[#E6EDF7] shadow-[0_0_12px_rgba(22,119,255,0.25)]"
+                          : "bg-white border-2 border-blue-600 text-slate-900 shadow-sm"
+                        : isDark
+                        ? "bg-[#051122] border-[#0f2848] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#071933]"
+                        : "bg-slate-50 border-slate-300 text-slate-800 hover:border-blue-500"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 truncate pr-2">
+                      <span className="material-symbols-outlined text-[18px] text-[#38BDF8] shrink-0">
+                        location_on
+                      </span>
+                      <span className={`truncate font-semibold ${!editForm.district ? (isDark ? "text-slate-400" : "text-slate-500") : ""}`}>
+                        {editForm.district || "Pilih District"}
+                      </span>
+                    </div>
+                    <span
+                      className={`material-symbols-outlined text-[18px] text-[#94A3B8] transition-transform duration-200 shrink-0 ${
+                        editDistrictDropdownOpen ? "rotate-180" : ""
+                      }`}
+                    >
+                      expand_more
+                    </span>
+                  </button>
+
+                  {/* Pop-up Menu Filter District */}
+                  {editDistrictDropdownOpen && (
+                    <div
+                      className={`absolute left-0 right-0 top-full mt-1.5 rounded-xl border shadow-2xl p-1.5 z-50 backdrop-blur-md overflow-hidden ${
+                        isDark
+                          ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7]"
+                          : "bg-white border-slate-200 text-slate-800 shadow-xl"
+                      }`}
+                      style={{
+                        backgroundColor: isDark ? "#0A182B" : "#FFFFFF",
+                        borderColor: isDark ? "#1E3A5F" : "#E2E8F0",
+                      }}
+                    >
+                      <div className="max-h-60 overflow-y-auto custom-scrollbar">
+                        {districtOptions.map((d) => {
+                          const isSelected = editForm.district === d;
+                          return (
+                            <button
+                              key={d}
+                              type="button"
+                              onClick={() => {
+                                setEditForm({ ...editForm, district: d });
+                                setEditDistrictDropdownOpen(false);
+                              }}
+                              className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
+                                isSelected
+                                  ? isDark
+                                    ? "bg-[#1677FF] text-white font-semibold shadow-sm"
+                                    : "bg-blue-600 text-white font-semibold shadow-sm"
+                                  : isDark
+                                  ? "hover:bg-[#122846] text-[#CBD5E1]"
+                                  : "hover:bg-slate-100 text-slate-700"
+                              }`}
+                            >
+                              <span className="truncate pr-2">{d}</span>
+                              {isSelected && (
+                                <span className="material-symbols-outlined text-[16px] shrink-0">check</span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Hidden native select untuk compatibility */}
                   <select
+                    id="edit-district"
+                    name="district"
                     value={editForm.district}
                     onChange={(e) => setEditForm({ ...editForm, district: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl border outline-none text-xs sm:text-sm cursor-pointer ${isDark
-                      ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
-                      : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500"
-                      }`}
+                    required
+                    className="sr-only"
+                    tabIndex={-1}
+                    aria-hidden="true"
                   >
-                    <option value="" disabled>
-                      Pilih District
-                    </option>
+                    <option value="" disabled>Pilih District</option>
                     {districtOptions.map((d) => (
-                      <option key={d} value={d}>
-                        {d}
-                      </option>
+                      <option key={d} value={d}>{d}</option>
                     ))}
                   </select>
                 </div>
 
+                {/* Footer Buttons */}
                 <div
-                  className={`pt-4 border-t flex justify-end gap-2.5 ${isDark ? "border-[#0f2747]" : "border-slate-100"
+                  className={`pt-4 border-t flex justify-end gap-2.5 ${isDark ? "border-[#142D4C]" : "border-slate-100"
                     }`}
                 >
                   <button
                     type="button"
-                    onClick={() => setEditUser(null)}
-                    className={`px-4 py-2 rounded-xl border cursor-pointer ${isDark
-                      ? "border-slate-600 text-slate-400 hover:text-white"
+                    onClick={() => {
+                      setEditUser(null);
+                      setEditRoleDropdownOpen(false);
+                      setEditStatusDropdownOpen(false);
+                      setEditDistrictDropdownOpen(false);
+                    }}
+                    className={`px-4 py-2.5 rounded-xl border text-xs font-semibold cursor-pointer transition-colors ${isDark
+                      ? "border-[#1E3A5F] text-slate-400 hover:text-white hover:bg-[#071933]"
                       : "border-slate-300 text-slate-700 hover:bg-slate-100"
                       }`}
                   >
@@ -2038,9 +2386,12 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                   <button
                     type="submit"
                     disabled={editSubmitting}
-                    className="px-5 py-2 rounded-xl bg-[#1677FF] text-white font-semibold hover:bg-blue-600 disabled:opacity-50 cursor-pointer shadow-sm"
+                    className="px-5 py-2.5 rounded-xl bg-[#1677FF] text-white text-xs font-semibold hover:bg-blue-600 disabled:opacity-50 cursor-pointer shadow-lg shadow-[#1677FF]/25 hover:shadow-[#1677FF]/40 transition-all flex items-center gap-2"
                   >
-                    {editSubmitting ? "Menyimpan..." : "Simpan Perubahan"}
+                    {editSubmitting && (
+                      <span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
+                    )}
+                    <span>{editSubmitting ? "Menyimpan..." : "Simpan Perubahan"}</span>
                   </button>
                 </div>
               </form>
