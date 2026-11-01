@@ -1511,7 +1511,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                       <div className="flex items-center gap-2 bg-black/70 px-2.5 py-1 rounded-md border border-[#00E5FF]/20 backdrop-blur-sm">
                         <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-ping" />
                         <span className="font-bold">
-                          {rotX === 0 && rotY === 0 ? "FRONTAL 3D CHASSIS (DEPTH: 350mm)" : "ISOMETRIC 3D CHASSIS (DEPTH: 350mm)"}
+                          ISOMETRIC 3D CHASSIS (DEPTH: 350mm)
                         </span>
                       </div>
                       <div className="bg-black/70 px-2.5 py-1 rounded-md border border-[#00E5FF]/20 backdrop-blur-sm">
@@ -1753,35 +1753,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                                         : "Kosong (Ready)"
                                       }`}
                                   >
-                                    {/* Floating 3D Spotlight HUD Pin Badge */}
-                                    {isHighlighted && (
-                                      <div
-                                        className="absolute -top-16 left-1/2 -translate-x-1/2 z-50 px-3 py-1.5 rounded-xl bg-[#030A16]/95 border-2 border-amber-400 shadow-[0_8px_30px_rgba(0,0,0,0.9),0_0_20px_rgba(245,158,11,0.6)] flex flex-col items-center gap-0.5 pointer-events-none whitespace-nowrap backdrop-blur-md"
-                                        style={{ transform: "translateZ(45px)", WebkitFontSmoothing: "antialiased" }}
-                                      >
-                                        <div className="flex items-center gap-1.5 text-amber-300 text-[11px] font-black tracking-wide">
-                                          <span className="material-symbols-outlined text-[14px] text-amber-400 animate-bounce">location_on</span>
-                                          <span>Slot #{slot.nomor_slot} &bull; Tier Atas</span>
-                                        </div>
-                                        <div className="text-[10px] font-mono">
-                                          {isOccupied ? (
-                                            <div className="flex items-center gap-1.5">
-                                              <span className="text-slate-300 font-semibold">SN:</span>
-                                              <strong className="text-[#00E5FF] font-black tracking-wider text-[11px] bg-cyan-950/90 px-1.5 py-0.5 rounded border border-cyan-500/40">
-                                                {slot.module?.serial_number || "-"}
-                                              </strong>
-                                              <span className="text-amber-300 text-[9px] font-bold">({cardModuleType})</span>
-                                            </div>
-                                          ) : (
-                                            <div className="flex items-center gap-1 text-emerald-300 font-black tracking-wider text-[10px] bg-emerald-950/90 px-2 py-0.5 rounded border border-emerald-500/50">
-                                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                                              <span>🟢 SLOT KOSONG (EMPTY)</span>
-                                            </div>
-                                          )}
-                                        </div>
-                                        <div className="w-2.5 h-2.5 bg-[#030A16] border-r-2 border-b-2 border-amber-400 rotate-45 -mb-2 mt-0.5" />
-                                      </div>
-                                    )}
+
 
                                     {/* Top Ejector Latch */}
                                     <div
@@ -1811,35 +1783,18 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                                         <>
                                           <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#00E5FF] mb-1 animate-pulse" />
                                           <span
-                                            className={`text-[8.5px] font-mono font-black tracking-tight text-center leading-tight break-all uppercase ${isHighlighted ? "text-slate-950 font-black" : "text-cyan-300"
+                                            className={`text-[9px] font-mono font-black tracking-wider text-center leading-tight break-all uppercase ${isHighlighted ? "text-slate-950 font-black" : "text-cyan-300"
                                               }`}
                                             style={{
                                               writingMode: "vertical-rl",
                                               textOrientation: "mixed",
-                                              maxHeight: "52px",
+                                              maxHeight: "85px",
                                               textShadow: isHighlighted ? "none" : "0 0 4px rgba(0, 229, 255, 0.4)",
                                             }}
                                           >
                                             {cardModuleType}
                                           </span>
-                                          {slot.module?.serial_number && (
-                                            <span
-                                              className={`text-[8px] font-mono font-black text-center leading-none mt-1 ${isHighlighted ? "text-slate-900 font-black" : "text-amber-300"
-                                                }`}
-                                              style={{
-                                                writingMode: "vertical-rl",
-                                                textOrientation: "mixed",
-                                                maxHeight: "38px",
-                                                textShadow: isHighlighted ? "none" : "0 0 3px rgba(245, 158, 11, 0.4)",
-                                              }}
-                                              title={`SN: ${slot.module.serial_number}`}
-                                            >
-                                              {slot.module.serial_number.length > 7
-                                                ? slot.module.serial_number.slice(-7)
-                                                : slot.module.serial_number}
-                                            </span>
-                                          )}
-                                          <div className="w-2.5 h-3 mt-1 rounded-sm bg-black border border-slate-700 flex items-center justify-center">
+                                          <div className="w-2.5 h-3 mt-1.5 rounded-sm bg-black border border-slate-700 flex items-center justify-center">
                                             <div className="w-1 h-1 rounded-full bg-slate-500" />
                                           </div>
                                         </>
@@ -1931,35 +1886,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                                         : "Kosong (Ready)"
                                       }`}
                                   >
-                                    {/* Floating 3D Spotlight HUD Pin Badge */}
-                                    {isHighlighted && (
-                                      <div
-                                        className="absolute -top-16 left-1/2 -translate-x-1/2 z-50 px-3 py-1.5 rounded-xl bg-[#030A16]/95 border-2 border-amber-400 shadow-[0_8px_30px_rgba(0,0,0,0.9),0_0_20px_rgba(245,158,11,0.6)] flex flex-col items-center gap-0.5 pointer-events-none whitespace-nowrap backdrop-blur-md"
-                                        style={{ transform: "translateZ(45px)", WebkitFontSmoothing: "antialiased" }}
-                                      >
-                                        <div className="flex items-center gap-1.5 text-amber-300 text-[11px] font-black tracking-wide">
-                                          <span className="material-symbols-outlined text-[14px] text-amber-400 animate-bounce">location_on</span>
-                                          <span>Slot #{slot.nomor_slot} &bull; Tier Bawah</span>
-                                        </div>
-                                        <div className="text-[10px] font-mono">
-                                          {isOccupied ? (
-                                            <div className="flex items-center gap-1.5">
-                                              <span className="text-slate-300 font-semibold">SN:</span>
-                                              <strong className="text-[#00E5FF] font-black tracking-wider text-[11px] bg-cyan-950/90 px-1.5 py-0.5 rounded border border-cyan-500/40">
-                                                {slot.module?.serial_number || "-"}
-                                              </strong>
-                                              <span className="text-amber-300 text-[9px] font-bold">({cardModuleType})</span>
-                                            </div>
-                                          ) : (
-                                            <div className="flex items-center gap-1 text-emerald-300 font-black tracking-wider text-[10px] bg-emerald-950/90 px-2 py-0.5 rounded border border-emerald-500/50">
-                                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                                              <span>🟢 SLOT KOSONG (EMPTY)</span>
-                                            </div>
-                                          )}
-                                        </div>
-                                        <div className="w-2.5 h-2.5 bg-[#030A16] border-r-2 border-b-2 border-amber-400 rotate-45 -mb-2 mt-0.5" />
-                                      </div>
-                                    )}
+
 
                                     {/* Top Ejector Latch */}
                                     <div
@@ -1989,35 +1916,18 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                                         <>
                                           <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#00E5FF] mb-1 animate-pulse" />
                                           <span
-                                            className={`text-[8.5px] font-mono font-black tracking-tight text-center leading-tight break-all uppercase ${isHighlighted ? "text-slate-950 font-black" : "text-cyan-300"
+                                            className={`text-[9px] font-mono font-black tracking-wider text-center leading-tight break-all uppercase ${isHighlighted ? "text-slate-950 font-black" : "text-cyan-300"
                                               }`}
                                             style={{
                                               writingMode: "vertical-rl",
                                               textOrientation: "mixed",
-                                              maxHeight: "50px",
+                                              maxHeight: "80px",
                                               textShadow: isHighlighted ? "none" : "0 0 4px rgba(0, 229, 255, 0.4)",
                                             }}
                                           >
                                             {cardModuleType}
                                           </span>
-                                          {slot.module?.serial_number && (
-                                            <span
-                                              className={`text-[8px] font-mono font-black text-center leading-none mt-1 ${isHighlighted ? "text-slate-900 font-black" : "text-amber-300"
-                                                }`}
-                                              style={{
-                                                writingMode: "vertical-rl",
-                                                textOrientation: "mixed",
-                                                maxHeight: "38px",
-                                                textShadow: isHighlighted ? "none" : "0 0 3px rgba(245, 158, 11, 0.4)",
-                                              }}
-                                              title={`SN: ${slot.module.serial_number}`}
-                                            >
-                                              {slot.module.serial_number.length > 7
-                                                ? slot.module.serial_number.slice(-7)
-                                                : slot.module.serial_number}
-                                            </span>
-                                          )}
-                                          <div className="w-2.5 h-3 mt-1 rounded-sm bg-black border border-slate-700 flex items-center justify-center">
+                                          <div className="w-2.5 h-3 mt-1.5 rounded-sm bg-black border border-slate-700 flex items-center justify-center">
                                             <div className="w-1 h-1 rounded-full bg-slate-500" />
                                           </div>
                                         </>
@@ -2061,10 +1971,16 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                           {/* ── AUXILIARY SLOTS (JIKA ADA LEBIH DARI 29) ── */}
                           {otherSlots.length > 0 && (
                             <div className="mb-2">
-                              <div className="text-[9px] font-mono text-slate-400 px-1 mb-1">
-                                <span>AUXILIARY EXPANSION SLOTS</span>
+                              <div className="flex items-center justify-between text-[10px] font-mono px-1 mb-1">
+                                <span className="font-bold text-[#38BDF8] flex items-center gap-1">
+                                  <span>◆ AUXILIARY EXPANSION SLOTS</span>
+                                  <span className="text-slate-400 font-normal">(SLOT 30+)</span>
+                                </span>
+                                <span className="text-[9px] text-[#38BDF8]/90 font-semibold">
+                                  {otherSlots.filter((s) => s.occupied).length}/{otherSlots.length} Terpasang
+                                </span>
                               </div>
-                              <div className="flex gap-1 overflow-x-auto custom-scrollbar p-1.5 rounded-lg bg-[#050D1A] border border-[#1E3A5F]/50">
+                              <div className="flex gap-1 overflow-x-auto custom-scrollbar p-1.5 rounded-lg bg-[#050D1A] border border-[#1E3A5F]/70">
                                 {otherSlots.map((slot) => {
                                   const isOccupied = slot.occupied;
                                   const isHighlighted = slot.slot_definition_id === highlightedSlotId;
@@ -2072,11 +1988,11 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                                     <div
                                       key={slot.slot_definition_id}
                                       onClick={() => handleSlotCardClick(slot)}
-                                      className={`p-2 rounded text-center cursor-pointer border text-[9px] font-mono ${isHighlighted
-                                          ? "bg-amber-400 text-black border-amber-300 font-bold"
+                                      className={`px-2.5 py-1.5 rounded text-center cursor-pointer border text-[10px] font-mono font-bold transition-all ${isHighlighted
+                                          ? "bg-amber-400 text-black border-amber-300 font-extrabold shadow-[0_0_12px_#F59E0B]"
                                           : isOccupied
-                                            ? "bg-slate-800 text-white border-slate-700"
-                                            : "bg-emerald-950/30 text-emerald-300 border-emerald-800"
+                                            ? "bg-slate-800 text-cyan-200 border-slate-600 hover:border-cyan-400 hover:text-white"
+                                            : "bg-emerald-950/60 text-emerald-300 border-emerald-600/80 hover:border-emerald-400"
                                         }`}
                                     >
                                       #{slot.nomor_slot}
@@ -2278,20 +2194,34 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
 
                         {/* 2D Auxiliary Slots jika ada */}
                         {otherSlots.length > 0 && (
-                          <div className="pt-2 border-t border-slate-700/50">
-                            <div className="text-[11px] font-mono font-bold text-slate-400 mb-2">
-                              <span>AUXILIARY SLOTS</span>
+                          <div className={`pt-2 border-t ${isDark ? "border-slate-700/50" : "border-slate-300"}`}>
+                            <div className={`text-[11px] font-mono font-bold mb-2 flex items-center gap-1.5 ${isDark ? "text-[#38BDF8]" : "text-blue-700 font-extrabold"}`}>
+                              <span>◆ AUXILIARY EXPANSION SLOTS</span>
                             </div>
                             <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                              {otherSlots.map((slot) => (
-                                <div
-                                  key={slot.slot_definition_id}
-                                  onClick={() => handleSlotCardClick(slot)}
-                                  className="p-2 rounded-lg border text-center cursor-pointer text-xs bg-slate-800 text-slate-200"
-                                >
-                                  Slot {slot.nomor_slot}
-                                </div>
-                              ))}
+                              {otherSlots.map((slot) => {
+                                const isOccupied = slot.occupied;
+                                const isHighlighted = slot.slot_definition_id === highlightedSlotId;
+                                return (
+                                  <div
+                                    key={slot.slot_definition_id}
+                                    onClick={() => handleSlotCardClick(slot)}
+                                    className={`p-2.5 rounded-lg border text-center cursor-pointer text-xs font-bold transition-all ${
+                                      isHighlighted
+                                        ? "bg-amber-400 text-black border-amber-500 shadow-md font-extrabold"
+                                        : isDark
+                                          ? isOccupied
+                                            ? "bg-slate-800 text-cyan-200 border-slate-700 hover:border-cyan-400"
+                                            : "bg-emerald-950/40 text-emerald-300 border-emerald-800 hover:border-emerald-500"
+                                          : isOccupied
+                                            ? "bg-white text-blue-900 border-slate-300 shadow-sm hover:border-blue-400"
+                                            : "bg-emerald-50 text-emerald-800 border-emerald-300 shadow-sm hover:border-emerald-500"
+                                    }`}
+                                  >
+                                    Slot {slot.nomor_slot}
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
                         )}
