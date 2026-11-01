@@ -1874,92 +1874,87 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                         >
                           {/* TOP HEADER: BRAND, REGULATORY WARNING LABELS & FIBER MANAGEMENT CHUTES */}
                           <div className="border border-slate-400 rounded-t-lg bg-gradient-to-b from-slate-100 via-slate-200 to-slate-300 p-2 sm:p-2.5 mb-2 shadow-sm text-slate-900">
-                            {/* Row 1: Brand & Model Header Plate */}
-                            <div className="flex items-center justify-between pb-1.5 border-b border-slate-400/80">
-                              <div className="flex items-center gap-2">
-                                <span className="font-black text-xs tracking-widest text-white px-2 py-0.5 rounded-[2px] bg-[#124191] shadow-sm font-sans">
+                            {/* Row 1: Brand & Model Header Plate (100% Single-Line, No Wrapping) */}
+                            <div className="flex items-center justify-between pb-1.5 border-b border-slate-400/80 gap-2 min-w-0">
+                              <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 shrink-0">
+                                <span className="font-black text-[11px] sm:text-xs tracking-widest text-white px-2 py-0.5 rounded-[2px] bg-[#124191] shadow-sm font-sans shrink-0 whitespace-nowrap">
                                   NOKIA
                                 </span>
-                                <span className="font-black text-xs text-slate-900 tracking-wide font-mono">
+                                <span className="font-black text-[11px] sm:text-xs text-slate-900 tracking-wide font-mono shrink-0 whitespace-nowrap">
                                   {currentDevice.tipe === "PSS24" || currentDevice.tipe?.includes("24")
                                     ? "1830 PSS-24x"
                                     : `${currentDevice.tipe} SHELF`}
                                 </span>
-                                <span className="text-[9.5px] font-mono text-slate-600 hidden sm:inline">&bull; 3HE08222AA &bull; CLEI: IPUCAN0RAA</span>
+                                <span className="text-[8.5px] sm:text-[9.5px] font-mono text-slate-600 shrink-0 whitespace-nowrap hidden md:inline">
+                                  &bull; 3HE08222AA &bull; CLEI: IPUCAN0RAA
+                                </span>
                               </div>
                               
-                              <div className="flex items-center gap-2">
-                                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] bg-slate-900 text-emerald-400 border border-slate-700 text-[9px] font-mono font-bold shadow-sm">
-                                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_#10B981]" />
-                                  <span className="hidden sm:inline">DUAL DC POWER OK</span>
+                              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] bg-slate-900 text-emerald-400 border border-slate-700 text-[8.5px] sm:text-[9px] font-mono font-bold shadow-sm shrink-0 whitespace-nowrap">
+                                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_#10B981] shrink-0" />
+                                  <span className="shrink-0 whitespace-nowrap">DUAL DC POWER OK</span>
                                 </div>
-                                <div className="hidden md:flex items-center gap-1 text-[7.5px] font-mono text-slate-600 border border-slate-400/80 px-1 py-0.5 rounded-[2px] bg-slate-200">
-                                  <span>ETL</span>
-                                  <span>&bull;</span>
-                                  <span>CE</span>
-                                  <span>&bull;</span>
-                                  <span>NEBS 3</span>
+                                <div className="hidden lg:flex items-center gap-1 text-[7.5px] font-mono text-slate-600 border border-slate-400/80 px-1.5 py-0.5 rounded-[2px] bg-slate-200 shrink-0 whitespace-nowrap">
+                                  <span className="shrink-0 whitespace-nowrap">ETL &bull; CE &bull; NEBS 3</span>
                                 </div>
                               </div>
                             </div>
 
-                            {/* Row 2: Industrial Safety Warning Labels (Danger Red, Caution & Attention Yellow) */}
+                            {/* Row 2: Industrial Safety Warning Labels (100% Single-Line Badges) */}
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 pt-1.5 text-[8px] sm:text-[8.5px] font-bold">
                               {/* DANGER: INVISIBLE LASER RADIATION */}
-                              <div className="px-2 py-1 rounded-[2px] bg-[#DC2626] text-white border border-rose-300 shadow-sm flex items-center gap-1.5">
+                              <div className="px-2 py-1 rounded-[2px] bg-[#DC2626] text-white border border-rose-300 shadow-sm flex items-center gap-1.5 min-w-0">
                                 <span className="bg-white text-[#DC2626] rounded-full w-3.5 h-3.5 flex items-center justify-center text-[9px] font-black shrink-0">!</span>
-                                <div className="leading-tight truncate">
-                                  <div className="font-black uppercase tracking-wider text-[8.5px]">▲ DANGER</div>
-                                  <div className="text-[7.5px] font-normal truncate">INVISIBLE LASER RADIATION &bull; CLASS 1M / 3R</div>
-                                </div>
+                                <span className="uppercase tracking-wider font-bold whitespace-nowrap truncate min-w-0">
+                                  ▲ DANGER: INVISIBLE LASER RADIATION
+                                </span>
                               </div>
 
                               {/* CAUTION: LASER RADIATION */}
-                              <div className="px-2 py-1 rounded-[2px] bg-[#FACC15] text-black border border-yellow-600 shadow-sm flex items-center gap-1.5">
-                                <span className="text-black text-[10px] shrink-0">▲</span>
-                                <div className="leading-tight truncate">
-                                  <div className="font-black uppercase tracking-wider text-[8.5px]">CAUTION / ATTENTION</div>
-                                  <div className="text-[7.5px] font-medium truncate">RAYONNEMENT LASER INVISIBLE &bull; EVITER EXPOSITION</div>
-                                </div>
+                              <div className="px-2 py-1 rounded-[2px] bg-[#FACC15] text-black border border-yellow-600 shadow-sm flex items-center gap-1.5 min-w-0">
+                                <span className="text-black text-[10px] shrink-0 font-bold">▲</span>
+                                <span className="uppercase tracking-wider font-bold whitespace-nowrap truncate min-w-0">
+                                  CAUTION: RAYONNEMENT LASER
+                                </span>
                               </div>
 
                               {/* WARNING: DUAL -48V DC FEEDS */}
-                              <div className="px-2 py-1 rounded-[2px] bg-[#F59E0B] text-black border border-amber-600 shadow-sm flex items-center gap-1.5">
+                              <div className="px-2 py-1 rounded-[2px] bg-[#F59E0B] text-black border border-amber-600 shadow-sm flex items-center gap-1.5 min-w-0">
                                 <span className="text-black text-[10px] font-black shrink-0">⚡</span>
-                                <div className="leading-tight truncate">
-                                  <div className="font-black uppercase tracking-wider text-[8.5px]">WARNING / AVERTISSEMENT</div>
-                                  <div className="text-[7.5px] font-medium truncate">HIGH TOUCH LEAKAGE CURRENT &bull; DUAL -48V DC</div>
-                                </div>
+                                <span className="uppercase tracking-wider font-bold whitespace-nowrap truncate min-w-0">
+                                  WARNING: DUAL -48V DC FEEDS
+                                </span>
                               </div>
                             </div>
 
                             {/* Row 3: Top Fiber Management Troughs (Curved Stainless Cable Chutes) */}
-                            <div className="mt-1.5 pt-1 border-t border-slate-400/80 flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="flex items-center gap-2">
-                                  <div className="w-20 sm:w-28 h-2.5 rounded-b-md bg-gradient-to-b from-slate-300 via-slate-400 to-slate-500 border border-slate-600 shadow-inner flex items-center justify-around px-1" title="Left Fiber Drop Chute">
+                            <div className="mt-1.5 pt-1 border-t border-slate-400/80 flex items-center justify-between gap-2 min-w-0">
+                              <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink-0">
+                                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                                  <div className="w-16 sm:w-24 h-2.5 rounded-b-md bg-gradient-to-b from-slate-300 via-slate-400 to-slate-500 border border-slate-600 shadow-inner flex items-center justify-around px-1 shrink-0" title="Left Fiber Drop Chute">
                                     <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
                                     <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
                                     <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
                                   </div>
-                                  <div className="w-20 sm:w-28 h-2.5 rounded-b-md bg-gradient-to-b from-slate-300 via-slate-400 to-slate-500 border border-slate-600 shadow-inner flex items-center justify-around px-1" title="Right Fiber Drop Chute">
+                                  <div className="w-16 sm:w-24 h-2.5 rounded-b-md bg-gradient-to-b from-slate-300 via-slate-400 to-slate-500 border border-slate-600 shadow-inner flex items-center justify-around px-1 shrink-0" title="Right Fiber Drop Chute">
                                     <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
                                     <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
                                     <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
                                   </div>
                                 </div>
-                                <span className="text-[8px] font-mono text-slate-700 font-semibold uppercase hidden sm:inline">
+                                <span className="text-[8px] font-mono text-slate-700 font-semibold uppercase hidden sm:inline shrink-0 whitespace-nowrap">
                                   TOP FIBER MANAGEMENT TROUGH
                                 </span>
                               </div>
 
-                              <div className="flex items-center gap-1.5 text-[8px] font-mono text-slate-700">
-                                <span className="w-8 h-1 rounded-full bg-amber-400 shadow-[0_0_3px_#F59E0B]" />
-                                <span className="font-semibold text-slate-800">FIBER CORDS</span>
+                              <div className="flex items-center gap-1.5 text-[8px] font-mono text-slate-700 shrink-0 whitespace-nowrap">
+                                <span className="w-6 sm:w-8 h-1 rounded-full bg-amber-400 shadow-[0_0_3px_#F59E0B] shrink-0" />
+                                <span className="font-semibold text-slate-800 shrink-0 whitespace-nowrap">FIBER CORDS</span>
                               </div>
                             </div>
                           </div>
-{/* ── TIER 1: BARIS ATAS (SLOTS 1 - 16) ── */}
+                          {/* ── TIER 1: BARIS ATAS (SLOTS 1 - 16) ── */}
                           <div className="mb-2">
                             <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 px-1 mb-1">
                               <span className="font-bold text-[#38BDF8] flex items-center gap-1">
