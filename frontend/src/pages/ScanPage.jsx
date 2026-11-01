@@ -1609,78 +1609,142 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                       <div
                         className="relative"
                         style={{
-                          width: "clamp(340px, 94vw, 610px)",
+                          width: "clamp(320px, 92vw, 590px)",
                           transformStyle: "preserve-3d",
                         }}
                       >
-                        {/* ── 3D DEPTH WALLS (EXTRUSION) ANTI-GEPENG ── */}
-                        {/* Top Roof Wall (Dinding Atas) */}
+                        {/* ── 3D DEPTH WALLS (EXTRUSION) NOKIA PSS-24X BRUSHED GALVANIZED STEEL ── */}
+                        {/* Top Roof Wall (Dinding Atas - Slanted Sheet Steel Canopy) */}
                         <div
                           className="absolute top-0 left-0 right-0 h-[110px] pointer-events-none rounded-t"
                           style={{
                             transformOrigin: "top",
                             transform: "rotateX(90deg) translateY(-110px)",
-                            background: "linear-gradient(to bottom, #1E293B, #0B1324)",
-                            border: "1px solid #334155",
-                            boxShadow: "inset 0 0 30px rgba(0,0,0,0.8)",
+                            background: "linear-gradient(to bottom, #94A3B8 0%, #CBD5E1 30%, #E2E8F0 60%, #94A3B8 85%, #64748B 100%)",
+                            border: "1px solid #94A3B8",
+                            boxShadow: "inset 0 0 25px rgba(0,0,0,0.35), inset 0 2px 4px rgba(255,255,255,0.7)",
                           }}
                         >
-                          <div className="w-full h-full p-2 flex items-center justify-around opacity-30">
-                            <div className="w-20 h-4 border border-slate-600 rounded bg-slate-900" />
-                            <div className="w-20 h-4 border border-slate-600 rounded bg-slate-900" />
-                            <div className="w-20 h-4 border border-slate-600 rounded bg-slate-900" />
+                          <div className="w-full h-full p-2 flex flex-col justify-between">
+                            <div className="w-full flex items-center justify-around opacity-80">
+                              {[...Array(7)].map((_, i) => (
+                                <div key={i} className="w-1.5 h-1.5 rounded-full bg-slate-300 border border-slate-500 shadow-sm" />
+                              ))}
+                            </div>
+                            <div className="w-full flex items-center justify-between px-4 opacity-40">
+                              <div className="h-0.5 flex-1 bg-slate-500 mr-2" />
+                              <span className="text-[7.5px] font-mono tracking-wider text-slate-800 uppercase font-bold">
+                                NOKIA 1830 PSS-24X OPTICAL SUBRACK
+                              </span>
+                              <div className="h-0.5 flex-1 bg-slate-500 ml-2" />
+                            </div>
+                            <div className="w-full flex items-center justify-around opacity-80">
+                              {[...Array(7)].map((_, i) => (
+                                <div key={i} className="w-1.5 h-1.5 rounded-full bg-slate-300 border border-slate-500 shadow-sm" />
+                              ))}
+                            </div>
                           </div>
                         </div>
 
-                        {/* Bottom Floor Wall (Dinding Bawah) */}
+                        {/* Bottom Floor Wall (Dinding Bawah - Steel Sub-rack Base) */}
                         <div
                           className="absolute bottom-0 left-0 right-0 h-[110px] pointer-events-none rounded-b"
                           style={{
                             transformOrigin: "bottom",
                             transform: "rotateX(-90deg) translateY(110px)",
-                            background: "linear-gradient(to top, #0A0F1D, #020617)",
-                            border: "1px solid #1E293B",
-                            boxShadow: "inset 0 0 30px rgba(0,0,0,0.9)",
+                            background: "linear-gradient(to top, #475569, #64748B, #94A3B8)",
+                            border: "1px solid #64748B",
+                            boxShadow: "inset 0 0 30px rgba(0,0,0,0.5)",
                           }}
-                        />
+                        >
+                          <div className="w-full h-full p-3 flex flex-col justify-between opacity-70">
+                            <div className="w-full flex items-center justify-around">
+                              {[...Array(6)].map((_, i) => (
+                                <div key={i} className="w-2 h-2 rounded-full bg-slate-400 border border-slate-600 shadow-inner" />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
 
-                        {/* Left Side Wall (Dinding Samping Kiri) */}
+                        {/* Left Side Wall (Dinding Samping Kiri - Galvanized Steel Sheet Panel) */}
                         <div
                           className="absolute top-0 bottom-0 left-0 w-[110px] pointer-events-none rounded-l"
                           style={{
                             transformOrigin: "left",
                             transform: "rotateY(-90deg) translateX(-110px)",
-                            background: "linear-gradient(to right, #0F172A, #1E293B)",
-                            border: "1px solid #334155",
-                            boxShadow: "inset 0 0 30px rgba(0,0,0,0.85)",
+                            background: "linear-gradient(to right, #475569 0%, #64748B 30%, #94A3B8 70%, #CBD5E1 100%)",
+                            border: "1px solid #94A3B8",
+                            boxShadow: "inset 0 0 25px rgba(0,0,0,0.4)",
                           }}
                         >
-                          <div className="h-full w-full p-2 flex flex-col justify-between items-center opacity-70">
-                            <div className="w-3.5 h-3.5 rounded-full border border-slate-500 bg-slate-800" title="Rack Mounting Hole" />
-                            <div className="w-full border-t border-dashed border-slate-600/70 my-2" />
-                            <div className="w-3.5 h-3.5 rounded-full border border-slate-500 bg-slate-800" />
-                            <div className="w-full border-t border-dashed border-slate-600/70 my-2" />
-                            <div className="w-3.5 h-3.5 rounded-full border border-slate-500 bg-slate-800" />
+                          <div className="h-full w-full p-2 flex flex-col justify-between items-center">
+                            <div className="w-full flex justify-around opacity-80">
+                              <div className="w-1.5 h-1.5 rounded-full bg-slate-200 border border-slate-500 shadow-sm" />
+                              <div className="w-1.5 h-1.5 rounded-full bg-slate-200 border border-slate-500 shadow-sm" />
+                              <div className="w-1.5 h-1.5 rounded-full bg-slate-200 border border-slate-500 shadow-sm" />
+                            </div>
+                            <div className="w-full my-2 space-y-3 opacity-60">
+                              <div className="w-full h-0.5 bg-slate-700/40 border-b border-white/20" />
+                              <div className="w-full h-0.5 bg-slate-700/40 border-b border-white/20" />
+                            </div>
+                            <div className="w-full flex justify-around opacity-80">
+                              <div className="w-1.5 h-1.5 rounded-full bg-slate-200 border border-slate-500 shadow-sm" />
+                              <div className="w-1.5 h-1.5 rounded-full bg-slate-200 border border-slate-500 shadow-sm" />
+                              <div className="w-1.5 h-1.5 rounded-full bg-slate-200 border border-slate-500 shadow-sm" />
+                            </div>
+                            <div className="w-full my-2 space-y-3 opacity-60">
+                              <div className="w-full h-0.5 bg-slate-700/40 border-b border-white/20" />
+                              <div className="w-full h-0.5 bg-slate-700/40 border-b border-white/20" />
+                            </div>
+                            <div className="w-full flex flex-col items-center gap-1 opacity-75">
+                              <div className="w-full flex justify-around">
+                                <div className="w-1.5 h-1.5 rounded-full bg-slate-200 border border-slate-500 shadow-sm" />
+                                <div className="w-1.5 h-1.5 rounded-full bg-slate-200 border border-slate-500 shadow-sm" />
+                                <div className="w-1.5 h-1.5 rounded-full bg-slate-200 border border-slate-500 shadow-sm" />
+                              </div>
+                              <span className="text-[7px] font-mono text-slate-800 font-bold">⏚ ESD CHASSIS GROUND</span>
+                            </div>
                           </div>
                         </div>
 
-                        {/* Right Side Wall (Dinding Samping Kanan) */}
+                        {/* Right Side Wall (Dinding Samping Kanan - Galvanized Steel Sheet Panel) */}
                         <div
                           className="absolute top-0 bottom-0 right-0 w-[110px] pointer-events-none rounded-r"
                           style={{
                             transformOrigin: "right",
                             transform: "rotateY(90deg) translateX(110px)",
-                            background: "linear-gradient(to left, #0F172A, #1E293B)",
-                            border: "1px solid #334155",
-                            boxShadow: "inset 0 0 30px rgba(0,0,0,0.85)",
+                            background: "linear-gradient(to left, #475569 0%, #64748B 30%, #94A3B8 70%, #CBD5E1 100%)",
+                            border: "1px solid #94A3B8",
+                            boxShadow: "inset 0 0 25px rgba(0,0,0,0.4)",
                           }}
                         >
-                          <div className="h-full w-full p-2 flex flex-col justify-between items-center opacity-70">
-                            <div className="w-3.5 h-3.5 rounded-full border border-slate-500 bg-slate-800" />
-                            <div className="w-full border-t border-dashed border-slate-600/70 my-2" />
-                            <div className="w-3.5 h-3.5 rounded-full border border-slate-500 bg-slate-800" />
-                            <div className="w-full border-t border-dashed border-slate-600/70 my-2" />
-                            <div className="w-3.5 h-3.5 rounded-full border border-slate-500 bg-slate-800" />
+                          <div className="h-full w-full p-2 flex flex-col justify-between items-center">
+                            <div className="w-full flex justify-around opacity-80">
+                              <div className="w-1.5 h-1.5 rounded-full bg-slate-200 border border-slate-500 shadow-sm" />
+                              <div className="w-1.5 h-1.5 rounded-full bg-slate-200 border border-slate-500 shadow-sm" />
+                              <div className="w-1.5 h-1.5 rounded-full bg-slate-200 border border-slate-500 shadow-sm" />
+                            </div>
+                            <div className="w-full my-2 space-y-3 opacity-60">
+                              <div className="w-full h-0.5 bg-slate-700/40 border-b border-white/20" />
+                              <div className="w-full h-0.5 bg-slate-700/40 border-b border-white/20" />
+                            </div>
+                            <div className="w-full flex justify-around opacity-80">
+                              <div className="w-1.5 h-1.5 rounded-full bg-slate-200 border border-slate-500 shadow-sm" />
+                              <div className="w-1.5 h-1.5 rounded-full bg-slate-200 border border-slate-500 shadow-sm" />
+                              <div className="w-1.5 h-1.5 rounded-full bg-slate-200 border border-slate-500 shadow-sm" />
+                            </div>
+                            <div className="w-full my-2 space-y-3 opacity-60">
+                              <div className="w-full h-0.5 bg-slate-700/40 border-b border-white/20" />
+                              <div className="w-full h-0.5 bg-slate-700/40 border-b border-white/20" />
+                            </div>
+                            <div className="w-full flex flex-col items-center gap-1 opacity-75">
+                              <div className="w-full flex justify-around">
+                                <div className="w-1.5 h-1.5 rounded-full bg-slate-200 border border-slate-500 shadow-sm" />
+                                <div className="w-1.5 h-1.5 rounded-full bg-slate-200 border border-slate-500 shadow-sm" />
+                                <div className="w-1.5 h-1.5 rounded-full bg-slate-200 border border-slate-500 shadow-sm" />
+                              </div>
+                              <span className="text-[7px] font-mono text-slate-800 font-bold">⏚ ESD CHASSIS GROUND</span>
+                            </div>
                           </div>
                         </div>
 
@@ -1689,99 +1753,213 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                           className="absolute inset-0 pointer-events-none rounded-xl"
                           style={{
                             transform: "translateZ(-110px)",
-                            background: "#050B14",
-                            border: "2px solid #1E293B",
-                            boxShadow: "0 0 60px rgba(0,0,0,0.9)",
+                            background: "#080E1A",
+                            border: "2px solid #334155",
+                            boxShadow: "0 0 60px rgba(0,0,0,0.85)",
                           }}
                         />
 
-                        {/* ── SIDE CABLE RINGS (CINCIN KABEL SAMPING KIRI & KANAN) ── */}
-                        {/* Left Cable Rings */}
+                        {/* ── VERTICAL RACK MOUNTING FLANGES (KUPING RAK ALUMINIUM PERAK NOKIA PSS-24X) ── */}
+                        {/* Left Vertical Mounting Ear */}
                         <div
-                          className="absolute -left-8 top-16 bottom-16 flex flex-col justify-between pointer-events-none z-20"
-                          style={{ transform: "translateZ(15px)", transformStyle: "preserve-3d" }}
+                          className="absolute -left-6 sm:-left-7 top-14 bottom-10 w-6 sm:w-7 pointer-events-none z-10 rounded-[2px]"
+                          style={{
+                            transform: "translateZ(8px)",
+                            transformStyle: "preserve-3d",
+                            background: "linear-gradient(to right, #94A3B8 0%, #E2E8F0 35%, #CBD5E1 70%, #64748B 100%)",
+                            border: "1px solid #94A3B8",
+                            boxShadow: "2px 0 8px rgba(0,0,0,0.35)",
+                          }}
                         >
-                          {[0, 1, 2, 3].map((ringIdx) => (
-                            <div key={ringIdx} className="relative flex items-center">
+                          <div className="h-full flex flex-col justify-between items-start pl-1 py-3">
+                            {[...Array(9)].map((_, i) => (
+                              <div key={i} className="w-2.5 h-3.5 rounded-[3px] bg-slate-900 border border-slate-500/80 shadow-inner" title="19-inch EIA-310 Rack Hole" />
+                            ))}
+                          </div>
+                          <div className="absolute top-2 bottom-2 right-1 flex flex-col justify-between items-center">
+                            {[...Array(6)].map((_, i) => (
+                              <div key={i} className="w-2 h-2 rounded-full bg-gradient-to-b from-slate-100 to-slate-400 border border-slate-500 shadow-sm flex items-center justify-center text-[5px] text-slate-800 font-bold">
+                                +
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Right Vertical Mounting Ear */}
+                        <div
+                          className="absolute -right-6 sm:-right-7 top-14 bottom-10 w-6 sm:w-7 pointer-events-none z-10 rounded-[2px]"
+                          style={{
+                            transform: "translateZ(8px)",
+                            transformStyle: "preserve-3d",
+                            background: "linear-gradient(to left, #94A3B8 0%, #E2E8F0 35%, #CBD5E1 70%, #64748B 100%)",
+                            border: "1px solid #94A3B8",
+                            boxShadow: "-2px 0 8px rgba(0,0,0,0.35)",
+                          }}
+                        >
+                          <div className="h-full flex flex-col justify-between items-end pr-1 py-3">
+                            {[...Array(9)].map((_, i) => (
+                              <div key={i} className="w-2.5 h-3.5 rounded-[3px] bg-slate-900 border border-slate-500/80 shadow-inner" title="19-inch EIA-310 Rack Hole" />
+                            ))}
+                          </div>
+                          <div className="absolute top-2 bottom-2 left-1 flex flex-col justify-between items-center">
+                            {[...Array(6)].map((_, i) => (
+                              <div key={i} className="w-2 h-2 rounded-full bg-gradient-to-b from-slate-100 to-slate-400 border border-slate-500 shadow-sm flex items-center justify-center text-[5px] text-slate-800 font-bold">
+                                +
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* ── SIDE CABLE MANAGEMENT BRACKETS (HEAVY-DUTY BLACK RECTANGULAR BRACKETS NOKIA PSS-24X) ── */}
+                        {/* Left Cable Brackets (4 Levels) */}
+                        <div
+                          className="absolute -left-12 sm:-left-13 top-14 bottom-10 flex flex-col justify-between pointer-events-none z-20"
+                          style={{ transform: "translateZ(16px)", transformStyle: "preserve-3d" }}
+                        >
+                          {[0, 1, 2, 3].map((bIdx) => (
+                            <div key={bIdx} className="relative flex items-center">
                               <div
-                                className="w-6 h-9 rounded-l-full border-2 border-slate-700/90 bg-gradient-to-r from-slate-900 to-slate-800 shadow-lg flex items-center pl-1"
-                                style={{ transform: "rotateY(-25deg)" }}
+                                className="w-6 sm:w-7 h-5 sm:h-6 bg-gradient-to-r from-neutral-950 via-neutral-900 to-neutral-800 border-2 border-neutral-700/90 shadow-xl rounded-[2px] flex items-center justify-start pl-1"
+                                style={{ transform: "rotateY(-20deg)" }}
                               >
-                                <div className="w-1.5 h-7 rounded-full bg-amber-400 shadow-[0_0_6px_#F59E0B]" />
+                                <div className="w-3 h-2.5 bg-neutral-950 border border-neutral-800 rounded-sm shadow-inner" />
                               </div>
                             </div>
                           ))}
                         </div>
 
-                        {/* Right Cable Rings */}
+                        {/* Right Cable Brackets (4 Levels) */}
                         <div
-                          className="absolute -right-8 top-16 bottom-16 flex flex-col justify-between pointer-events-none z-20"
-                          style={{ transform: "translateZ(15px)", transformStyle: "preserve-3d" }}
+                          className="absolute -right-12 sm:-right-13 top-14 bottom-10 flex flex-col justify-between pointer-events-none z-20"
+                          style={{ transform: "translateZ(16px)", transformStyle: "preserve-3d" }}
                         >
-                          {[0, 1, 2, 3].map((ringIdx) => (
-                            <div key={ringIdx} className="relative flex items-center justify-end">
+                          {[0, 1, 2, 3].map((bIdx) => (
+                            <div key={bIdx} className="relative flex items-center justify-end">
                               <div
-                                className="w-6 h-9 rounded-r-full border-2 border-slate-700/90 bg-gradient-to-l from-slate-900 to-slate-800 shadow-lg flex items-center justify-end pr-1"
-                                style={{ transform: "rotateY(25deg)" }}
+                                className="w-6 sm:w-7 h-5 sm:h-6 bg-gradient-to-l from-neutral-950 via-neutral-900 to-neutral-800 border-2 border-neutral-700/90 shadow-xl rounded-[2px] flex items-center justify-end pr-1"
+                                style={{ transform: "rotateY(20deg)" }}
                               >
-                                <div className="w-1.5 h-7 rounded-full bg-amber-400 shadow-[0_0_6px_#F59E0B]" />
+                                <div className="w-3 h-2.5 bg-neutral-950 border border-neutral-800 rounded-sm shadow-inner" />
                               </div>
                             </div>
                           ))}
+                        </div>
+
+                        {/* Top Header Corner Cable Brackets */}
+                        <div
+                          className="absolute -left-12 sm:-left-13 top-3 pointer-events-none z-20"
+                          style={{ transform: "translateZ(16px) rotateY(-20deg)", transformStyle: "preserve-3d" }}
+                        >
+                          <div className="w-6 sm:w-7 h-5 sm:h-6 bg-gradient-to-r from-neutral-950 via-neutral-900 to-neutral-800 border-2 border-neutral-700/90 shadow-xl rounded-[2px] flex items-center justify-start pl-1">
+                            <div className="w-3 h-2.5 bg-neutral-950 border border-neutral-800 rounded-sm shadow-inner" />
+                          </div>
+                        </div>
+
+                        <div
+                          className="absolute -right-12 sm:-right-13 top-3 pointer-events-none z-20"
+                          style={{ transform: "translateZ(16px) rotateY(20deg)", transformStyle: "preserve-3d" }}
+                        >
+                          <div className="w-6 sm:w-7 h-5 sm:h-6 bg-gradient-to-l from-neutral-950 via-neutral-900 to-neutral-800 border-2 border-neutral-700/90 shadow-xl rounded-[2px] flex items-center justify-end pr-1">
+                            <div className="w-3 h-2.5 bg-neutral-950 border border-neutral-800 rounded-sm shadow-inner" />
+                          </div>
                         </div>
 
                         {/* ── FRONT FASCIA PANEL (MUKA DEPAN SASIS NOKIA PSS-24X) ── */}
                         <div
-                          className="relative rounded-xl border-2 border-[#1E3A5F] bg-[#0A1628]/95 shadow-[0_20px_50px_rgba(0,0,0,0.8)] p-3"
+                          className="relative rounded-xl border-2 border-slate-400 bg-gradient-to-b from-[#1b2537] via-[#091220] to-[#1b2537] shadow-[0_25px_60px_rgba(0,0,0,0.85)] p-2.5 sm:p-3"
                           style={{
                             transformStyle: "preserve-3d",
                             transform: "translateZ(2px)",
                           }}
                         >
-                          {/* TOP HEADER: BRAND, DANGER/CAUTION LABELS & FIBER TROUGH */}
-                          <div className="border-b-2 border-[#1E3A5F] pb-2 mb-2">
-                            {/* Brand Row */}
-                            <div className="flex items-center justify-between text-[11px] font-mono text-[#38BDF8] pb-1.5">
+                          {/* TOP HEADER: BRAND, REGULATORY WARNING LABELS & FIBER MANAGEMENT CHUTES */}
+                          <div className="border border-slate-400 rounded-t-lg bg-gradient-to-b from-slate-100 via-slate-200 to-slate-300 p-2 sm:p-2.5 mb-2 shadow-sm text-slate-900">
+                            {/* Row 1: Brand & Model Header Plate */}
+                            <div className="flex items-center justify-between pb-1.5 border-b border-slate-400/80">
                               <div className="flex items-center gap-2">
-                                <span className="font-black text-xs tracking-widest text-white px-2 py-0.5 rounded bg-blue-600 shadow-sm">
+                                <span className="font-black text-xs tracking-widest text-white px-2 py-0.5 rounded-[2px] bg-[#124191] shadow-sm font-sans">
                                   NOKIA
                                 </span>
-                                <span className="font-bold text-xs text-slate-200">
+                                <span className="font-black text-xs text-slate-900 tracking-wide font-mono">
                                   {currentDevice.tipe === "PSS24" || currentDevice.tipe?.includes("24")
                                     ? "1830 PSS-24x"
                                     : `${currentDevice.tipe} SHELF`}
                                 </span>
-                                <span className="text-[10px] text-slate-400 hidden sm:inline">&bull; Model 3HE08222AA</span>
+                                <span className="text-[9.5px] font-mono text-slate-600 hidden sm:inline">&bull; 3HE08222AA &bull; CLEI: IPUCAN0RAA</span>
                               </div>
-                              <div className="flex items-center gap-2 text-[10px]">
-                                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_#10B981]" />
-                                <span className="text-emerald-300 font-semibold hidden sm:inline">DUAL DC POWER OK</span>
-                              </div>
-                            </div>
-
-                            {/* Warning Safety Badges */}
-                            <div className="flex items-center gap-1.5 text-[9px] font-bold">
-                              <div className="flex-1 px-2 py-0.5 rounded bg-rose-600/90 text-white border border-rose-400/50 flex items-center gap-1">
-                                <span className="material-symbols-outlined text-[12px] text-yellow-300">warning</span>
-                                <span className="truncate uppercase tracking-wider">DANGER: INVISIBLE LASER RADIATION</span>
-                              </div>
-                              <div className="flex-1 px-2 py-0.5 rounded bg-amber-500/90 text-black border border-amber-300 flex items-center gap-1">
-                                <span className="material-symbols-outlined text-[12px]">bolt</span>
-                                <span className="truncate uppercase tracking-wider">CAUTION: DUAL -48V DC FEEDS</span>
+                              
+                              <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] bg-slate-900 text-emerald-400 border border-slate-700 text-[9px] font-mono font-bold shadow-sm">
+                                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_#10B981]" />
+                                  <span className="hidden sm:inline">DUAL DC POWER OK</span>
+                                </div>
+                                <div className="hidden md:flex items-center gap-1 text-[7.5px] font-mono text-slate-600 border border-slate-400/80 px-1 py-0.5 rounded-[2px] bg-slate-200">
+                                  <span>ETL</span>
+                                  <span>&bull;</span>
+                                  <span>CE</span>
+                                  <span>&bull;</span>
+                                  <span>NEBS 3</span>
+                                </div>
                               </div>
                             </div>
 
-                            {/* Top Fiber Routing Trough Header */}
-                            <div className="mt-1 px-2 py-0.5 rounded bg-black/60 border border-slate-800 flex items-center justify-between text-[8px] text-slate-400 font-mono">
-                              <span>TOP FIBER MANAGEMENT TROUGH</span>
-                              <div className="flex items-center gap-1">
-                                <span className="w-10 h-1 rounded-full bg-amber-400/80 shadow-[0_0_4px_#F59E0B]" />
-                                <span className="text-[7.5px] text-amber-300">PATCH CORDS</span>
+                            {/* Row 2: Industrial Safety Warning Labels (Danger Red, Caution & Attention Yellow) */}
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 pt-1.5 text-[8px] sm:text-[8.5px] font-bold">
+                              {/* DANGER: INVISIBLE LASER RADIATION */}
+                              <div className="px-2 py-1 rounded-[2px] bg-[#DC2626] text-white border border-rose-300 shadow-sm flex items-center gap-1.5">
+                                <span className="bg-white text-[#DC2626] rounded-full w-3.5 h-3.5 flex items-center justify-center text-[9px] font-black shrink-0">!</span>
+                                <div className="leading-tight truncate">
+                                  <div className="font-black uppercase tracking-wider text-[8.5px]">▲ DANGER</div>
+                                  <div className="text-[7.5px] font-normal truncate">INVISIBLE LASER RADIATION &bull; CLASS 1M / 3R</div>
+                                </div>
+                              </div>
+
+                              {/* CAUTION: LASER RADIATION */}
+                              <div className="px-2 py-1 rounded-[2px] bg-[#FACC15] text-black border border-yellow-600 shadow-sm flex items-center gap-1.5">
+                                <span className="text-black text-[10px] shrink-0">▲</span>
+                                <div className="leading-tight truncate">
+                                  <div className="font-black uppercase tracking-wider text-[8.5px]">CAUTION / ATTENTION</div>
+                                  <div className="text-[7.5px] font-medium truncate">RAYONNEMENT LASER INVISIBLE &bull; EVITER EXPOSITION</div>
+                                </div>
+                              </div>
+
+                              {/* WARNING: DUAL -48V DC FEEDS */}
+                              <div className="px-2 py-1 rounded-[2px] bg-[#F59E0B] text-black border border-amber-600 shadow-sm flex items-center gap-1.5">
+                                <span className="text-black text-[10px] font-black shrink-0">⚡</span>
+                                <div className="leading-tight truncate">
+                                  <div className="font-black uppercase tracking-wider text-[8.5px]">WARNING / AVERTISSEMENT</div>
+                                  <div className="text-[7.5px] font-medium truncate">HIGH TOUCH LEAKAGE CURRENT &bull; DUAL -48V DC</div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Row 3: Top Fiber Management Troughs (Curved Stainless Cable Chutes) */}
+                            <div className="mt-1.5 pt-1 border-t border-slate-400/80 flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-20 sm:w-28 h-2.5 rounded-b-md bg-gradient-to-b from-slate-300 via-slate-400 to-slate-500 border border-slate-600 shadow-inner flex items-center justify-around px-1" title="Left Fiber Drop Chute">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
+                                    <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
+                                    <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
+                                  </div>
+                                  <div className="w-20 sm:w-28 h-2.5 rounded-b-md bg-gradient-to-b from-slate-300 via-slate-400 to-slate-500 border border-slate-600 shadow-inner flex items-center justify-around px-1" title="Right Fiber Drop Chute">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
+                                    <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
+                                    <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
+                                  </div>
+                                </div>
+                                <span className="text-[8px] font-mono text-slate-700 font-semibold uppercase hidden sm:inline">
+                                  TOP FIBER MANAGEMENT TROUGH
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-1.5 text-[8px] font-mono text-slate-700">
+                                <span className="w-8 h-1 rounded-full bg-amber-400 shadow-[0_0_3px_#F59E0B]" />
+                                <span className="font-semibold text-slate-800">FIBER CORDS</span>
                               </div>
                             </div>
                           </div>
-
-                          {/* ── TIER 1: BARIS ATAS (SLOTS 1 - 16) ── */}
+{/* ── TIER 1: BARIS ATAS (SLOTS 1 - 16) ── */}
                           <div className="mb-2">
                             <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 px-1 mb-1">
                               <span className="font-bold text-[#38BDF8] flex items-center gap-1">
@@ -2081,25 +2259,36 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                             </div>
                           )}
 
-                          {/* ── BOTTOM FOOTER: AIR INTAKE & ESD GROUND ── */}
-                          <div className="border-t-2 border-[#1E3A5F] pt-2 flex items-center justify-between text-[9px] font-mono">
+                          {/* ── BOTTOM FOOTER: AIR INTAKE & ESD GROUND & LASER WARNING KICKPLATE ── */}
+                          <div className="border-t-2 border-slate-400 bg-gradient-to-b from-slate-200 via-slate-100 to-slate-300 p-2 sm:p-2.5 rounded-b-lg text-slate-800 shadow-inner flex flex-wrap items-center justify-between gap-2 text-[9px] font-mono mt-1">
+                            {/* Left: Black Corner Guard + Cooling Air Intake Vents */}
                             <div className="flex items-center gap-2">
-                              <div className="flex flex-col gap-0.5 w-20">
-                                <div className="w-full h-0.5 bg-slate-700 rounded" />
-                                <div className="w-full h-0.5 bg-slate-700 rounded" />
-                                <div className="w-full h-0.5 bg-slate-700 rounded" />
+                              <div className="w-3.5 h-3.5 bg-neutral-900 border border-neutral-700 rounded-sm shadow-sm" title="Bottom Cable Corner Guide" />
+                              <div className="flex items-center gap-1 opacity-70">
+                                {[...Array(6)].map((_, i) => (
+                                  <div key={i} className="w-1.5 h-1.5 rounded-full bg-slate-400 border border-slate-600/60 shadow-inner" />
+                                ))}
                               </div>
-                              <span className="text-[8px] text-slate-400">COOLING AIR INTAKE</span>
+                              <span className="text-[8px] text-slate-700 font-semibold uppercase hidden sm:inline">COOLING AIR INTAKE</span>
                             </div>
 
-                            <div className="px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/40 flex items-center gap-1 font-bold">
-                              <span className="material-symbols-outlined text-[11px]">bolt</span>
-                              <span>ESD GROUND STUD</span>
+                            {/* Center: Authentic Yellow Laser Caution Kickplate Sticker */}
+                            <div className="px-2 py-0.5 rounded-[2px] bg-yellow-400 text-black border border-black flex items-center gap-1.5 font-bold shadow-sm">
+                              <span className="text-[10px]">▲</span>
+                              <span className="text-[8.5px] font-black uppercase tracking-wide">ATTENTION: LASER HAZARD / CLASSE 1M</span>
+                            </div>
+
+                            {/* Right: ESD Ground Stud + Black Corner Guard */}
+                            <div className="flex items-center gap-2">
+                              <div className="px-2 py-0.5 rounded bg-amber-600/20 text-amber-900 border border-amber-600/40 flex items-center gap-1 font-bold">
+                                <span className="material-symbols-outlined text-[11px]">bolt</span>
+                                <span>ESD GROUND STUD</span>
+                              </div>
+                              <div className="w-3.5 h-3.5 bg-neutral-900 border border-neutral-700 rounded-sm shadow-sm" title="Bottom Cable Corner Guide" />
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
+                      </div>                    </div>
                   </div>
                 </div>
               ) : (
