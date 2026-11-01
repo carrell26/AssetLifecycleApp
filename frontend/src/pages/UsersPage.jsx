@@ -24,7 +24,6 @@ const ROLE_FILTER_OPTIONS = [
 ];
 
 const EDIT_ROLE_OPTIONS = [
-  { value: "admin", label: "Super Admin", icon: "security" },
   { value: "karyawan_tif", label: "Karyawan TIF", icon: "badge" },
   { value: "teknisi", label: "Teknisi", icon: "engineering" },
 ];
@@ -2028,14 +2027,14 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                     <button
                       type="button"
                       id="edit-role-btn"
-                      disabled={currentUser && currentUser.id === editUser.user_id}
+                      disabled={editUser.role === "admin" || (currentUser && currentUser.id === editUser.user_id)}
                       onClick={() => {
                         setEditRoleDropdownOpen(!editRoleDropdownOpen);
                         setEditStatusDropdownOpen(false);
                         setEditDistrictDropdownOpen(false);
                       }}
                       className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center justify-between text-xs sm:text-sm font-medium transition-all outline-none ${
-                        currentUser && currentUser.id === editUser.user_id
+                        (editUser.role === "admin" || (currentUser && currentUser.id === editUser.user_id))
                           ? isDark
                             ? "bg-[#051122]/60 border-[#0f2848] text-slate-400 cursor-not-allowed opacity-75"
                             : "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-75"
@@ -2047,14 +2046,24 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                           ? "bg-[#051122] border-[#0f2848] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#071933] cursor-pointer"
                           : "bg-slate-50 border-slate-300 text-slate-800 hover:border-blue-500 cursor-pointer"
                       }`}
-                      title={currentUser && currentUser.id === editUser.user_id ? "Tidak dapat mengubah role akun sendiri yang sedang aktif" : ""}
+                      title={
+                        currentUser && currentUser.id === editUser.user_id
+                          ? "Tidak dapat mengubah role akun sendiri yang sedang aktif"
+                          : editUser.role === "admin"
+                          ? "Role Super Admin tidak dapat diubah dari menu ini"
+                          : ""
+                      }
                     >
                       <div className="flex items-center gap-2 truncate pr-2">
                         <span className="material-symbols-outlined text-[18px] text-[#38BDF8] shrink-0">
-                          badge
+                          {editForm.role === "admin"
+                            ? "security"
+                            : EDIT_ROLE_OPTIONS.find((r) => r.value === editForm.role)?.icon || "badge"}
                         </span>
                         <span className="truncate font-semibold">
-                          {EDIT_ROLE_OPTIONS.find((r) => r.value === editForm.role)?.label || "Pilih Role"}
+                          {editForm.role === "admin"
+                            ? "Super Admin"
+                            : EDIT_ROLE_OPTIONS.find((r) => r.value === editForm.role)?.label || "Pilih Role"}
                         </span>
                       </div>
                       <span
@@ -2121,13 +2130,13 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                       id="edit-role"
                       name="role"
                       value={editForm.role}
-                      disabled={currentUser && currentUser.id === editUser.user_id}
+                      disabled={editUser.role === "admin" || (currentUser && currentUser.id === editUser.user_id)}
                       onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
                       className="sr-only"
                       tabIndex={-1}
                       aria-hidden="true"
                     >
-                      <option value="admin">Super Admin</option>
+                      {editForm.role === "admin" && <option value="admin">Super Admin</option>}
                       <option value="karyawan_tif">Karyawan TIF</option>
                       <option value="teknisi">Teknisi</option>
                     </select>
