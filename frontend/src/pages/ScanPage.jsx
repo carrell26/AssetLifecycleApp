@@ -900,11 +900,18 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
         {/* KOLOM KIRI: KAMERA AR VIEWFINDER HUD (5 COL)   */}
         {/* ============================================== */}
         <div
-          className={`lg:col-span-5 rounded-2xl border p-5 shadow-lg transition-all duration-300 flex flex-col justify-between h-full ${isDark ? "bg-[#0D1F36] border-[#1E3A5F]" : "bg-white border-slate-200"
+          className={`lg:col-span-5 rounded-2xl border p-5 shadow-lg transition-all duration-300 flex flex-col justify-between h-full relative overflow-hidden ${isDark
+              ? "border-[#1E3A5F] bg-gradient-to-r from-[#071426] via-[#0D2341] to-[#0A182B] shadow-2xl shadow-blue-950/60"
+              : "border-blue-200 bg-gradient-to-r from-white via-blue-50 to-white shadow-md shadow-blue-100/80"
             }`}
         >
+          {/* Ambient Glow di Sekitar Logo & Tulisan Card Kamera */}
+          <div className="absolute -top-12 -left-12 w-64 h-64 bg-blue-500/25 dark:bg-blue-600/30 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -top-12 -right-12 w-52 h-52 bg-cyan-500/20 dark:bg-cyan-500/25 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-10 left-1/4 w-72 h-72 bg-indigo-500/15 dark:bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+
           {/* Wrapper Konten Atas Viewfinder */}
-          <div className="flex flex-col">
+          <div className="flex flex-col relative z-10">
             {/* Header Kontrol Scanner */}
             <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#1A2E4C]/60">
               <div className="flex items-center gap-2">
@@ -996,7 +1003,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
           </div>
 
           {/* Custom Filter Dropdown: Pilih Rak Perangkat Langsung (Sesuai Desain Gambar 1) */}
-          <div className="mt-auto pt-4 border-t border-[#1A2E4C]/50">
+          <div className="mt-auto pt-4 border-t border-[#1A2E4C]/50 relative z-10">
             <label className={`block text-xs font-semibold mb-2 ${isDark ? "text-[#CBD5E1]" : "text-slate-700"}`}>
               Atau Pilih Rak Perangkat Langsung:
             </label>
@@ -1134,10 +1141,20 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
         {/* KOLOM KANAN: DIGITAL TWIN RAK & PETA SLOT AR (7 COL)     */}
         {/* ======================================================== */}
         <div
-          className={`lg:col-span-7 rounded-2xl border p-6 shadow-lg transition-all duration-300 flex flex-col h-full ${isDark ? "bg-[#0D1F36] border-[#1E3A5F]" : "bg-white border-slate-200"
+          className={`lg:col-span-7 rounded-2xl border p-6 shadow-lg transition-all duration-300 flex flex-col h-full relative overflow-hidden ${isDark
+              ? "border-[#1E3A5F] bg-gradient-to-r from-[#071426] via-[#0D2341] to-[#0A182B] shadow-2xl shadow-blue-950/60"
+              : "border-blue-200 bg-gradient-to-r from-white via-blue-50 to-white shadow-md shadow-blue-100/80"
             }`}
         >
-          {loadingDevice ? (
+          {/* Ambient Glow di Sekitar Logo, Header & Kontrol Digital Twin */}
+          <div className="absolute -top-14 -left-14 w-72 h-72 bg-blue-500/25 dark:bg-blue-600/30 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -top-14 -right-14 w-72 h-72 bg-cyan-500/20 dark:bg-cyan-500/25 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-16 left-1/3 w-80 h-80 bg-blue-500/15 dark:bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
+
+          {/* Konten Utama Card 3 di Layer z-10 */}
+          <div className="relative z-10 flex-1 flex flex-col justify-between">
+            {loadingDevice ? (
             <div className="flex-1 flex flex-col items-center justify-center py-20 text-center my-auto">
               <span className="material-symbols-outlined text-[40px] text-[#38BDF8] animate-spin">progress_activity</span>
               <p className={`text-sm mt-3 font-semibold ${isDark ? "text-[#E6EDF7]" : "text-slate-800"}`}>
@@ -2408,6 +2425,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
               </div>
             </div>
           )}
+          </div>
         </div>
       </div>
 
