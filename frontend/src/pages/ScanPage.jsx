@@ -1171,14 +1171,16 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
 
                 {/* Toggle Mode Tampilan 2D vs 3D Digital Twin */}
                 <div className="flex items-center gap-2 shrink-0">
-                  <div className="flex p-0.5 rounded-xl bg-[#071426] border border-[#1E3A5F]">
+                  <div className={`flex p-0.5 rounded-xl border transition-colors ${
+                    isDark ? "bg-[#071426] border-[#1E3A5F]" : "bg-slate-100 border-slate-300 shadow-sm"
+                  }`}>
                     <button
                       type="button"
                       onClick={() => setRackViewMode("2d")}
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
                         rackViewMode === "2d"
                           ? "bg-[#1677FF] text-white shadow-md shadow-[#1677FF]/30"
-                          : "text-[#94A3B8] hover:text-white"
+                          : isDark ? "text-[#94A3B8] hover:text-white" : "text-slate-600 hover:text-slate-900"
                       }`}
                     >
                       <span className="material-symbols-outlined text-[16px]">grid_view</span>
@@ -1190,7 +1192,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
                         rackViewMode === "3d"
                           ? "bg-[#1677FF] text-white shadow-md shadow-[#1677FF]/30"
-                          : "text-[#94A3B8] hover:text-white"
+                          : isDark ? "text-[#94A3B8] hover:text-white" : "text-slate-600 hover:text-slate-900"
                       }`}
                     >
                       <span className="material-symbols-outlined text-[16px]">3d_rotation</span>
@@ -1202,7 +1204,9 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
 
               {/* Tabs Mode Pencarian & Form Search */}
               <div>
-                <div className="flex gap-2 p-1 rounded-xl mb-3 bg-[#071426] border border-[#1E3A5F] max-w-md">
+                <div className={`flex gap-2 p-1 rounded-xl mb-3 border max-w-md transition-colors ${
+                  isDark ? "bg-[#071426] border-[#1E3A5F]" : "bg-slate-100 border-slate-300 shadow-sm"
+                }`}>
                   <button
                     type="button"
                     onClick={() => {
@@ -1213,7 +1217,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                     className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
                       searchMode === "sn"
                         ? "bg-[#1677FF] text-white shadow-md shadow-[#1677FF]/30"
-                        : "text-[#94A3B8] hover:text-[#E6EDF7]"
+                        : isDark ? "text-[#94A3B8] hover:text-[#E6EDF7]" : "text-slate-600 hover:text-slate-900"
                     }`}
                   >
                     <span>🏷️ Cari by Serial Number</span>
@@ -1228,7 +1232,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                     className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
                       searchMode === "slot"
                         ? "bg-[#1677FF] text-white shadow-md shadow-[#1677FF]/30"
-                        : "text-[#94A3B8] hover:text-[#E6EDF7]"
+                        : isDark ? "text-[#94A3B8] hover:text-[#E6EDF7]" : "text-slate-600 hover:text-slate-900"
                     }`}
                   >
                     <span>📦 Cari by Nomor Slot</span>
@@ -1383,7 +1387,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                   {/* Toolbar Kontrol 3D */}
                   <div className="flex items-center justify-between flex-wrap gap-2 text-xs">
                     <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[18px] text-[#00E5FF]">view_in_ar</span>
+                      <span className={`material-symbols-outlined text-[18px] ${isDark ? "text-[#00E5FF]" : "text-[#0284C7]"}`}>view_in_ar</span>
                       <span className={`font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
                         3D Digital Twin Sub-Rack (Nokia 1830 PSS-24x)
                       </span>
@@ -1391,14 +1395,16 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
 
                     <div className="flex items-center gap-2 flex-wrap">
                       {/* Presets Sudut Pandang */}
-                      <div className="flex items-center gap-1 bg-[#050D1A] p-0.5 rounded-lg border border-[#1E3A5F]">
+                      <div className={`flex items-center gap-1 p-0.5 rounded-lg border transition-colors ${
+                        isDark ? "bg-[#050D1A] border-[#1E3A5F]" : "bg-slate-100 border-slate-300 shadow-sm"
+                      }`}>
                         <button
                           type="button"
                           onClick={() => { setRotX(0); setRotY(0); setZoomLevel(1.0); }}
                           className={`px-2 py-1 rounded text-[10px] font-semibold transition-all ${
                             rotX === 0 && rotY === 0
                               ? "bg-[#1677FF] text-white shadow-sm"
-                              : "text-slate-400 hover:text-white"
+                              : isDark ? "text-slate-400 hover:text-white hover:bg-slate-800/60" : "text-slate-600 hover:text-slate-900 hover:bg-white"
                           }`}
                           title="Tampak Depan Lurus (Tegak)"
                         >
@@ -1410,7 +1416,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                           className={`px-2 py-1 rounded text-[10px] font-semibold transition-all ${
                             rotX === 14 && rotY === -22
                               ? "bg-[#1677FF] text-white shadow-sm"
-                              : "text-slate-400 hover:text-white"
+                              : isDark ? "text-slate-400 hover:text-white hover:bg-slate-800/60" : "text-slate-600 hover:text-slate-900 hover:bg-white"
                           }`}
                           title="Tampak Sudut Isometrik 3D"
                         >
@@ -1422,7 +1428,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                           className={`px-2 py-1 rounded text-[10px] font-semibold transition-all ${
                             rotY === -42
                               ? "bg-[#1677FF] text-white shadow-sm"
-                              : "text-slate-400 hover:text-white"
+                              : isDark ? "text-slate-400 hover:text-white hover:bg-slate-800/60" : "text-slate-600 hover:text-slate-900 hover:bg-white"
                           }`}
                           title="Tampak Miring Kiri"
                         >
@@ -1434,7 +1440,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                           className={`px-2 py-1 rounded text-[10px] font-semibold transition-all ${
                             rotY === 42
                               ? "bg-[#1677FF] text-white shadow-sm"
-                              : "text-slate-400 hover:text-white"
+                              : isDark ? "text-slate-400 hover:text-white hover:bg-slate-800/60" : "text-slate-600 hover:text-slate-900 hover:bg-white"
                           }`}
                           title="Tampak Miring Kanan"
                         >
@@ -1443,11 +1449,15 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                       </div>
 
                       {/* Zoom Controls */}
-                      <div className="flex items-center gap-1 bg-[#050D1A] p-0.5 rounded-lg border border-[#1E3A5F]">
+                      <div className={`flex items-center gap-1 p-0.5 rounded-lg border transition-colors ${
+                        isDark ? "bg-[#050D1A] border-[#1E3A5F]" : "bg-slate-100 border-slate-300 shadow-sm"
+                      }`}>
                         <button
                           type="button"
                           onClick={() => setZoomLevel((prev) => Math.min(1.4, prev + 0.1))}
-                          className="p-1 rounded text-slate-300 hover:text-white"
+                          className={`p-1 rounded transition-colors ${
+                            isDark ? "text-slate-300 hover:text-white hover:bg-slate-800/60" : "text-slate-600 hover:text-slate-900 hover:bg-white"
+                          }`}
                           title="Perbesar Zoom"
                         >
                           <span className="material-symbols-outlined text-[15px]">zoom_in</span>
@@ -1455,7 +1465,9 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                         <button
                           type="button"
                           onClick={() => setZoomLevel((prev) => Math.max(0.65, prev - 0.1))}
-                          className="p-1 rounded text-slate-300 hover:text-white"
+                          className={`p-1 rounded transition-colors ${
+                            isDark ? "text-slate-300 hover:text-white hover:bg-slate-800/60" : "text-slate-600 hover:text-slate-900 hover:bg-white"
+                          }`}
                           title="Perkecil Zoom"
                         >
                           <span className="material-symbols-outlined text-[15px]">zoom_out</span>
@@ -1463,7 +1475,9 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                         <button
                           type="button"
                           onClick={() => { setRotX(0); setRotY(0); setZoomLevel(1.0); }}
-                          className="p-1 rounded text-slate-300 hover:text-white"
+                          className={`p-1 rounded transition-colors ${
+                            isDark ? "text-slate-300 hover:text-white hover:bg-slate-800/60" : "text-slate-600 hover:text-slate-900 hover:bg-white"
+                          }`}
                           title="Reset Tampak Depan & Zoom"
                         >
                           <span className="material-symbols-outlined text-[15px]">restart_alt</span>
@@ -1479,7 +1493,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                             ? "bg-emerald-500/20 border-emerald-500 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.4)]"
                             : isDark
                             ? "bg-[#071426] border-[#1E3A5F] text-[#94A3B8] hover:text-white"
-                            : "bg-slate-100 border-slate-300 text-slate-700"
+                            : "bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200"
                         }`}
                         title="Gunakan Sensor Gyroscope Smartphone (IMU Parallax)"
                       >
@@ -1502,33 +1516,55 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                     onTouchMove={handle3DTouchMove}
                     onTouchEnd={handle3DTouchEnd}
                     onTouchCancel={handle3DTouchEnd}
-                    className="relative w-full min-h-[520px] rounded-2xl overflow-hidden border border-[#1E3A5F] bg-gradient-to-b from-[#030712] via-[#071324] to-[#0A1A2F] flex items-center justify-center cursor-grab active:cursor-grabbing select-none p-4 sm:p-8"
+                    className={`relative w-full min-h-[520px] rounded-2xl overflow-hidden border flex items-center justify-center cursor-grab active:cursor-grabbing select-none p-4 sm:p-8 transition-colors duration-300 ${
+                      isDark
+                        ? "border-[#1E3A5F] bg-gradient-to-b from-[#030712] via-[#071324] to-[#0A1A2F]"
+                        : "border-slate-300 bg-gradient-to-b from-[#F8FAFC] via-[#EEF2F6] to-[#E2E8F0] shadow-inner"
+                    }`}
                     style={{ perspective: "1400px" }}
                   >
                     {/* Grid Background Ambient Wireframe */}
                     <div
-                      className="absolute inset-0 pointer-events-none opacity-20"
+                      className={`absolute inset-0 pointer-events-none transition-opacity ${
+                        isDark ? "opacity-20" : "opacity-35"
+                      }`}
                       style={{
-                        backgroundImage: "radial-gradient(#00E5FF 1px, transparent 1px)",
+                        backgroundImage: isDark
+                          ? "radial-gradient(#00E5FF 1px, transparent 1px)"
+                          : "radial-gradient(#64748B 1.2px, transparent 1.2px)",
                         backgroundSize: "28px 28px",
                       }}
                     />
 
                     {/* HUD Telemetry Overlay di Atas 3D */}
-                    <div className="absolute top-3 left-3 right-3 flex items-center justify-between text-[10px] font-mono text-[#38BDF8] pointer-events-none z-30">
-                      <div className="flex items-center gap-2 bg-black/70 px-2.5 py-1 rounded-md border border-[#00E5FF]/20 backdrop-blur-sm">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-ping" />
+                    <div className={`absolute top-3 left-3 right-3 flex items-center justify-between text-[10px] font-mono pointer-events-none z-30 transition-colors ${
+                      isDark ? "text-[#38BDF8]" : "text-sky-800"
+                    }`}>
+                      <div className={`flex items-center gap-2 px-2.5 py-1 rounded-md border backdrop-blur-sm shadow-sm ${
+                        isDark
+                          ? "bg-black/70 border-[#00E5FF]/20"
+                          : "bg-white/90 border-slate-300 text-slate-800"
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full animate-ping ${isDark ? "bg-[#00E5FF]" : "bg-sky-600"}`} />
                         <span className="font-bold">
                           {rotX === 0 && rotY === 0 ? "FRONTAL 3D CHASSIS (DEPTH: 350mm)" : "ISOMETRIC 3D CHASSIS (DEPTH: 350mm)"}
                         </span>
                       </div>
-                      <div className="bg-black/70 px-2.5 py-1 rounded-md border border-[#00E5FF]/20 backdrop-blur-sm">
+                      <div className={`px-2.5 py-1 rounded-md border backdrop-blur-sm shadow-sm ${
+                        isDark
+                          ? "bg-black/70 border-[#00E5FF]/20 text-[#38BDF8]"
+                          : "bg-white/90 border-slate-300 text-slate-700"
+                      }`}>
                         ROT: X {Math.round(rotX)}° | Y {Math.round(rotY)}° {imuActive && `| IMU: P${imuData.pitch} R${imuData.roll}`}
                       </div>
                     </div>
 
                     {/* Instruksi Drag di Bawah */}
-                    <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 text-[10px] text-[#94A3B8] pointer-events-none z-30 bg-black/60 px-3.5 py-1 rounded-full border border-slate-700/50 backdrop-blur-sm">
+                    <div className={`absolute bottom-2.5 left-1/2 -translate-x-1/2 text-[10px] pointer-events-none z-30 px-3.5 py-1 rounded-full border backdrop-blur-sm shadow-sm transition-colors ${
+                      isDark
+                        ? "text-[#94A3B8] bg-black/60 border-slate-700/50"
+                        : "text-slate-700 bg-white/90 border-slate-300"
+                    }`}>
                       {imuActive ? "📡 Miringkan smartphone untuk mengubah perspektif" : "🖱️ Tahan & geser untuk rotasi orbit 3D • Klik bilah slot untuk inspeksi"}
                     </div>
 
@@ -1546,6 +1582,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                         style={{
                           width: "clamp(340px, 94vw, 610px)",
                           transformStyle: "preserve-3d",
+                          filter: isDark ? "none" : "drop-shadow(0 25px 35px rgba(15, 23, 42, 0.28))",
                         }}
                       >
                         {/* ── 3D DEPTH WALLS (EXTRUSION) ANTI-GEPENG ── */}
@@ -1555,9 +1592,11 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                           style={{
                             transformOrigin: "top",
                             transform: "rotateX(90deg) translateY(-110px)",
-                            background: "linear-gradient(to bottom, #1E293B, #0B1324)",
-                            border: "1px solid #334155",
-                            boxShadow: "inset 0 0 30px rgba(0,0,0,0.8)",
+                            background: isDark
+                              ? "linear-gradient(to bottom, #1E293B, #0B1324)"
+                              : "linear-gradient(to bottom, #475569, #1E293B)",
+                            border: isDark ? "1px solid #334155" : "1px solid #64748B",
+                            boxShadow: isDark ? "inset 0 0 30px rgba(0,0,0,0.8)" : "inset 0 0 20px rgba(0,0,0,0.6)",
                           }}
                         >
                           <div className="w-full h-full p-2 flex items-center justify-around opacity-30">
@@ -1573,9 +1612,11 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                           style={{
                             transformOrigin: "bottom",
                             transform: "rotateX(-90deg) translateY(110px)",
-                            background: "linear-gradient(to top, #0A0F1D, #020617)",
-                            border: "1px solid #1E293B",
-                            boxShadow: "inset 0 0 30px rgba(0,0,0,0.9)",
+                            background: isDark
+                              ? "linear-gradient(to top, #0A0F1D, #020617)"
+                              : "linear-gradient(to top, #1E293B, #0F172A)",
+                            border: isDark ? "1px solid #1E293B" : "1px solid #334155",
+                            boxShadow: isDark ? "inset 0 0 30px rgba(0,0,0,0.9)" : "inset 0 0 20px rgba(0,0,0,0.7)",
                           }}
                         />
 
@@ -1585,9 +1626,11 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                           style={{
                             transformOrigin: "left",
                             transform: "rotateY(-90deg) translateX(-110px)",
-                            background: "linear-gradient(to right, #0F172A, #1E293B)",
-                            border: "1px solid #334155",
-                            boxShadow: "inset 0 0 30px rgba(0,0,0,0.85)",
+                            background: isDark
+                              ? "linear-gradient(to right, #0F172A, #1E293B)"
+                              : "linear-gradient(to right, #1E293B, #334155)",
+                            border: isDark ? "1px solid #334155" : "1px solid #475569",
+                            boxShadow: isDark ? "inset 0 0 30px rgba(0,0,0,0.85)" : "inset 0 0 20px rgba(0,0,0,0.65)",
                           }}
                         >
                           <div className="h-full w-full p-2 flex flex-col justify-between items-center opacity-70">
@@ -1605,9 +1648,11 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                           style={{
                             transformOrigin: "right",
                             transform: "rotateY(90deg) translateX(110px)",
-                            background: "linear-gradient(to left, #0F172A, #1E293B)",
-                            border: "1px solid #334155",
-                            boxShadow: "inset 0 0 30px rgba(0,0,0,0.85)",
+                            background: isDark
+                              ? "linear-gradient(to left, #0F172A, #1E293B)"
+                              : "linear-gradient(to left, #1E293B, #334155)",
+                            border: isDark ? "1px solid #334155" : "1px solid #475569",
+                            boxShadow: isDark ? "inset 0 0 30px rgba(0,0,0,0.85)" : "inset 0 0 20px rgba(0,0,0,0.65)",
                           }}
                         >
                           <div className="h-full w-full p-2 flex flex-col justify-between items-center opacity-70">
@@ -1624,9 +1669,9 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                           className="absolute inset-0 pointer-events-none rounded-xl"
                           style={{
                             transform: "translateZ(-110px)",
-                            background: "#050B14",
-                            border: "2px solid #1E293B",
-                            boxShadow: "0 0 60px rgba(0,0,0,0.9)",
+                            background: isDark ? "#050B14" : "#0F172A",
+                            border: isDark ? "2px solid #1E293B" : "2px solid #334155",
+                            boxShadow: isDark ? "0 0 60px rgba(0,0,0,0.9)" : "0 0 40px rgba(0,0,0,0.5)",
                           }}
                         />
 
@@ -1667,14 +1712,18 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
 
                         {/* ── FRONT FASCIA PANEL (MUKA DEPAN SASIS NOKIA PSS-24X) ── */}
                         <div
-                          className="relative rounded-xl border-2 border-[#1E3A5F] bg-[#0A1628]/95 shadow-[0_20px_50px_rgba(0,0,0,0.8)] p-3"
+                          className={`relative rounded-xl border-2 p-3 transition-colors ${
+                            isDark
+                              ? "border-[#1E3A5F] bg-[#0A1628]/95 shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
+                              : "border-slate-500 bg-[#0F1E36] shadow-[0_20px_50px_rgba(15,23,42,0.35)]"
+                          }`}
                           style={{
                             transformStyle: "preserve-3d",
                             transform: "translateZ(2px)",
                           }}
                         >
                           {/* TOP HEADER: BRAND, DANGER/CAUTION LABELS & FIBER TROUGH */}
-                          <div className="border-b-2 border-[#1E3A5F] pb-2 mb-2">
+                          <div className={`border-b-2 pb-2 mb-2 ${isDark ? "border-[#1E3A5F]" : "border-slate-700"}`}>
                             {/* Brand Row */}
                             <div className="flex items-center justify-between text-[11px] font-mono text-[#38BDF8] pb-1.5">
                               <div className="flex items-center gap-2">
@@ -1729,7 +1778,11 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                             </div>
 
                             {/* 16 Vertical Blade Slots Strip */}
-                            <div className="flex gap-1 overflow-x-auto custom-scrollbar p-1.5 rounded-lg bg-[#050D1A] border border-[#1E3A5F]/80">
+                            <div className={`flex gap-1 overflow-x-auto custom-scrollbar p-1.5 rounded-lg ${
+                              isDark
+                                ? "bg-[#050D1A] border border-[#1E3A5F]/80"
+                                : "bg-[#071324] border border-slate-700/80 shadow-inner"
+                            }`}>
                               {topTierSlots.map((slot) => {
                                 const isOccupied = slot.occupied;
                                 const isHighlighted = slot.slot_definition_id === highlightedSlotId;
@@ -1869,7 +1922,11 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                             </div>
 
                             {/* 13 Vertical Blade Slots Strip */}
-                            <div className="flex gap-1 overflow-x-auto custom-scrollbar p-1.5 rounded-lg bg-[#050D1A] border border-[#1E3A5F]/80">
+                            <div className={`flex gap-1 overflow-x-auto custom-scrollbar p-1.5 rounded-lg ${
+                              isDark
+                                ? "bg-[#050D1A] border border-[#1E3A5F]/80"
+                                : "bg-[#071324] border border-slate-700/80 shadow-inner"
+                            }`}>
                               {bottomTierSlots.map((slot) => {
                                 const isOccupied = slot.occupied;
                                 const isHighlighted = slot.slot_definition_id === highlightedSlotId;
@@ -1996,7 +2053,11 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                               <div className="text-[9px] font-mono text-slate-400 px-1 mb-1">
                                 <span>AUXILIARY EXPANSION SLOTS</span>
                               </div>
-                              <div className="flex gap-1 overflow-x-auto custom-scrollbar p-1.5 rounded-lg bg-[#050D1A] border border-[#1E3A5F]/50">
+                              <div className={`flex gap-1 overflow-x-auto custom-scrollbar p-1.5 rounded-lg ${
+                                isDark
+                                  ? "bg-[#050D1A] border border-[#1E3A5F]/50"
+                                  : "bg-[#071324] border border-slate-700/80 shadow-inner"
+                              }`}>
                                 {otherSlots.map((slot) => {
                                   const isOccupied = slot.occupied;
                                   const isHighlighted = slot.slot_definition_id === highlightedSlotId;
@@ -2021,7 +2082,9 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                           )}
 
                           {/* ── BOTTOM FOOTER: AIR INTAKE & ESD GROUND ── */}
-                          <div className="border-t-2 border-[#1E3A5F] pt-2 flex items-center justify-between text-[9px] font-mono">
+                          <div className={`border-t-2 pt-2 flex items-center justify-between text-[9px] font-mono ${
+                            isDark ? "border-[#1E3A5F]" : "border-slate-700"
+                          }`}>
                             <div className="flex items-center gap-2">
                               <div className="flex flex-col gap-0.5 w-20">
                                 <div className="w-full h-0.5 bg-slate-700 rounded" />
