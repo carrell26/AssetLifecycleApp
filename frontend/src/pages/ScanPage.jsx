@@ -1530,7 +1530,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                     </div>
                   </div>
 
-                  {/* Canvas Viewport 3D */}
+                  {/* Canvas Viewport 3D (Adaptif Tema Dark / Light Mode) */}
                   <div
                     ref={viewport3DRef}
                     onMouseDown={handle3DMouseDown}
@@ -1541,33 +1541,53 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                     onTouchMove={handle3DTouchMove}
                     onTouchEnd={handle3DTouchEnd}
                     onTouchCancel={handle3DTouchEnd}
-                    className="relative w-full min-h-[520px] rounded-2xl overflow-hidden border border-[#1E3A5F] bg-gradient-to-b from-[#030712] via-[#071324] to-[#0A1A2F] flex items-center justify-center cursor-grab active:cursor-grabbing select-none p-4 sm:p-8"
+                    className={`relative w-full min-h-[520px] rounded-2xl overflow-hidden border flex items-center justify-center cursor-grab active:cursor-grabbing select-none p-4 sm:p-8 transition-colors duration-300 ${
+                      isDark
+                        ? "border-[#1E3A5F] bg-gradient-to-b from-[#030712] via-[#071324] to-[#0A1A2F]"
+                        : "border-slate-300 bg-gradient-to-b from-slate-100 via-blue-50/50 to-slate-200 shadow-inner"
+                    }`}
                     style={{ perspective: "1400px" }}
                   >
-                    {/* Grid Background Ambient Wireframe */}
+                    {/* Grid Background Ambient Wireframe (Adaptif Biru / Cyan) */}
                     <div
-                      className="absolute inset-0 pointer-events-none opacity-20"
+                      className={`absolute inset-0 pointer-events-none ${isDark ? "opacity-20" : "opacity-35"}`}
                       style={{
-                        backgroundImage: "radial-gradient(#00E5FF 1px, transparent 1px)",
+                        backgroundImage: isDark
+                          ? "radial-gradient(#00E5FF 1px, transparent 1px)"
+                          : "radial-gradient(#1677FF 1.2px, transparent 1.2px)",
                         backgroundSize: "28px 28px",
                       }}
                     />
 
                     {/* HUD Telemetry Overlay di Atas 3D */}
-                    <div className="absolute top-3 left-3 right-3 flex items-center justify-between text-[10px] font-mono text-[#38BDF8] pointer-events-none z-30">
-                      <div className="flex items-center gap-2 bg-black/70 px-2.5 py-1 rounded-md border border-[#00E5FF]/20 backdrop-blur-sm">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-ping" />
+                    <div className={`absolute top-3 left-3 right-3 flex items-center justify-between text-[10px] font-mono pointer-events-none z-30 ${
+                      isDark ? "text-[#38BDF8]" : "text-blue-700"
+                    }`}>
+                      <div className={`flex items-center gap-2 px-2.5 py-1 rounded-md border backdrop-blur-sm shadow-sm ${
+                        isDark
+                          ? "bg-black/70 border-[#00E5FF]/20"
+                          : "bg-white/85 border-blue-200 text-blue-900"
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${isDark ? "bg-[#00E5FF] animate-ping" : "bg-[#1677FF] animate-pulse"}`} />
                         <span className="font-bold">
                           ISOMETRIC 3D CHASSIS (DEPTH: 350mm)
                         </span>
                       </div>
-                      <div className="bg-black/70 px-2.5 py-1 rounded-md border border-[#00E5FF]/20 backdrop-blur-sm">
+                      <div className={`px-2.5 py-1 rounded-md border backdrop-blur-sm shadow-sm ${
+                        isDark
+                          ? "bg-black/70 border-[#00E5FF]/20"
+                          : "bg-white/85 border-blue-200 text-blue-900 font-semibold"
+                      }`}>
                         ROT: X {Math.round(rotX)}° | Y {Math.round(rotY)}° {imuActive && `| IMU: P${imuData.pitch} R${imuData.roll}`}
                       </div>
                     </div>
 
                     {/* Instruksi Drag di Bawah */}
-                    <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 text-[10px] text-[#94A3B8] pointer-events-none z-30 bg-black/60 px-3.5 py-1 rounded-full border border-slate-700/50 backdrop-blur-sm">
+                    <div className={`absolute bottom-2.5 left-1/2 -translate-x-1/2 text-[10px] pointer-events-none z-30 px-3.5 py-1 rounded-full border backdrop-blur-sm shadow-sm ${
+                      isDark
+                        ? "bg-black/60 border-slate-700/50 text-[#94A3B8]"
+                        : "bg-white/85 border-slate-300 text-slate-700 font-medium"
+                    }`}>
                       {imuActive ? "📡 Miringkan smartphone untuk mengubah perspektif" : "🖱️ Tahan & geser untuk rotasi orbit 3D • Klik bilah slot untuk inspeksi"}
                     </div>
 
