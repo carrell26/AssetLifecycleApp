@@ -220,7 +220,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
             aspectRatio: 1.0,
           },
           onQrCodeSuccess,
-          (errorMessage) => {}
+          (errorMessage) => { }
         );
       } catch (constraintErr) {
         // Fallback otomatis jika kamera belakang (environment) tidak tersedia di laptop
@@ -233,7 +233,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
             aspectRatio: 1.0,
           },
           onQrCodeSuccess,
-          (errorMessage) => {}
+          (errorMessage) => { }
         );
       }
 
@@ -256,7 +256,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
         if (scannerRef.current.isScanning) {
           await scannerRef.current.stop();
         }
-      } catch (e) {}
+      } catch (e) { }
       setScannerActive(false);
     }
   };
@@ -272,7 +272,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
       }
       const matchPath = urlObj.pathname.match(/\/ar\/location\/(\d+)/);
       if (matchPath) return parseInt(matchPath[1], 10);
-    } catch (e) {}
+    } catch (e) { }
 
     const matchParam = text.match(/[?&]location_id=(\d+)/i) || text.match(/[?&]loc_id=(\d+)/i);
     if (matchParam) return parseInt(matchParam[1], 10);
@@ -292,7 +292,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
       }
       const matchPath = urlObj.pathname.match(/\/ar\/device\/(\d+)/);
       if (matchPath) return parseInt(matchPath[1], 10);
-    } catch (e) {}
+    } catch (e) { }
     const matchParam = text.match(/[?&]device_id=(\d+)/);
     if (matchParam) return parseInt(matchParam[1], 10);
     const matchDevicePath = text.match(/\/ar\/device\/(\d+)/);
@@ -448,7 +448,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
     // Coba scan file asli terlebih dahulu
     try {
       const decodedText = await fileScanner.scanFile(file, false);
-      try { await fileScanner.clear(); } catch (e) {}
+      try { await fileScanner.clear(); } catch (e) { }
       if (decodedText) return decodedText;
     } catch (directErr) {
       console.warn("Direct scan coba normalisasi canvas JPEG:", directErr);
@@ -492,38 +492,38 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
               const detector = new window.BarcodeDetector({ formats: ["qr_code"] });
               const codes = await detector.detect(canvas);
               if (codes && codes.length > 0 && codes[0].rawValue) {
-                try { await fileScanner.clear(); } catch (e) {}
+                try { await fileScanner.clear(); } catch (e) { }
                 resolve(codes[0].rawValue);
                 return;
               }
-            } catch (err) {}
+            } catch (err) { }
           }
 
           canvas.toBlob(async (blob) => {
             if (!blob) {
-              try { await fileScanner.clear(); } catch (e) {}
+              try { await fileScanner.clear(); } catch (e) { }
               reject(new Error("Gagal memproses canvas gambar."));
               return;
             }
             try {
               const optFile = new File([blob], "normalized.jpg", { type: "image/jpeg" });
               const resText = await fileScanner.scanFile(optFile, false);
-              try { await fileScanner.clear(); } catch (e) {}
+              try { await fileScanner.clear(); } catch (e) { }
               resolve(resText);
             } catch (canvasScanErr) {
-              try { await fileScanner.clear(); } catch (e) {}
+              try { await fileScanner.clear(); } catch (e) { }
               reject(new Error("QR code tidak terdeteksi pada gambar JPEG ini."));
             }
           }, "image/jpeg", 0.92);
         } catch (procErr) {
-          try { await fileScanner.clear(); } catch (e) {}
+          try { await fileScanner.clear(); } catch (e) { }
           reject(procErr);
         }
       };
 
       img.onerror = () => {
         URL.revokeObjectURL(objUrl);
-        try { fileScanner.clear(); } catch (e) {}
+        try { fileScanner.clear(); } catch (e) { }
         reject(new Error("Format file gambar tidak dapat dibuka atau file rusak."));
       };
 
@@ -771,19 +771,18 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
       {/* Toast Notification */}
       {toast && (
         <div
-          className={`fixed top-6 right-6 z-50 px-4 py-3 rounded-xl border text-xs font-semibold flex items-center gap-2 shadow-2xl transition-all duration-300 animate-slideIn ${
-            toast.type === "success"
+          className={`fixed top-6 right-6 z-50 px-4 py-3 rounded-xl border text-xs font-semibold flex items-center gap-2 shadow-2xl transition-all duration-300 animate-slideIn ${toast.type === "success"
               ? isDark
                 ? "bg-[#06241E] border-emerald-500/50 text-emerald-300 shadow-emerald-950/40"
                 : "bg-emerald-50 border-emerald-400 text-emerald-700"
               : toast.type === "info"
-              ? isDark
-                ? "bg-[#0A2540] border-[#38BDF8]/50 text-[#38BDF8] shadow-blue-950/40"
-                : "bg-blue-50 border-blue-400 text-blue-700"
-              : isDark
-              ? "bg-[#2A0E12] border-rose-500/50 text-rose-300 shadow-rose-950/40"
-              : "bg-rose-50 border-rose-400 text-rose-700"
-          }`}
+                ? isDark
+                  ? "bg-[#0A2540] border-[#38BDF8]/50 text-[#38BDF8] shadow-blue-950/40"
+                  : "bg-blue-50 border-blue-400 text-blue-700"
+                : isDark
+                  ? "bg-[#2A0E12] border-rose-500/50 text-rose-300 shadow-rose-950/40"
+                  : "bg-rose-50 border-rose-400 text-rose-700"
+            }`}
         >
           <span className="material-symbols-outlined text-[18px]">
             {toast.type === "success" ? "check_circle" : toast.type === "info" ? "info" : "error"}
@@ -796,11 +795,10 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
       {/* HERO BANNER BERGAYA CYBER AR & TELKOM INFRASTRUCTURE     */}
       {/* ======================================================== */}
       <div
-        className={`relative overflow-hidden rounded-2xl border px-5 sm:px-6 h-[120px] min-h-[120px] max-h-[120px] flex items-center justify-between transition-all duration-300 shadow-sm !mt-0 shrink-0 ${
-          isDark
+        className={`relative overflow-hidden rounded-2xl border px-5 sm:px-6 h-[120px] min-h-[120px] max-h-[120px] flex items-center justify-between transition-all duration-300 shadow-sm !mt-0 shrink-0 ${isDark
             ? "border-[#1E3A5F] bg-gradient-to-r from-[#071426] via-[#0D2341] to-[#0A182B] shadow-2xl shadow-blue-950/60"
             : "border-blue-200 bg-gradient-to-r from-white via-blue-50 to-white shadow-md shadow-blue-100/80"
-        }`}
+          }`}
         style={{ marginTop: 0, height: "120px", minHeight: "120px", maxHeight: "120px" }}
       >
         <div className="absolute -top-16 -left-16 w-80 h-80 bg-blue-500/30 dark:bg-blue-600/35 rounded-full blur-3xl pointer-events-none" />
@@ -811,11 +809,10 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
           {/* Kiri: Icon Box + Teks */}
           <div className="flex items-center gap-3.5 sm:gap-4 shrink-0">
             <div
-              className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0 border ${
-                isDark
+              className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0 border ${isDark
                   ? "bg-gradient-to-br from-[#1677FF]/40 to-[#0A2540] border-[#38BDF8]/40 shadow-[0_0_24px_rgba(22,119,255,0.45)] text-[#38BDF8]"
                   : "bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 shadow-sm text-blue-600"
-              }`}
+                }`}
             >
               <span className="material-symbols-outlined text-[26px] sm:text-[30px]">
                 view_in_ar
@@ -825,26 +822,23 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h1
-                  className={`text-xl sm:text-2xl font-bold tracking-tight !m-0 ${
-                    isDark ? "text-white" : "text-slate-900"
-                  }`}
+                  className={`text-xl sm:text-2xl font-bold tracking-tight !m-0 ${isDark ? "text-white" : "text-slate-900"
+                    }`}
                 >
                   AR Scan Perangkat
                 </h1>
                 <span
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase border ${
-                    isDark
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase border ${isDark
                       ? "bg-[#0A284D] text-[#38BDF8] border-[#18467A]"
                       : "bg-blue-50 text-blue-600 border-blue-200"
-                  }`}
+                    }`}
                 >
                   FR-12 Digital Twin
                 </span>
               </div>
               <p
-                className={`text-xs font-normal mt-0.5 leading-relaxed !m-0 ${
-                  isDark ? "text-[#94A3B8]" : "text-slate-500"
-                }`}
+                className={`text-xs font-normal mt-0.5 leading-relaxed !m-0 ${isDark ? "text-[#94A3B8]" : "text-slate-500"
+                  }`}
               >
                 Hierarki Spasial: Pindai QR Lokasi Ruang STO atau QR Rak untuk inspeksi slot digital twin.
               </p>
@@ -856,11 +850,10 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
           {/* Kanan: Badge Jumlah Perangkat */}
           <div className="hidden sm:flex shrink-0 items-center gap-2.5">
             <div
-              className={`px-4 py-2 rounded-xl text-xs font-semibold border flex items-center gap-2 ${
-                isDark
+              className={`px-4 py-2 rounded-xl text-xs font-semibold border flex items-center gap-2 ${isDark
                   ? "bg-[#0D1F36] border-[#1E3A5F] text-[#38BDF8]"
                   : "bg-blue-50 border-blue-200 text-blue-700"
-              }`}
+                }`}
             >
               <span className="material-symbols-outlined text-[16px]">devices</span>
               <span>{devicesList.length} Perangkat</span>
@@ -877,101 +870,98 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
         {/* KOLOM KIRI: KAMERA AR VIEWFINDER HUD (5 COL)   */}
         {/* ============================================== */}
         <div
-          className={`lg:col-span-5 rounded-2xl border p-5 shadow-lg transition-all duration-300 flex flex-col justify-between h-full ${
-            isDark ? "bg-[#0D1F36] border-[#1E3A5F]" : "bg-white border-slate-200"
-          }`}
+          className={`lg:col-span-5 rounded-2xl border p-5 shadow-lg transition-all duration-300 flex flex-col justify-between h-full ${isDark ? "bg-[#0D1F36] border-[#1E3A5F]" : "bg-white border-slate-200"
+            }`}
         >
           {/* Wrapper Konten Atas Viewfinder */}
           <div className="flex flex-col">
             {/* Header Kontrol Scanner */}
-          <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#1A2E4C]/60">
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[20px] text-[#38BDF8]">qr_code_scanner</span>
-              <span className={`text-sm font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
-                Kamera AR Viewfinder
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setCameraFacing((prev) => (prev === "environment" ? "user" : "environment"))}
-                title="Ganti Lensa Kamera"
-                className={`p-1.5 rounded-lg border text-xs flex items-center gap-1 transition-all ${
-                  isDark
-                    ? "bg-[#071426] border-[#1E3A5F] text-[#38BDF8] hover:bg-[#122846]"
-                    : "bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[16px]">flip_camera_ios</span>
-                <span className="hidden sm:inline font-medium text-[11px]">
-                  {cameraFacing === "environment" ? "Belakang" : "Depan"}
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#1A2E4C]/60">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[20px] text-[#38BDF8]">qr_code_scanner</span>
+                <span className={`text-sm font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
+                  Kamera AR Viewfinder
                 </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => fileInputRef.current && fileInputRef.current.click()}
-                title="Unggah Gambar QR Code"
-                className={`p-1.5 rounded-lg border text-xs flex items-center gap-1 transition-all ${
-                  isDark
-                    ? "bg-[#071426] border-[#1E3A5F] text-[#38BDF8] hover:bg-[#122846]"
-                    : "bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[16px]">upload_file</span>
-                <span className="hidden sm:inline font-medium text-[11px]">Foto QR</span>
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/jpg,image/png,image/webp,image/*"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-            </div>
-          </div>
-
-          {/* Viewport Kamera Video dengan Cyberpunk Reticle Overlay */}
-          <div className="relative w-full aspect-square max-h-[360px] rounded-xl overflow-hidden bg-black border-2 border-[#1E3A5F] flex items-center justify-center shadow-inner">
-            <div id="ar-qr-reader" className="w-full h-full object-cover"></div>
-
-            {/* Overlay AR Reticle */}
-            <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-6">
-              <div className="flex justify-between items-start">
-                <div className="w-8 h-8 border-t-2 border-l-2 border-[#00E5FF] shadow-[0_0_8px_#00E5FF]"></div>
-                <div className="w-8 h-8 border-t-2 border-r-2 border-[#00E5FF] shadow-[0_0_8px_#00E5FF]"></div>
               </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCameraFacing((prev) => (prev === "environment" ? "user" : "environment"))}
+                  title="Ganti Lensa Kamera"
+                  className={`p-1.5 rounded-lg border text-xs flex items-center gap-1 transition-all ${isDark
+                      ? "bg-[#071426] border-[#1E3A5F] text-[#38BDF8] hover:bg-[#122846]"
+                      : "bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200"
+                    }`}
+                >
+                  <span className="material-symbols-outlined text-[16px]">flip_camera_ios</span>
+                  <span className="hidden sm:inline font-medium text-[11px]">
+                    {cameraFacing === "environment" ? "Belakang" : "Depan"}
+                  </span>
+                </button>
 
-              <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-[#00E5FF] to-transparent shadow-[0_0_12px_#00E5FF] animate-pulse"></div>
-
-              <div className="flex justify-between items-end">
-                <div className="w-8 h-8 border-b-2 border-l-2 border-[#00E5FF] shadow-[0_0_8px_#00E5FF]"></div>
-                <div className="w-8 h-8 border-b-2 border-r-2 border-[#00E5FF] shadow-[0_0_8px_#00E5FF]"></div>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                  title="Unggah Gambar QR Code"
+                  className={`p-1.5 rounded-lg border text-xs flex items-center gap-1 transition-all ${isDark
+                      ? "bg-[#071426] border-[#1E3A5F] text-[#38BDF8] hover:bg-[#122846]"
+                      : "bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200"
+                    }`}
+                >
+                  <span className="material-symbols-outlined text-[16px]">upload_file</span>
+                  <span className="hidden sm:inline font-medium text-[11px]">Foto QR</span>
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp,image/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
               </div>
             </div>
 
-            {/* Indikator Status di Atas Video */}
-            <div className="absolute top-2 left-2 right-2 flex justify-between items-center px-2 py-1 bg-black/60 backdrop-blur-md rounded-md text-[10px] font-mono text-[#38BDF8] z-10 border border-[#00E5FF]/20">
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#00E5FF] shadow-[0_0_6px_#00E5FF] animate-ping"></span>
-                <span>HUD SCANNER ACTIVE</span>
-              </span>
-              <span>{cameraFacing.toUpperCase()}</span>
-            </div>
-          </div>
+            {/* Viewport Kamera Video dengan Cyberpunk Reticle Overlay */}
+            <div className="relative w-full aspect-square max-h-[360px] rounded-xl overflow-hidden bg-black border-2 border-[#1E3A5F] flex items-center justify-center shadow-inner">
+              <div id="ar-qr-reader" className="w-full h-full object-cover"></div>
 
-          {/* Status teks di bawah kamera */}
-          <div className="mt-3 text-center">
-            <p className={`text-xs font-medium ${isDark ? "text-[#94A3B8]" : "text-slate-600"}`}>
-              {cameraStatus}
-            </p>
-            {cameraError && (
-              <div className="mt-2.5 p-3 rounded-xl text-xs bg-rose-500/10 border border-rose-500/30 text-rose-300 text-left flex items-start gap-2">
-                <span className="material-symbols-outlined text-[16px] text-rose-400 mt-0.5">warning</span>
-                <span>{cameraError}</span>
+              {/* Overlay AR Reticle */}
+              <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-6">
+                <div className="flex justify-between items-start">
+                  <div className="w-8 h-8 border-t-2 border-l-2 border-[#00E5FF] shadow-[0_0_8px_#00E5FF]"></div>
+                  <div className="w-8 h-8 border-t-2 border-r-2 border-[#00E5FF] shadow-[0_0_8px_#00E5FF]"></div>
+                </div>
+
+                <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-[#00E5FF] to-transparent shadow-[0_0_12px_#00E5FF] animate-pulse"></div>
+
+                <div className="flex justify-between items-end">
+                  <div className="w-8 h-8 border-b-2 border-l-2 border-[#00E5FF] shadow-[0_0_8px_#00E5FF]"></div>
+                  <div className="w-8 h-8 border-b-2 border-r-2 border-[#00E5FF] shadow-[0_0_8px_#00E5FF]"></div>
+                </div>
               </div>
-            )}
-          </div>
+
+              {/* Indikator Status di Atas Video */}
+              <div className="absolute top-2 left-2 right-2 flex justify-between items-center px-2 py-1 bg-black/60 backdrop-blur-md rounded-md text-[10px] font-mono text-[#38BDF8] z-10 border border-[#00E5FF]/20">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#00E5FF] shadow-[0_0_6px_#00E5FF] animate-ping"></span>
+                  <span>HUD SCANNER ACTIVE</span>
+                </span>
+                <span>{cameraFacing.toUpperCase()}</span>
+              </div>
+            </div>
+
+            {/* Status teks di bawah kamera */}
+            <div className="mt-3 text-center">
+              <p className={`text-xs font-medium ${isDark ? "text-[#94A3B8]" : "text-slate-600"}`}>
+                {cameraStatus}
+              </p>
+              {cameraError && (
+                <div className="mt-2.5 p-3 rounded-xl text-xs bg-rose-500/10 border border-rose-500/30 text-rose-300 text-left flex items-start gap-2">
+                  <span className="material-symbols-outlined text-[16px] text-rose-400 mt-0.5">warning</span>
+                  <span>{cameraError}</span>
+                </div>
+              )}
+            </div>
 
           </div>
 
@@ -986,15 +976,14 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                 <button
                   type="button"
                   onClick={() => setDeviceDropdownOpen(!deviceDropdownOpen)}
-                  className={`relative w-full h-11 px-4 rounded-xl border flex items-center justify-between gap-3 text-xs font-medium transition-all duration-200 cursor-pointer ${
-                    deviceDropdownOpen
+                  className={`relative w-full h-11 px-4 rounded-xl border flex items-center justify-between gap-3 text-xs font-medium transition-all duration-200 cursor-pointer ${deviceDropdownOpen
                       ? isDark
                         ? "bg-[#0A182B] border-[#1677FF] ring-2 ring-[#1677FF]/25 text-[#E6EDF7]"
                         : "bg-white border-[#1677FF] ring-2 ring-[#1677FF]/20 text-slate-900"
                       : isDark
                         ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF] hover:bg-[#0E2038]"
                         : "bg-slate-50 border-slate-300 text-slate-800 hover:border-blue-500"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-2 truncate pr-2">
                     <span className="material-symbols-outlined text-[18px] text-[#38BDF8] shrink-0">
@@ -1005,9 +994,8 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                     </span>
                   </div>
                   <span
-                    className={`material-symbols-outlined text-[18px] text-[#94A3B8] transition-transform duration-200 shrink-0 ${
-                      deviceDropdownOpen ? "rotate-180" : ""
-                    }`}
+                    className={`material-symbols-outlined text-[18px] text-[#94A3B8] transition-transform duration-200 shrink-0 ${deviceDropdownOpen ? "rotate-180" : ""
+                      }`}
                   >
                     expand_more
                   </span>
@@ -1016,11 +1004,10 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                 {/* Custom Filter Dropdown Menu (Konsisten dengan Gambar 1) */}
                 {deviceDropdownOpen && (
                   <div
-                    className={`absolute left-0 top-12 mt-1.5 w-full min-w-full rounded-xl border shadow-2xl p-1.5 z-50 max-h-64 overflow-y-auto custom-scrollbar backdrop-blur-md animate-dropdown ${
-                      isDark
+                    className={`absolute left-0 top-12 mt-1.5 w-full min-w-full rounded-xl border shadow-2xl p-1.5 z-50 max-h-64 overflow-y-auto custom-scrollbar backdrop-blur-md animate-dropdown ${isDark
                         ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7]"
                         : "bg-white border-slate-200 text-slate-800 shadow-xl"
-                    }`}
+                      }`}
                     style={{
                       backgroundColor: isDark ? "#0A182B" : "#FFFFFF",
                       borderColor: isDark ? "#1E3A5F" : "#E2E8F0",
@@ -1033,15 +1020,14 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                         handleScanAnotherDevice();
                         setDeviceDropdownOpen(false);
                       }}
-                      className={`w-full px-3 py-2.5 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
-                        !currentDeviceId
+                      className={`w-full px-3 py-2.5 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${!currentDeviceId
                           ? isDark
                             ? "bg-[#1677FF] text-white font-semibold"
                             : "bg-blue-600 text-white font-semibold"
                           : isDark
                             ? "hover:bg-[#122846] text-[#CBD5E1]"
                             : "hover:bg-slate-100 text-slate-700"
-                      }`}
+                        }`}
                     >
                       <span>Semua Perangkat</span>
                       {!currentDeviceId && (
@@ -1062,26 +1048,24 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                             loadDeviceContext(dev.device_id);
                             setDeviceDropdownOpen(false);
                           }}
-                          className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
-                            isSelected
+                          className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${isSelected
                               ? isDark
                                 ? "bg-[#1677FF] text-white font-semibold"
                                 : "bg-blue-600 text-white font-semibold"
                               : isDark
                                 ? "hover:bg-[#122846] text-[#CBD5E1]"
                                 : "hover:bg-slate-100 text-slate-700"
-                          }`}
+                            }`}
                         >
                           <div className="flex flex-col truncate pr-2">
                             <span className="font-semibold">{dev.nama_perangkat}</span>
                             <span
-                              className={`text-[10px] ${
-                                isSelected
+                              className={`text-[10px] ${isSelected
                                   ? "text-blue-100"
                                   : isDark
                                     ? "text-[#64748B]"
                                     : "text-slate-400"
-                              }`}
+                                }`}
                             >
                               {dev.lokasi}
                             </span>
@@ -1103,11 +1087,10 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                   type="button"
                   onClick={handleScanAnotherDevice}
                   title="Reset & Pindai Ulang"
-                  className={`h-11 px-3.5 rounded-xl border flex items-center gap-1.5 text-xs font-semibold transition-all shrink-0 cursor-pointer ${
-                    isDark
+                  className={`h-11 px-3.5 rounded-xl border flex items-center gap-1.5 text-xs font-semibold transition-all shrink-0 cursor-pointer ${isDark
                       ? "bg-[#0A182B] border-[#1E3A5F] text-[#38BDF8] hover:bg-[#122846] hover:border-[#1677FF]"
                       : "bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200"
-                  }`}
+                    }`}
                 >
                   <span className="material-symbols-outlined text-[16px]">restart_alt</span>
                   <span className="hidden sm:inline">Scan Ulang</span>
@@ -1121,9 +1104,8 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
         {/* KOLOM KANAN: DIGITAL TWIN RAK & PETA SLOT AR (7 COL)     */}
         {/* ======================================================== */}
         <div
-          className={`lg:col-span-7 rounded-2xl border p-6 shadow-lg transition-all duration-300 flex flex-col h-full ${
-            isDark ? "bg-[#0D1F36] border-[#1E3A5F]" : "bg-white border-slate-200"
-          }`}
+          className={`lg:col-span-7 rounded-2xl border p-6 shadow-lg transition-all duration-300 flex flex-col h-full ${isDark ? "bg-[#0D1F36] border-[#1E3A5F]" : "bg-white border-slate-200"
+            }`}
         >
           {loadingDevice ? (
             <div className="flex-1 flex flex-col items-center justify-center py-20 text-center my-auto">
@@ -1145,24 +1127,21 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                   </div>
                   <div className="flex flex-wrap items-center gap-2 mt-1.5">
                     <span
-                      className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
-                        isDark ? "bg-[#0B2A4A] text-[#38BDF8] border-[#164477]" : "bg-blue-50 text-blue-700 border-blue-200"
-                      }`}
+                      className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${isDark ? "bg-[#0B2A4A] text-[#38BDF8] border-[#164477]" : "bg-blue-50 text-blue-700 border-blue-200"
+                        }`}
                     >
                       {currentDevice.tipe}
                     </span>
                     <span
-                      className={`px-2.5 py-0.5 rounded-full text-xs font-medium border flex items-center gap-1 ${
-                        isDark ? "bg-[#071426] text-[#CBD5E1] border-[#1E3A5F]" : "bg-slate-100 text-slate-700 border-slate-200"
-                      }`}
+                      className={`px-2.5 py-0.5 rounded-full text-xs font-medium border flex items-center gap-1 ${isDark ? "bg-[#071426] text-[#CBD5E1] border-[#1E3A5F]" : "bg-slate-100 text-slate-700 border-slate-200"
+                        }`}
                     >
                       <span className="material-symbols-outlined text-[13px] text-rose-400">location_on</span>
                       {currentDevice.lokasi}
                     </span>
                     <span
-                      className={`px-2.5 py-0.5 rounded-full text-xs font-mono font-medium border ${
-                        isDark ? "bg-[#071426] text-[#94A3B8] border-[#1E3A5F]" : "bg-slate-100 text-slate-600 border-slate-200"
-                      }`}
+                      className={`px-2.5 py-0.5 rounded-full text-xs font-mono font-medium border ${isDark ? "bg-[#071426] text-[#94A3B8] border-[#1E3A5F]" : "bg-slate-100 text-slate-600 border-slate-200"
+                        }`}
                     >
                       SN: {currentDevice.serial_number}
                     </span>
@@ -1171,17 +1150,14 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
 
                 {/* Toggle Mode Tampilan 2D vs 3D Digital Twin */}
                 <div className="flex items-center gap-2 shrink-0">
-                  <div className={`flex p-0.5 rounded-xl border transition-colors ${
-                    isDark ? "bg-[#071426] border-[#1E3A5F]" : "bg-slate-100 border-slate-300 shadow-sm"
-                  }`}>
+                  <div className="flex p-0.5 rounded-xl bg-[#071426] border border-[#1E3A5F]">
                     <button
                       type="button"
                       onClick={() => setRackViewMode("2d")}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                        rackViewMode === "2d"
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${rackViewMode === "2d"
                           ? "bg-[#1677FF] text-white shadow-md shadow-[#1677FF]/30"
-                          : isDark ? "text-[#94A3B8] hover:text-white" : "text-slate-600 hover:text-slate-900"
-                      }`}
+                          : "text-[#94A3B8] hover:text-white"
+                        }`}
                     >
                       <span className="material-symbols-outlined text-[16px]">grid_view</span>
                       <span>2D Grid</span>
@@ -1189,11 +1165,10 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                     <button
                       type="button"
                       onClick={() => setRackViewMode("3d")}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                        rackViewMode === "3d"
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${rackViewMode === "3d"
                           ? "bg-[#1677FF] text-white shadow-md shadow-[#1677FF]/30"
-                          : isDark ? "text-[#94A3B8] hover:text-white" : "text-slate-600 hover:text-slate-900"
-                      }`}
+                          : "text-[#94A3B8] hover:text-white"
+                        }`}
                     >
                       <span className="material-symbols-outlined text-[16px]">3d_rotation</span>
                       <span>3D Digital Twin</span>
@@ -1204,9 +1179,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
 
               {/* Tabs Mode Pencarian & Form Search */}
               <div>
-                <div className={`flex gap-2 p-1 rounded-xl mb-3 border max-w-md transition-colors ${
-                  isDark ? "bg-[#071426] border-[#1E3A5F]" : "bg-slate-100 border-slate-300 shadow-sm"
-                }`}>
+                <div className="flex gap-2 p-1 rounded-xl mb-3 bg-[#071426] border border-[#1E3A5F] max-w-md">
                   <button
                     type="button"
                     onClick={() => {
@@ -1214,11 +1187,10 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                       setSearchQuery("");
                       setSearchResult(null);
                     }}
-                    className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
-                      searchMode === "sn"
+                    className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${searchMode === "sn"
                         ? "bg-[#1677FF] text-white shadow-md shadow-[#1677FF]/30"
-                        : isDark ? "text-[#94A3B8] hover:text-[#E6EDF7]" : "text-slate-600 hover:text-slate-900"
-                    }`}
+                        : "text-[#94A3B8] hover:text-[#E6EDF7]"
+                      }`}
                   >
                     <span>🏷️ Cari by Serial Number</span>
                   </button>
@@ -1229,11 +1201,10 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                       setSearchQuery("");
                       setSearchResult(null);
                     }}
-                    className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
-                      searchMode === "slot"
+                    className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${searchMode === "slot"
                         ? "bg-[#1677FF] text-white shadow-md shadow-[#1677FF]/30"
-                        : isDark ? "text-[#94A3B8] hover:text-[#E6EDF7]" : "text-slate-600 hover:text-slate-900"
-                    }`}
+                        : "text-[#94A3B8] hover:text-[#E6EDF7]"
+                      }`}
                   >
                     <span>📦 Cari by Nomor Slot</span>
                   </button>
@@ -1241,16 +1212,11 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
 
                 <form onSubmit={handleSearch} className="flex gap-2">
                   <div className="relative flex-1">
-                    <span
-                      className={`material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[18px] pointer-events-none transition-colors ${
-                        isDark ? "text-[#4d6686]" : "text-slate-400"
-                      }`}
-                    >
+                    <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[18px] text-[#64748B]">
                       search
                     </span>
                     <input
                       type="text"
-                      id="scanModuleSearchInput"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder={
@@ -1258,32 +1224,16 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                           ? "Masukkan nomor seri modul (cth: CFP2-001, SN-...)"
                           : "Masukkan nomor slot (cth: 1, 2, 5...)"
                       }
-                      className={`w-full h-11 pl-10 pr-9 rounded-xl border text-xs sm:text-sm outline-none transition-all duration-200 ease-in-out ${
-                        isDark
-                          ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] placeholder-[#4d6686] focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF]"
-                          : "bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:bg-white"
-                      }`}
-                    />
-                    {searchQuery && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSearchQuery("");
-                          setSearchResult(null);
-                        }}
-                        title="Hapus pencarian"
-                        className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors cursor-pointer ${
-                          isDark ? "text-[#64748B] hover:text-white" : "text-slate-400 hover:text-slate-700"
+                      className={`w-full h-11 pl-10 pr-4 rounded-xl text-xs transition-all focus:outline-none ${isDark
+                          ? "bg-[#071426] border border-[#1E3A5F] text-white focus:border-[#1677FF]"
+                          : "bg-slate-50 border border-slate-300 text-slate-900 focus:border-[#1677FF]"
                         }`}
-                      >
-                        <span className="material-symbols-outlined text-[16px]">close</span>
-                      </button>
-                    )}
+                    />
                   </div>
                   <button
                     type="submit"
                     disabled={searching || !searchQuery.trim()}
-                    className="h-11 px-5 rounded-xl font-semibold text-xs text-white bg-[#1677FF] hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md shadow-[#1677FF]/25 flex items-center gap-1.5 cursor-pointer shrink-0"
+                    className="h-11 px-5 rounded-xl font-semibold text-xs text-white bg-[#1677FF] hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md shadow-[#1677FF]/25 flex items-center gap-1.5"
                   >
                     {searching ? (
                       <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
@@ -1300,39 +1250,37 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                 <div className="animate-fadeIn">
                   {!searchResult.found ? (
                     <div
-                      className={`p-4 rounded-xl border text-xs flex items-start gap-3 ${
-                        searchResult.reason === "wrong_device" || searchResult.reason === "not_installed"
+                      className={`p-4 rounded-xl border text-xs flex items-start gap-3 ${searchResult.reason === "wrong_device" || searchResult.reason === "not_installed"
                           ? isDark
                             ? "bg-amber-500/10 border-amber-500/30 text-amber-300"
                             : "bg-amber-50 border-amber-300 text-amber-800"
                           : isDark
-                          ? "bg-rose-500/10 border-rose-500/30 text-rose-300"
-                          : "bg-rose-50 border-rose-300 text-rose-800"
-                      }`}
+                            ? "bg-rose-500/10 border-rose-500/30 text-rose-300"
+                            : "bg-rose-50 border-rose-300 text-rose-800"
+                        }`}
                     >
                       <span className="material-symbols-outlined text-[20px] shrink-0 mt-0.5">
                         {searchResult.reason === "wrong_device"
                           ? "swap_horiz"
                           : searchResult.reason === "not_installed"
-                          ? "inventory_2"
-                          : "cancel"}
+                            ? "inventory_2"
+                            : "cancel"}
                       </span>
                       <div>
                         <strong className="block text-sm font-bold mb-0.5">
                           {searchResult.reason === "wrong_device"
                             ? "Modul Berada di Perangkat Lain"
                             : searchResult.reason === "not_installed"
-                            ? "Modul Bebas (Belum Terpasang)"
-                            : "Pencarian Tidak Ditemukan"}
+                              ? "Modul Bebas (Belum Terpasang)"
+                              : "Pencarian Tidak Ditemukan"}
                         </strong>
                         <p className="leading-relaxed">{searchResult.message}</p>
                       </div>
                     </div>
                   ) : (
                     <div
-                      className={`p-4 rounded-xl border transition-all ${
-                        isDark ? "bg-[#071426] border-[#1E3A5F]" : "bg-slate-50 border-slate-300"
-                      }`}
+                      className={`p-4 rounded-xl border transition-all ${isDark ? "bg-[#071426] border-[#1E3A5F]" : "bg-slate-50 border-slate-300"
+                        }`}
                     >
                       <div className="flex items-center justify-between pb-3 border-b border-[#1A2E4C]/50">
                         <div className="flex items-center gap-2">
@@ -1343,20 +1291,19 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                         </div>
                         {searchResult.module && (
                           <span
-                            className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase border ${
-                              searchResult.module.kondisi?.toLowerCase() === "baik" ||
-                              searchResult.module.kondisi?.toLowerCase() === "aktif"
+                            className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase border ${searchResult.module.kondisi?.toLowerCase() === "baik" ||
+                                searchResult.module.kondisi?.toLowerCase() === "aktif"
                                 ? isDark
                                   ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
                                   : "bg-emerald-50 text-emerald-700 border-emerald-200"
                                 : searchResult.module.kondisi?.toLowerCase() === "rusak"
-                                ? isDark
-                                  ? "bg-rose-500/15 text-rose-400 border-rose-500/30"
-                                  : "bg-rose-50 text-rose-700 border-rose-200"
-                                : isDark
-                                ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
-                                : "bg-amber-50 text-amber-700 border-amber-200"
-                            }`}
+                                  ? isDark
+                                    ? "bg-rose-500/15 text-rose-400 border-rose-500/30"
+                                    : "bg-rose-50 text-rose-700 border-rose-200"
+                                  : isDark
+                                    ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
+                                    : "bg-amber-50 text-amber-700 border-amber-200"
+                              }`}
                           >
                             Kondisi: {searchResult.module.kondisi}
                           </span>
@@ -1373,9 +1320,8 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                         <div>
                           <span className="block text-[11px] text-[#94A3B8]">Status Slot</span>
                           <span
-                            className={`font-semibold ${
-                              searchResult.slot?.status === "KOSONG" ? "text-emerald-400" : "text-rose-400"
-                            }`}
+                            className={`font-semibold ${searchResult.slot?.status === "KOSONG" ? "text-emerald-400" : "text-rose-400"
+                              }`}
                           >
                             {searchResult.slot?.status === "KOSONG" ? "🟢 Kosong" : "🔴 Terisi"}
                           </span>
@@ -1407,7 +1353,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                   {/* Toolbar Kontrol 3D */}
                   <div className="flex items-center justify-between flex-wrap gap-2 text-xs">
                     <div className="flex items-center gap-2">
-                      <span className={`material-symbols-outlined text-[18px] ${isDark ? "text-[#00E5FF]" : "text-[#0284C7]"}`}>view_in_ar</span>
+                      <span className="material-symbols-outlined text-[18px] text-[#00E5FF]">view_in_ar</span>
                       <span className={`font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
                         3D Digital Twin Sub-Rack (Nokia 1830 PSS-24x)
                       </span>
@@ -1415,17 +1361,14 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
 
                     <div className="flex items-center gap-2 flex-wrap">
                       {/* Presets Sudut Pandang */}
-                      <div className={`flex items-center gap-1 p-0.5 rounded-lg border transition-colors ${
-                        isDark ? "bg-[#050D1A] border-[#1E3A5F]" : "bg-slate-100 border-slate-300 shadow-sm"
-                      }`}>
+                      <div className="flex items-center gap-1 bg-[#050D1A] p-0.5 rounded-lg border border-[#1E3A5F]">
                         <button
                           type="button"
                           onClick={() => { setRotX(0); setRotY(0); setZoomLevel(1.0); }}
-                          className={`px-2 py-1 rounded text-[10px] font-semibold transition-all ${
-                            rotX === 0 && rotY === 0
+                          className={`px-2 py-1 rounded text-[10px] font-semibold transition-all ${rotX === 0 && rotY === 0
                               ? "bg-[#1677FF] text-white shadow-sm"
-                              : isDark ? "text-slate-400 hover:text-white hover:bg-slate-800/60" : "text-slate-600 hover:text-slate-900 hover:bg-white"
-                          }`}
+                              : "text-slate-400 hover:text-white"
+                            }`}
                           title="Tampak Depan Lurus (Tegak)"
                         >
                           ⏹️ Depan
@@ -1433,11 +1376,10 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                         <button
                           type="button"
                           onClick={() => { setRotX(14); setRotY(-22); setZoomLevel(1.0); }}
-                          className={`px-2 py-1 rounded text-[10px] font-semibold transition-all ${
-                            rotX === 14 && rotY === -22
+                          className={`px-2 py-1 rounded text-[10px] font-semibold transition-all ${rotX === 14 && rotY === -22
                               ? "bg-[#1677FF] text-white shadow-sm"
-                              : isDark ? "text-slate-400 hover:text-white hover:bg-slate-800/60" : "text-slate-600 hover:text-slate-900 hover:bg-white"
-                          }`}
+                              : "text-slate-400 hover:text-white"
+                            }`}
                           title="Tampak Sudut Isometrik 3D"
                         >
                           📐 Isometrik
@@ -1445,11 +1387,10 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                         <button
                           type="button"
                           onClick={() => { setRotX(6); setRotY(-42); setZoomLevel(1.0); }}
-                          className={`px-2 py-1 rounded text-[10px] font-semibold transition-all ${
-                            rotY === -42
+                          className={`px-2 py-1 rounded text-[10px] font-semibold transition-all ${rotY === -42
                               ? "bg-[#1677FF] text-white shadow-sm"
-                              : isDark ? "text-slate-400 hover:text-white hover:bg-slate-800/60" : "text-slate-600 hover:text-slate-900 hover:bg-white"
-                          }`}
+                              : "text-slate-400 hover:text-white"
+                            }`}
                           title="Tampak Miring Kiri"
                         >
                           ◀️ Kiri
@@ -1457,11 +1398,10 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                         <button
                           type="button"
                           onClick={() => { setRotX(6); setRotY(42); setZoomLevel(1.0); }}
-                          className={`px-2 py-1 rounded text-[10px] font-semibold transition-all ${
-                            rotY === 42
+                          className={`px-2 py-1 rounded text-[10px] font-semibold transition-all ${rotY === 42
                               ? "bg-[#1677FF] text-white shadow-sm"
-                              : isDark ? "text-slate-400 hover:text-white hover:bg-slate-800/60" : "text-slate-600 hover:text-slate-900 hover:bg-white"
-                          }`}
+                              : "text-slate-400 hover:text-white"
+                            }`}
                           title="Tampak Miring Kanan"
                         >
                           ▶️ Kanan
@@ -1469,15 +1409,11 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                       </div>
 
                       {/* Zoom Controls */}
-                      <div className={`flex items-center gap-1 p-0.5 rounded-lg border transition-colors ${
-                        isDark ? "bg-[#050D1A] border-[#1E3A5F]" : "bg-slate-100 border-slate-300 shadow-sm"
-                      }`}>
+                      <div className="flex items-center gap-1 bg-[#050D1A] p-0.5 rounded-lg border border-[#1E3A5F]">
                         <button
                           type="button"
                           onClick={() => setZoomLevel((prev) => Math.min(1.4, prev + 0.1))}
-                          className={`p-1 rounded transition-colors ${
-                            isDark ? "text-slate-300 hover:text-white hover:bg-slate-800/60" : "text-slate-600 hover:text-slate-900 hover:bg-white"
-                          }`}
+                          className="p-1 rounded text-slate-300 hover:text-white"
                           title="Perbesar Zoom"
                         >
                           <span className="material-symbols-outlined text-[15px]">zoom_in</span>
@@ -1485,9 +1421,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                         <button
                           type="button"
                           onClick={() => setZoomLevel((prev) => Math.max(0.65, prev - 0.1))}
-                          className={`p-1 rounded transition-colors ${
-                            isDark ? "text-slate-300 hover:text-white hover:bg-slate-800/60" : "text-slate-600 hover:text-slate-900 hover:bg-white"
-                          }`}
+                          className="p-1 rounded text-slate-300 hover:text-white"
                           title="Perkecil Zoom"
                         >
                           <span className="material-symbols-outlined text-[15px]">zoom_out</span>
@@ -1495,9 +1429,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                         <button
                           type="button"
                           onClick={() => { setRotX(0); setRotY(0); setZoomLevel(1.0); }}
-                          className={`p-1 rounded transition-colors ${
-                            isDark ? "text-slate-300 hover:text-white hover:bg-slate-800/60" : "text-slate-600 hover:text-slate-900 hover:bg-white"
-                          }`}
+                          className="p-1 rounded text-slate-300 hover:text-white"
                           title="Reset Tampak Depan & Zoom"
                         >
                           <span className="material-symbols-outlined text-[15px]">restart_alt</span>
@@ -1508,13 +1440,12 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                       <button
                         type="button"
                         onClick={() => setImuActive(!imuActive)}
-                        className={`px-2.5 py-1 rounded-lg border text-[11px] font-semibold flex items-center gap-1.5 transition-all ${
-                          imuActive
+                        className={`px-2.5 py-1 rounded-lg border text-[11px] font-semibold flex items-center gap-1.5 transition-all ${imuActive
                             ? "bg-emerald-500/20 border-emerald-500 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.4)]"
                             : isDark
-                            ? "bg-[#071426] border-[#1E3A5F] text-[#94A3B8] hover:text-white"
-                            : "bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200"
-                        }`}
+                              ? "bg-[#071426] border-[#1E3A5F] text-[#94A3B8] hover:text-white"
+                              : "bg-slate-100 border-slate-300 text-slate-700"
+                          }`}
                         title="Gunakan Sensor Gyroscope Smartphone (IMU Parallax)"
                       >
                         <span className="material-symbols-outlined text-[15px]">
@@ -1536,59 +1467,33 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                     onTouchMove={handle3DTouchMove}
                     onTouchEnd={handle3DTouchEnd}
                     onTouchCancel={handle3DTouchEnd}
-                    className={`relative w-full min-h-[520px] rounded-2xl overflow-hidden border flex items-center justify-center cursor-grab active:cursor-grabbing select-none p-4 sm:p-8 transition-colors ${
-                      isDark
-                        ? "border-[#1E3A5F] bg-gradient-to-b from-[#030712] via-[#071324] to-[#0A1A2F] shadow-2xl"
-                        : "border-slate-200 bg-white shadow-sm"
-                    }`}
+                    className="relative w-full min-h-[520px] rounded-2xl overflow-hidden border border-[#1E3A5F] bg-gradient-to-b from-[#030712] via-[#071324] to-[#0A1A2F] flex items-center justify-center cursor-grab active:cursor-grabbing select-none p-4 sm:p-8"
                     style={{ perspective: "1400px" }}
                   >
                     {/* Grid Background Ambient Wireframe */}
                     <div
-                      className={`absolute inset-0 pointer-events-none transition-opacity ${
-                        isDark ? "opacity-20" : "opacity-35"
-                      }`}
+                      className="absolute inset-0 pointer-events-none opacity-20"
                       style={{
-                        backgroundImage: isDark
-                          ? "radial-gradient(#00E5FF 1px, transparent 1px)"
-                          : "radial-gradient(#94A3B8 1px, transparent 1px)",
+                        backgroundImage: "radial-gradient(#00E5FF 1px, transparent 1px)",
                         backgroundSize: "28px 28px",
                       }}
                     />
 
                     {/* HUD Telemetry Overlay di Atas 3D */}
-                    <div className="absolute top-3 left-3 right-3 flex items-center justify-between text-[10px] font-mono pointer-events-none z-30">
-                      <div
-                        className={`flex items-center gap-2 px-2.5 py-1 rounded-md border backdrop-blur-sm shadow-sm transition-colors ${
-                          isDark
-                            ? "bg-black/70 border-[#00E5FF]/20 text-[#38BDF8]"
-                            : "bg-white/90 border-slate-200 text-slate-700"
-                        }`}
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full ${isDark ? "bg-[#00E5FF]" : "bg-blue-500"} animate-ping`} />
+                    <div className="absolute top-3 left-3 right-3 flex items-center justify-between text-[10px] font-mono text-[#38BDF8] pointer-events-none z-30">
+                      <div className="flex items-center gap-2 bg-black/70 px-2.5 py-1 rounded-md border border-[#00E5FF]/20 backdrop-blur-sm">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-ping" />
                         <span className="font-bold">
                           {rotX === 0 && rotY === 0 ? "FRONTAL 3D CHASSIS (DEPTH: 350mm)" : "ISOMETRIC 3D CHASSIS (DEPTH: 350mm)"}
                         </span>
                       </div>
-                      <div
-                        className={`px-2.5 py-1 rounded-md border backdrop-blur-sm shadow-sm transition-colors ${
-                          isDark
-                            ? "bg-black/70 border-[#00E5FF]/20 text-[#38BDF8]"
-                            : "bg-white/90 border-slate-200 text-slate-700"
-                        }`}
-                      >
+                      <div className="bg-black/70 px-2.5 py-1 rounded-md border border-[#00E5FF]/20 backdrop-blur-sm">
                         ROT: X {Math.round(rotX)}° | Y {Math.round(rotY)}° {imuActive && `| IMU: P${imuData.pitch} R${imuData.roll}`}
                       </div>
                     </div>
 
                     {/* Instruksi Drag di Bawah */}
-                    <div
-                      className={`absolute bottom-2.5 left-1/2 -translate-x-1/2 text-[10px] pointer-events-none z-30 px-3.5 py-1 rounded-full border backdrop-blur-sm shadow-sm transition-colors ${
-                        isDark
-                          ? "text-[#94A3B8] bg-black/60 border-slate-700/50"
-                          : "text-slate-600 bg-white/90 border-slate-300"
-                      }`}
-                    >
+                    <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 text-[10px] text-[#94A3B8] pointer-events-none z-30 bg-black/60 px-3.5 py-1 rounded-full border border-slate-700/50 backdrop-blur-sm">
                       {imuActive ? "📡 Miringkan smartphone untuk mengubah perspektif" : "🖱️ Tahan & geser untuk rotasi orbit 3D • Klik bilah slot untuk inspeksi"}
                     </div>
 
@@ -1606,7 +1511,6 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                         style={{
                           width: "clamp(340px, 94vw, 610px)",
                           transformStyle: "preserve-3d",
-                          filter: isDark ? "none" : "drop-shadow(0 25px 35px rgba(15, 23, 42, 0.40)) drop-shadow(0 10px 15px rgba(15, 23, 42, 0.20))",
                         }}
                       >
                         {/* ── 3D DEPTH WALLS (EXTRUSION) ANTI-GEPENG ── */}
@@ -1790,11 +1694,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                             </div>
 
                             {/* 16 Vertical Blade Slots Strip */}
-                            <div className={`flex gap-1 overflow-x-auto custom-scrollbar p-1.5 rounded-lg ${
-                              isDark
-                                ? "bg-[#050D1A] border border-[#1E3A5F]/80"
-                                : "bg-[#071324] border border-slate-700/80 shadow-inner"
-                            }`}>
+                            <div className="flex gap-1 overflow-x-auto custom-scrollbar p-1.5 rounded-lg bg-[#050D1A] border border-[#1E3A5F]/80">
                               {topTierSlots.map((slot) => {
                                 const isOccupied = slot.occupied;
                                 const isHighlighted = slot.slot_definition_id === highlightedSlotId;
@@ -1808,13 +1708,12 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                                       e.stopPropagation();
                                       handleSlotCardClick(slot);
                                     }}
-                                    className={`group relative flex flex-col justify-between items-center rounded transition-all duration-300 cursor-pointer select-none border ${
-                                      isHighlighted
+                                    className={`group relative flex flex-col justify-between items-center rounded transition-all duration-300 cursor-pointer select-none border ${isHighlighted
                                         ? "bg-gradient-to-b from-amber-400 via-amber-300 to-amber-500 border-amber-200 shadow-[0_0_30px_#F59E0B] z-40 text-black font-extrabold ring-2 ring-amber-400"
                                         : isOccupied
-                                        ? "bg-gradient-to-b from-[#1E293B] via-[#152033] to-[#0D1526] border-slate-700/80 hover:border-cyan-400/80 text-white shadow-sm hover:shadow-cyan-500/20"
-                                        : "bg-[#091524]/60 border-dashed border-emerald-500/35 hover:border-emerald-400/90 text-emerald-300/80 hover:bg-emerald-500/10"
-                                    }`}
+                                          ? "bg-gradient-to-b from-[#1E293B] via-[#152033] to-[#0D1526] border-slate-700/80 hover:border-cyan-400/80 text-white shadow-sm hover:shadow-cyan-500/20"
+                                          : "bg-[#091524]/60 border-dashed border-emerald-500/35 hover:border-emerald-400/90 text-emerald-300/80 hover:bg-emerald-500/10"
+                                      }`}
                                     style={{
                                       width: "32px",
                                       minWidth: "32px",
@@ -1822,32 +1721,49 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                                       transformStyle: "preserve-3d",
                                       transform: isHighlighted ? "translateZ(38px) scale(1.08)" : "translateZ(8px)",
                                     }}
-                                    title={`Slot #${slot.nomor_slot}: ${
-                                      isOccupied
+                                    title={`Slot #${slot.nomor_slot}: ${isOccupied
                                         ? `Terisi (${cardModuleType}) - SN: ${slot.module?.serial_number}`
                                         : "Kosong (Ready)"
-                                    }`}
+                                      }`}
                                   >
-                                    {/* Floating 3D Spotlight Pin Badge */}
+                                    {/* Floating 3D Spotlight HUD Pin Badge */}
                                     {isHighlighted && (
                                       <div
-                                        className="absolute -top-11 left-1/2 -translate-x-1/2 z-50 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-black text-[10px] font-black shadow-[0_4px_16px_rgba(245,158,11,0.6)] flex items-center gap-1 animate-bounce pointer-events-none whitespace-nowrap border border-amber-200"
-                                        style={{ transform: "translateZ(20px)" }}
+                                        className="absolute -top-16 left-1/2 -translate-x-1/2 z-50 px-3 py-1.5 rounded-xl bg-[#030A16]/95 border-2 border-amber-400 shadow-[0_8px_30px_rgba(0,0,0,0.9),0_0_20px_rgba(245,158,11,0.6)] flex flex-col items-center gap-0.5 pointer-events-none whitespace-nowrap backdrop-blur-md"
+                                        style={{ transform: "translateZ(45px)", WebkitFontSmoothing: "antialiased" }}
                                       >
-                                        <span className="material-symbols-outlined text-[13px]">location_on</span>
-                                        <span>Tier Atas &bull; Slot #{slot.nomor_slot}</span>
+                                        <div className="flex items-center gap-1.5 text-amber-300 text-[11px] font-black tracking-wide">
+                                          <span className="material-symbols-outlined text-[14px] text-amber-400 animate-bounce">location_on</span>
+                                          <span>Slot #{slot.nomor_slot} &bull; Tier Atas</span>
+                                        </div>
+                                        <div className="text-[10px] font-mono">
+                                          {isOccupied ? (
+                                            <div className="flex items-center gap-1.5">
+                                              <span className="text-slate-300 font-semibold">SN:</span>
+                                              <strong className="text-[#00E5FF] font-black tracking-wider text-[11px] bg-cyan-950/90 px-1.5 py-0.5 rounded border border-cyan-500/40">
+                                                {slot.module?.serial_number || "-"}
+                                              </strong>
+                                              <span className="text-amber-300 text-[9px] font-bold">({cardModuleType})</span>
+                                            </div>
+                                          ) : (
+                                            <div className="flex items-center gap-1 text-emerald-300 font-black tracking-wider text-[10px] bg-emerald-950/90 px-2 py-0.5 rounded border border-emerald-500/50">
+                                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                                              <span>🟢 SLOT KOSONG (EMPTY)</span>
+                                            </div>
+                                          )}
+                                        </div>
+                                        <div className="w-2.5 h-2.5 bg-[#030A16] border-r-2 border-b-2 border-amber-400 rotate-45 -mb-2 mt-0.5" />
                                       </div>
                                     )}
 
                                     {/* Top Ejector Latch */}
                                     <div
-                                      className={`w-full h-3 rounded-t flex items-center justify-center border-b ${
-                                        isHighlighted
+                                      className={`w-full h-3 rounded-t flex items-center justify-center border-b ${isHighlighted
                                           ? "bg-amber-600/60 border-amber-700"
                                           : isOccupied
-                                          ? "bg-gradient-to-b from-slate-700 to-slate-800 border-slate-900"
-                                          : "bg-emerald-950/40 border-emerald-900/50"
-                                      }`}
+                                            ? "bg-gradient-to-b from-slate-700 to-slate-800 border-slate-900"
+                                            : "bg-emerald-950/40 border-emerald-900/50"
+                                        }`}
                                     >
                                       <div className={`w-3.5 h-1 rounded-sm ${isHighlighted ? "bg-black" : "bg-slate-400/60"}`} />
                                     </div>
@@ -1855,9 +1771,8 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                                     {/* Slot Number Label */}
                                     <div className="w-full text-center py-0.5">
                                       <span
-                                        className={`text-[9px] font-mono font-bold leading-none block ${
-                                          isHighlighted ? "text-black" : "text-slate-400"
-                                        }`}
+                                        className={`text-[9px] font-mono font-bold leading-none block ${isHighlighted ? "text-black" : "text-slate-400"
+                                          }`}
                                       >
                                         #{slot.nomor_slot}
                                       </span>
@@ -1869,27 +1784,51 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                                         <>
                                           <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#00E5FF] mb-1 animate-pulse" />
                                           <span
-                                            className={`text-[8px] font-mono font-bold tracking-tight text-center leading-tight break-all uppercase ${
-                                              isHighlighted ? "text-slate-950" : "text-cyan-300"
-                                            }`}
+                                            className={`text-[8.5px] font-mono font-black tracking-tight text-center leading-tight break-all uppercase ${isHighlighted ? "text-slate-950 font-black" : "text-cyan-300"
+                                              }`}
                                             style={{
                                               writingMode: "vertical-rl",
                                               textOrientation: "mixed",
-                                              maxHeight: "68px",
+                                              maxHeight: "52px",
+                                              textShadow: isHighlighted ? "none" : "0 0 4px rgba(0, 229, 255, 0.4)",
                                             }}
                                           >
                                             {cardModuleType}
                                           </span>
+                                          {slot.module?.serial_number && (
+                                            <span
+                                              className={`text-[8px] font-mono font-black text-center leading-none mt-1 ${isHighlighted ? "text-slate-900 font-black" : "text-amber-300"
+                                                }`}
+                                              style={{
+                                                writingMode: "vertical-rl",
+                                                textOrientation: "mixed",
+                                                maxHeight: "38px",
+                                                textShadow: isHighlighted ? "none" : "0 0 3px rgba(245, 158, 11, 0.4)",
+                                              }}
+                                              title={`SN: ${slot.module.serial_number}`}
+                                            >
+                                              {slot.module.serial_number.length > 7
+                                                ? slot.module.serial_number.slice(-7)
+                                                : slot.module.serial_number}
+                                            </span>
+                                          )}
                                           <div className="w-2.5 h-3 mt-1 rounded-sm bg-black border border-slate-700 flex items-center justify-center">
                                             <div className="w-1 h-1 rounded-full bg-slate-500" />
                                           </div>
                                         </>
                                       ) : (
-                                        <div className="flex flex-col items-center justify-center h-full opacity-60">
-                                          <span className="material-symbols-outlined text-[13px] text-emerald-400/70">add</span>
+                                        <div className="flex flex-col items-center justify-center h-full">
+                                          <span className={`material-symbols-outlined text-[14px] ${isHighlighted ? "text-black font-black" : "text-emerald-400 font-bold"}`}>
+                                            add
+                                          </span>
                                           <span
-                                            className="text-[7px] font-mono text-emerald-400/80 font-semibold"
-                                            style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}
+                                            className={`text-[9px] font-mono font-black tracking-widest leading-none ${isHighlighted ? "text-black" : "text-emerald-300"
+                                              }`}
+                                            style={{
+                                              writingMode: "vertical-rl",
+                                              textOrientation: "mixed",
+                                              textShadow: isHighlighted ? "none" : "0 0 5px rgba(16, 185, 129, 0.7)",
+                                            }}
                                           >
                                             EMPTY
                                           </span>
@@ -1899,13 +1838,12 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
 
                                     {/* Bottom Ejector Latch */}
                                     <div
-                                      className={`w-full h-3 rounded-b flex items-center justify-center border-t ${
-                                        isHighlighted
+                                      className={`w-full h-3 rounded-b flex items-center justify-center border-t ${isHighlighted
                                           ? "bg-amber-600/60 border-amber-700"
                                           : isOccupied
-                                          ? "bg-gradient-to-t from-slate-700 to-slate-800 border-slate-900"
-                                          : "bg-emerald-950/40 border-emerald-900/50"
-                                      }`}
+                                            ? "bg-gradient-to-t from-slate-700 to-slate-800 border-slate-900"
+                                            : "bg-emerald-950/40 border-emerald-900/50"
+                                        }`}
                                     >
                                       <div className={`w-3.5 h-1 rounded-sm ${isHighlighted ? "bg-black" : "bg-slate-400/60"}`} />
                                     </div>
@@ -1934,11 +1872,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                             </div>
 
                             {/* 13 Vertical Blade Slots Strip */}
-                            <div className={`flex gap-1 overflow-x-auto custom-scrollbar p-1.5 rounded-lg ${
-                              isDark
-                                ? "bg-[#050D1A] border border-[#1E3A5F]/80"
-                                : "bg-[#071324] border border-slate-700/80 shadow-inner"
-                            }`}>
+                            <div className="flex gap-1 overflow-x-auto custom-scrollbar p-1.5 rounded-lg bg-[#050D1A] border border-[#1E3A5F]/80">
                               {bottomTierSlots.map((slot) => {
                                 const isOccupied = slot.occupied;
                                 const isHighlighted = slot.slot_definition_id === highlightedSlotId;
@@ -1952,13 +1886,12 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                                       e.stopPropagation();
                                       handleSlotCardClick(slot);
                                     }}
-                                    className={`group relative flex flex-col justify-between items-center rounded transition-all duration-300 cursor-pointer select-none border ${
-                                      isHighlighted
+                                    className={`group relative flex flex-col justify-between items-center rounded transition-all duration-300 cursor-pointer select-none border ${isHighlighted
                                         ? "bg-gradient-to-b from-amber-400 via-amber-300 to-amber-500 border-amber-200 shadow-[0_0_30px_#F59E0B] z-40 text-black font-extrabold ring-2 ring-amber-400"
                                         : isOccupied
-                                        ? "bg-gradient-to-b from-[#1E293B] via-[#152033] to-[#0D1526] border-slate-700/80 hover:border-cyan-400/80 text-white shadow-sm hover:shadow-cyan-500/20"
-                                        : "bg-[#091524]/60 border-dashed border-emerald-500/35 hover:border-emerald-400/90 text-emerald-300/80 hover:bg-emerald-500/10"
-                                    }`}
+                                          ? "bg-gradient-to-b from-[#1E293B] via-[#152033] to-[#0D1526] border-slate-700/80 hover:border-cyan-400/80 text-white shadow-sm hover:shadow-cyan-500/20"
+                                          : "bg-[#091524]/60 border-dashed border-emerald-500/35 hover:border-emerald-400/90 text-emerald-300/80 hover:bg-emerald-500/10"
+                                      }`}
                                     style={{
                                       width: "32px",
                                       minWidth: "32px",
@@ -1966,32 +1899,49 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                                       transformStyle: "preserve-3d",
                                       transform: isHighlighted ? "translateZ(38px) scale(1.08)" : "translateZ(8px)",
                                     }}
-                                    title={`Slot #${slot.nomor_slot}: ${
-                                      isOccupied
+                                    title={`Slot #${slot.nomor_slot}: ${isOccupied
                                         ? `Terisi (${cardModuleType}) - SN: ${slot.module?.serial_number}`
                                         : "Kosong (Ready)"
-                                    }`}
+                                      }`}
                                   >
-                                    {/* Floating 3D Spotlight Pin Badge */}
+                                    {/* Floating 3D Spotlight HUD Pin Badge */}
                                     {isHighlighted && (
                                       <div
-                                        className="absolute -top-11 left-1/2 -translate-x-1/2 z-50 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-black text-[10px] font-black shadow-[0_4px_16px_rgba(245,158,11,0.6)] flex items-center gap-1 animate-bounce pointer-events-none whitespace-nowrap border border-amber-200"
-                                        style={{ transform: "translateZ(20px)" }}
+                                        className="absolute -top-16 left-1/2 -translate-x-1/2 z-50 px-3 py-1.5 rounded-xl bg-[#030A16]/95 border-2 border-amber-400 shadow-[0_8px_30px_rgba(0,0,0,0.9),0_0_20px_rgba(245,158,11,0.6)] flex flex-col items-center gap-0.5 pointer-events-none whitespace-nowrap backdrop-blur-md"
+                                        style={{ transform: "translateZ(45px)", WebkitFontSmoothing: "antialiased" }}
                                       >
-                                        <span className="material-symbols-outlined text-[13px]">location_on</span>
-                                        <span>Tier Bawah &bull; Slot #{slot.nomor_slot}</span>
+                                        <div className="flex items-center gap-1.5 text-amber-300 text-[11px] font-black tracking-wide">
+                                          <span className="material-symbols-outlined text-[14px] text-amber-400 animate-bounce">location_on</span>
+                                          <span>Slot #{slot.nomor_slot} &bull; Tier Bawah</span>
+                                        </div>
+                                        <div className="text-[10px] font-mono">
+                                          {isOccupied ? (
+                                            <div className="flex items-center gap-1.5">
+                                              <span className="text-slate-300 font-semibold">SN:</span>
+                                              <strong className="text-[#00E5FF] font-black tracking-wider text-[11px] bg-cyan-950/90 px-1.5 py-0.5 rounded border border-cyan-500/40">
+                                                {slot.module?.serial_number || "-"}
+                                              </strong>
+                                              <span className="text-amber-300 text-[9px] font-bold">({cardModuleType})</span>
+                                            </div>
+                                          ) : (
+                                            <div className="flex items-center gap-1 text-emerald-300 font-black tracking-wider text-[10px] bg-emerald-950/90 px-2 py-0.5 rounded border border-emerald-500/50">
+                                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                                              <span>🟢 SLOT KOSONG (EMPTY)</span>
+                                            </div>
+                                          )}
+                                        </div>
+                                        <div className="w-2.5 h-2.5 bg-[#030A16] border-r-2 border-b-2 border-amber-400 rotate-45 -mb-2 mt-0.5" />
                                       </div>
                                     )}
 
                                     {/* Top Ejector Latch */}
                                     <div
-                                      className={`w-full h-3 rounded-t flex items-center justify-center border-b ${
-                                        isHighlighted
+                                      className={`w-full h-3 rounded-t flex items-center justify-center border-b ${isHighlighted
                                           ? "bg-amber-600/60 border-amber-700"
                                           : isOccupied
-                                          ? "bg-gradient-to-b from-slate-700 to-slate-800 border-slate-900"
-                                          : "bg-emerald-950/40 border-emerald-900/50"
-                                      }`}
+                                            ? "bg-gradient-to-b from-slate-700 to-slate-800 border-slate-900"
+                                            : "bg-emerald-950/40 border-emerald-900/50"
+                                        }`}
                                     >
                                       <div className={`w-3.5 h-1 rounded-sm ${isHighlighted ? "bg-black" : "bg-slate-400/60"}`} />
                                     </div>
@@ -1999,9 +1949,8 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                                     {/* Slot Number Label */}
                                     <div className="w-full text-center py-0.5">
                                       <span
-                                        className={`text-[9px] font-mono font-bold leading-none block ${
-                                          isHighlighted ? "text-black" : "text-slate-400"
-                                        }`}
+                                        className={`text-[9px] font-mono font-bold leading-none block ${isHighlighted ? "text-black" : "text-slate-400"
+                                          }`}
                                       >
                                         #{slot.nomor_slot}
                                       </span>
@@ -2013,27 +1962,51 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                                         <>
                                           <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#00E5FF] mb-1 animate-pulse" />
                                           <span
-                                            className={`text-[8px] font-mono font-bold tracking-tight text-center leading-tight break-all uppercase ${
-                                              isHighlighted ? "text-slate-950" : "text-cyan-300"
-                                            }`}
+                                            className={`text-[8.5px] font-mono font-black tracking-tight text-center leading-tight break-all uppercase ${isHighlighted ? "text-slate-950 font-black" : "text-cyan-300"
+                                              }`}
                                             style={{
                                               writingMode: "vertical-rl",
                                               textOrientation: "mixed",
-                                              maxHeight: "58px",
+                                              maxHeight: "50px",
+                                              textShadow: isHighlighted ? "none" : "0 0 4px rgba(0, 229, 255, 0.4)",
                                             }}
                                           >
                                             {cardModuleType}
                                           </span>
+                                          {slot.module?.serial_number && (
+                                            <span
+                                              className={`text-[8px] font-mono font-black text-center leading-none mt-1 ${isHighlighted ? "text-slate-900 font-black" : "text-amber-300"
+                                                }`}
+                                              style={{
+                                                writingMode: "vertical-rl",
+                                                textOrientation: "mixed",
+                                                maxHeight: "38px",
+                                                textShadow: isHighlighted ? "none" : "0 0 3px rgba(245, 158, 11, 0.4)",
+                                              }}
+                                              title={`SN: ${slot.module.serial_number}`}
+                                            >
+                                              {slot.module.serial_number.length > 7
+                                                ? slot.module.serial_number.slice(-7)
+                                                : slot.module.serial_number}
+                                            </span>
+                                          )}
                                           <div className="w-2.5 h-3 mt-1 rounded-sm bg-black border border-slate-700 flex items-center justify-center">
                                             <div className="w-1 h-1 rounded-full bg-slate-500" />
                                           </div>
                                         </>
                                       ) : (
-                                        <div className="flex flex-col items-center justify-center h-full opacity-60">
-                                          <span className="material-symbols-outlined text-[13px] text-emerald-400/70">add</span>
+                                        <div className="flex flex-col items-center justify-center h-full">
+                                          <span className={`material-symbols-outlined text-[14px] ${isHighlighted ? "text-black font-black" : "text-emerald-400 font-bold"}`}>
+                                            add
+                                          </span>
                                           <span
-                                            className="text-[7px] font-mono text-emerald-400/80 font-semibold"
-                                            style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}
+                                            className={`text-[9px] font-mono font-black tracking-widest leading-none ${isHighlighted ? "text-black" : "text-emerald-300"
+                                              }`}
+                                            style={{
+                                              writingMode: "vertical-rl",
+                                              textOrientation: "mixed",
+                                              textShadow: isHighlighted ? "none" : "0 0 5px rgba(16, 185, 129, 0.7)",
+                                            }}
                                           >
                                             EMPTY
                                           </span>
@@ -2043,13 +2016,12 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
 
                                     {/* Bottom Ejector Latch */}
                                     <div
-                                      className={`w-full h-3 rounded-b flex items-center justify-center border-t ${
-                                        isHighlighted
+                                      className={`w-full h-3 rounded-b flex items-center justify-center border-t ${isHighlighted
                                           ? "bg-amber-600/60 border-amber-700"
                                           : isOccupied
-                                          ? "bg-gradient-to-t from-slate-700 to-slate-800 border-slate-900"
-                                          : "bg-emerald-950/40 border-emerald-900/50"
-                                      }`}
+                                            ? "bg-gradient-to-t from-slate-700 to-slate-800 border-slate-900"
+                                            : "bg-emerald-950/40 border-emerald-900/50"
+                                        }`}
                                     >
                                       <div className={`w-3.5 h-1 rounded-sm ${isHighlighted ? "bg-black" : "bg-slate-400/60"}`} />
                                     </div>
@@ -2065,11 +2037,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                               <div className="text-[9px] font-mono text-slate-400 px-1 mb-1">
                                 <span>AUXILIARY EXPANSION SLOTS</span>
                               </div>
-                              <div className={`flex gap-1 overflow-x-auto custom-scrollbar p-1.5 rounded-lg ${
-                                isDark
-                                  ? "bg-[#050D1A] border border-[#1E3A5F]/50"
-                                  : "bg-[#071324] border border-slate-700/80 shadow-inner"
-                              }`}>
+                              <div className="flex gap-1 overflow-x-auto custom-scrollbar p-1.5 rounded-lg bg-[#050D1A] border border-[#1E3A5F]/50">
                                 {otherSlots.map((slot) => {
                                   const isOccupied = slot.occupied;
                                   const isHighlighted = slot.slot_definition_id === highlightedSlotId;
@@ -2077,13 +2045,12 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                                     <div
                                       key={slot.slot_definition_id}
                                       onClick={() => handleSlotCardClick(slot)}
-                                      className={`p-2 rounded text-center cursor-pointer border text-[9px] font-mono ${
-                                        isHighlighted
+                                      className={`p-2 rounded text-center cursor-pointer border text-[9px] font-mono ${isHighlighted
                                           ? "bg-amber-400 text-black border-amber-300 font-bold"
                                           : isOccupied
-                                          ? "bg-slate-800 text-white border-slate-700"
-                                          : "bg-emerald-950/30 text-emerald-300 border-emerald-800"
-                                      }`}
+                                            ? "bg-slate-800 text-white border-slate-700"
+                                            : "bg-emerald-950/30 text-emerald-300 border-emerald-800"
+                                        }`}
                                     >
                                       #{slot.nomor_slot}
                                     </div>
@@ -2094,9 +2061,7 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                           )}
 
                           {/* ── BOTTOM FOOTER: AIR INTAKE & ESD GROUND ── */}
-                          <div className={`border-t-2 pt-2 flex items-center justify-between text-[9px] font-mono ${
-                            isDark ? "border-[#1E3A5F]" : "border-slate-700"
-                          }`}>
+                          <div className="border-t-2 border-[#1E3A5F] pt-2 flex items-center justify-between text-[9px] font-mono">
                             <div className="flex items-center gap-2">
                               <div className="flex flex-col gap-0.5 w-20">
                                 <div className="w-full h-0.5 bg-slate-700 rounded" />
@@ -2145,9 +2110,8 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
 
                   {/* Kontainer Slot 2D Berdasarkan 2 Tier */}
                   <div
-                    className={`p-3.5 rounded-xl border flex-1 min-h-[280px] max-h-[500px] overflow-y-auto custom-scrollbar space-y-4 ${
-                      isDark ? "bg-[#071426] border-[#1A2E4C]" : "bg-slate-100 border-slate-200"
-                    }`}
+                    className={`p-3.5 rounded-xl border flex-1 min-h-[280px] max-h-[500px] overflow-y-auto custom-scrollbar space-y-4 ${isDark ? "bg-[#071426] border-[#1A2E4C]" : "bg-slate-100 border-slate-200"
+                      }`}
                   >
                     {normalizedSlots.length === 0 ? (
                       <div className="py-8 text-center text-xs text-[#94A3B8]">
@@ -2173,19 +2137,18 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                                   key={slot.slot_definition_id}
                                   id={`slot-item-${slot.slot_definition_id}`}
                                   onClick={() => handleSlotCardClick(slot)}
-                                  className={`p-2.5 rounded-xl border text-center cursor-pointer transition-all duration-200 relative select-none ${
-                                    isHighlighted
+                                  className={`p-2.5 rounded-xl border text-center cursor-pointer transition-all duration-200 relative select-none ${isHighlighted
                                       ? isDark
                                         ? "bg-[#2A1D0B] border-amber-400 shadow-[0_0_18px_rgba(245,158,11,0.6)] scale-[1.03] z-10"
                                         : "bg-amber-50 border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.5)] scale-[1.03] z-10"
                                       : isOccupied
-                                      ? isDark
-                                        ? "bg-rose-500/10 border-rose-500/30 hover:border-rose-400/80 hover:bg-rose-500/20"
-                                        : "bg-rose-50 border-rose-200 hover:border-rose-400"
-                                      : isDark
-                                      ? "bg-emerald-500/10 border-emerald-500/30 hover:border-emerald-400/80 hover:bg-emerald-500/20"
-                                      : "bg-emerald-50 border-emerald-200 hover:border-emerald-400"
-                                  }`}
+                                        ? isDark
+                                          ? "bg-rose-500/10 border-rose-500/30 hover:border-rose-400/80 hover:bg-rose-500/20"
+                                          : "bg-rose-50 border-rose-200 hover:border-rose-400"
+                                        : isDark
+                                          ? "bg-emerald-500/10 border-emerald-500/30 hover:border-emerald-400/80 hover:bg-emerald-500/20"
+                                          : "bg-emerald-50 border-emerald-200 hover:border-emerald-400"
+                                    }`}
                                 >
                                   {isHighlighted && (
                                     <span className="absolute -top-2 right-1 px-1.5 py-0.2 rounded-full text-[8px] font-bold bg-amber-400 text-black uppercase tracking-wider shadow">
@@ -2196,18 +2159,16 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                                     Slot {slot.nomor_slot}
                                   </div>
                                   <div
-                                    className={`text-[10px] font-semibold mt-0.5 flex items-center justify-center gap-1 ${
-                                      isOccupied ? "text-rose-400" : "text-emerald-400"
-                                    }`}
+                                    className={`text-[10px] font-semibold mt-0.5 flex items-center justify-center gap-1 ${isOccupied ? "text-rose-400" : "text-emerald-400"
+                                      }`}
                                   >
                                     <span>{isOccupied ? "🔴 Terisi" : "🟢 Kosong"}</span>
                                   </div>
                                   {isOccupied && slot.module ? (
                                     <div className="mt-1 pt-1 border-t border-[#1A2E4C]/40">
                                       <div
-                                        className={`text-[10px] font-mono font-medium truncate ${
-                                          isDark ? "text-[#E6EDF7]" : "text-slate-800"
-                                        }`}
+                                        className={`text-[10px] font-mono font-medium truncate ${isDark ? "text-[#E6EDF7]" : "text-slate-800"
+                                          }`}
                                         title={slot.module.serial_number}
                                       >
                                         {slot.module.serial_number}
@@ -2241,19 +2202,18 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                                   key={slot.slot_definition_id}
                                   id={`slot-item-${slot.slot_definition_id}`}
                                   onClick={() => handleSlotCardClick(slot)}
-                                  className={`p-2.5 rounded-xl border text-center cursor-pointer transition-all duration-200 relative select-none ${
-                                    isHighlighted
+                                  className={`p-2.5 rounded-xl border text-center cursor-pointer transition-all duration-200 relative select-none ${isHighlighted
                                       ? isDark
                                         ? "bg-[#2A1D0B] border-amber-400 shadow-[0_0_18px_rgba(245,158,11,0.6)] scale-[1.03] z-10"
                                         : "bg-amber-50 border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.5)] scale-[1.03] z-10"
                                       : isOccupied
-                                      ? isDark
-                                        ? "bg-rose-500/10 border-rose-500/30 hover:border-rose-400/80 hover:bg-rose-500/20"
-                                        : "bg-rose-50 border-rose-200 hover:border-rose-400"
-                                      : isDark
-                                      ? "bg-emerald-500/10 border-emerald-500/30 hover:border-emerald-400/80 hover:bg-emerald-500/20"
-                                      : "bg-emerald-50 border-emerald-200 hover:border-emerald-400"
-                                  }`}
+                                        ? isDark
+                                          ? "bg-rose-500/10 border-rose-500/30 hover:border-rose-400/80 hover:bg-rose-500/20"
+                                          : "bg-rose-50 border-rose-200 hover:border-rose-400"
+                                        : isDark
+                                          ? "bg-emerald-500/10 border-emerald-500/30 hover:border-emerald-400/80 hover:bg-emerald-500/20"
+                                          : "bg-emerald-50 border-emerald-200 hover:border-emerald-400"
+                                    }`}
                                 >
                                   {isHighlighted && (
                                     <span className="absolute -top-2 right-1 px-1.5 py-0.2 rounded-full text-[8px] font-bold bg-amber-400 text-black uppercase tracking-wider shadow">
@@ -2264,18 +2224,16 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                                     Slot {slot.nomor_slot}
                                   </div>
                                   <div
-                                    className={`text-[10px] font-semibold mt-0.5 flex items-center justify-center gap-1 ${
-                                      isOccupied ? "text-rose-400" : "text-emerald-400"
-                                    }`}
+                                    className={`text-[10px] font-semibold mt-0.5 flex items-center justify-center gap-1 ${isOccupied ? "text-rose-400" : "text-emerald-400"
+                                      }`}
                                   >
                                     <span>{isOccupied ? "🔴 Terisi" : "🟢 Kosong"}</span>
                                   </div>
                                   {isOccupied && slot.module ? (
                                     <div className="mt-1 pt-1 border-t border-[#1A2E4C]/40">
                                       <div
-                                        className={`text-[10px] font-mono font-medium truncate ${
-                                          isDark ? "text-[#E6EDF7]" : "text-slate-800"
-                                        }`}
+                                        className={`text-[10px] font-mono font-medium truncate ${isDark ? "text-[#E6EDF7]" : "text-slate-800"
+                                          }`}
                                         title={slot.module.serial_number}
                                       >
                                         {slot.module.serial_number}
@@ -2319,23 +2277,21 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
               {/* Call-to-Action Baris: Aksi Pemasangan / Mutasi Cepat */}
               {selectedSlotForAction && (
                 <div
-                  className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-300 shadow-xl animate-slideIn ${
-                    selectedSlotForAction.occupied
+                  className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-300 shadow-xl animate-slideIn ${selectedSlotForAction.occupied
                       ? isDark
                         ? "bg-gradient-to-r from-[#1B1226] via-[#1E1736] to-[#0A1628] border-purple-500/50 text-purple-200"
                         : "bg-purple-50 border-purple-300 text-purple-900 shadow-purple-500/10"
                       : isDark
                         ? "bg-gradient-to-r from-[#07241E] via-[#0A2E26] to-[#0B1E33] border-emerald-500/50 text-emerald-200"
                         : "bg-emerald-50 border-emerald-300 text-emerald-900 shadow-emerald-500/10"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3.5">
                     <div
-                      className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border ${
-                        selectedSlotForAction.occupied
+                      className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border ${selectedSlotForAction.occupied
                           ? "bg-purple-500/20 border-purple-500/40 text-purple-300"
                           : "bg-emerald-500/20 border-emerald-500/40 text-emerald-300"
-                      }`}
+                        }`}
                     >
                       <span className="material-symbols-outlined text-[26px]">
                         {selectedSlotForAction.occupied ? "memory" : "add_box"}
@@ -2343,45 +2299,55 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                     </div>
                     <div>
                       <div className="font-bold text-sm flex items-center gap-2 flex-wrap">
-                        <span>Slot #{selectedSlotForAction.nomor_slot}</span>
+                        <span className={isDark ? "text-white" : "text-slate-900 font-extrabold"}>
+                          Slot #{selectedSlotForAction.nomor_slot}
+                        </span>
                         <span
-                          className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase border ${
+                          className={`text-xs px-3 py-1 rounded-full font-black uppercase border tracking-wide shadow-sm ${
                             selectedSlotForAction.occupied
-                              ? "bg-rose-500/20 text-rose-300 border-rose-500/40"
-                              : "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                              ? isDark
+                                ? "bg-rose-500/20 text-rose-300 border-rose-500/40"
+                                : "bg-rose-100 text-rose-800 border-rose-300 font-extrabold"
+                              : isDark
+                                ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-bold"
+                                : "bg-emerald-600 text-white border-emerald-700 font-extrabold shadow-md"
                           }`}
                         >
                           {selectedSlotForAction.occupied ? "🔴 Modul Terpasang" : "🟢 Slot Kosong (Ready)"}
                         </span>
-                        <span className="text-[11px] opacity-75 font-mono">
+                        <span className={`text-[11px] font-mono ${isDark ? "text-slate-400" : "text-slate-700 font-bold"}`}>
                           {parseInt(String(selectedSlotForAction.nomor_slot).replace(/[^\d.]/g, ""), 10) <= 16
                             ? "(Baris Atas)"
                             : "(Baris Bawah)"}
                         </span>
                       </div>
-                      <div className="text-xs opacity-90 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <div className={`text-xs mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 ${
+                        isDark ? "text-slate-300" : "text-slate-800 font-semibold"
+                      }`}>
                         {selectedSlotForAction.occupied ? (
                           <>
                             <span>
                               SN:{" "}
-                              <strong className="font-mono text-amber-300">
+                              <strong className={`font-mono text-sm ${isDark ? "text-amber-300" : "text-amber-700 font-black"}`}>
                                 {selectedSlotForAction.module?.serial_number || "-"}
                               </strong>
                             </span>
                             <span>&bull;</span>
                             <span>
-                              Tipe: <strong>{selectedSlotForAction.module?.tipe || "-"}</strong>
+                              Tipe: <strong className={isDark ? "text-white" : "text-slate-900 font-bold"}>{selectedSlotForAction.module?.tipe || "-"}</strong>
                             </span>
                             <span>&bull;</span>
                             <span>
                               Kondisi:{" "}
-                              <span className="capitalize font-medium">
+                              <span className="capitalize font-semibold">
                                 {selectedSlotForAction.module?.kondisi || "-"}
                               </span>
                             </span>
                           </>
                         ) : (
-                          <span>Slot ini kosong dan siap dialokasikan untuk penempatan modul baru di STO.</span>
+                          <span className={isDark ? "text-emerald-200" : "text-emerald-950 font-bold text-xs"}>
+                            ✨ Slot ini kosong dan siap dialokasikan untuk penempatan modul baru di STO.
+                          </span>
                         )}
                       </div>
                     </div>
@@ -2436,9 +2402,8 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
       {locationModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
           <div
-            className={`w-full max-w-xl rounded-2xl border shadow-2xl overflow-hidden transition-all ${
-              isDark ? "bg-[#0A182B] border-[#1E3A5F] text-white" : "bg-white border-slate-200 text-slate-900"
-            }`}
+            className={`w-full max-w-xl rounded-2xl border shadow-2xl overflow-hidden transition-all ${isDark ? "bg-[#0A182B] border-[#1E3A5F] text-white" : "bg-white border-slate-200 text-slate-900"
+              }`}
           >
             {/* Modal Header */}
             <div className="p-5 border-b border-[#1E3A5F]/60 flex items-center justify-between">
@@ -2489,11 +2454,10 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                 locationDevices.map((dev) => (
                   <div
                     key={dev.device_id}
-                    className={`p-4 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-                      isDark
+                    className={`p-4 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${isDark
                         ? "bg-[#071426] border-[#1E3A5F] hover:border-[#38BDF8] hover:bg-[#0D1F36]"
                         : "bg-slate-50 border-slate-300 hover:border-blue-500 hover:bg-blue-50/50"
-                    }`}
+                      }`}
                   >
                     <div>
                       <div className="flex items-center gap-2">
@@ -2555,9 +2519,8 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
       {susModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
           <div
-            className={`w-full max-w-2xl rounded-2xl border shadow-2xl overflow-hidden transition-all ${
-              isDark ? "bg-[#0A182B] border-[#1E3A5F] text-white" : "bg-white border-slate-200 text-slate-900"
-            }`}
+            className={`w-full max-w-2xl rounded-2xl border shadow-2xl overflow-hidden transition-all ${isDark ? "bg-[#0A182B] border-[#1E3A5F] text-white" : "bg-white border-slate-200 text-slate-900"
+              }`}
           >
             {/* Header */}
             <div className="p-5 border-b border-[#1E3A5F]/60 flex items-center justify-between">
