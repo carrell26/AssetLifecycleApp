@@ -665,15 +665,33 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
     }
   };
 
-  // Navigasi pintas ke pengajuan mutasi modul
-  const handleNavigateToMutation = (slot, actionType = "pasang") => {
+  // Navigasi langsung ke Catat Mutasi Modul dengan pre-fill otomatis
+  const handleNavigateToMutation = (slot, actionType = "pindah") => {
     if (!currentDevice) return;
     const cleanSlotNo = slot.nomor_slot || "";
-    let url = `/modules/requests?action=${actionType}&device_id=${currentDevice.device_id}&slot_id=${slot.slot_definition_id}&slot_no=${encodeURIComponent(cleanSlotNo)}`;
-    if (slot.module && slot.module.modul_id) {
-      url += `&module_id=${slot.module.modul_id}&sn=${encodeURIComponent(slot.module.serial_number || "")}`;
+    const devId = currentDevice.device_id || "";
+    const devName = currentDevice.hostname || currentDevice.nama_perangkat || "";
+    const locName = currentDevice.lokasi || (currentDevice.location && currentDevice.location.nama_lokasi) || "";
+
+    const params = new URLSearchParams();
+    params.set("open_modal", "1");
+    params.set("action", actionType);
+    params.set("device_id", String(devId));
+    params.set("device_name", devName);
+    if (locName) params.set("location_name", locName);
+    params.set("slot_no", String(cleanSlotNo));
+    if (slot.slot_definition_id) {
+      params.set("slot_id", String(slot.slot_definition_id));
     }
-    window.location.href = url;
+
+    if (slot.module) {
+      if (slot.module.modul_id) params.set("module_id", String(slot.module.modul_id));
+      if (slot.module.serial_number) params.set("sn", String(slot.module.serial_number));
+      if (slot.module.tipe) params.set("unit_type", String(slot.module.tipe));
+      if (slot.module.kondisi) params.set("kondisi", String(slot.module.kondisi));
+    }
+
+    window.location.href = `/modules/requests?${params.toString()}`;
   };
 
   // Interaksi Drag Orbit 3D Rack
@@ -2295,8 +2313,8 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                     ) : (
                       <button
                         type="button"
-                        onClick={() => handleNavigateToMutation(selectedSlotForAction, "lepas")}
-                        className="px-5 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-[#1677FF] to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0"
+                        onClick={() => handleNavigateToMutation(selectedSlotForAction, "pindah")}
+                        className="px-5 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-[#1677FF] to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
                       >
                         <span className="material-symbols-outlined text-[17px]">swap_horiz</span>
                         <span>Ajukan Mutasi / Lepas Modul Ini</span>
