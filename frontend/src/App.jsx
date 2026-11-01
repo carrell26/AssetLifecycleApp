@@ -20,6 +20,7 @@ import ImportPage from "./pages/ImportPage";
 import ExportPage from "./pages/ExportPage";
 import AuditLogPage from "./pages/AuditLogPage";
 import ScanPage from "./pages/ScanPage";
+import WarehousePage from "./pages/WarehousePage";
 
 export default function App() {
   // Simple client-side routing based on pathname
@@ -42,6 +43,7 @@ export default function App() {
   const isExportPage = path.startsWith("/export");
   const isAuditPage = path.startsWith("/audit");
   const isScanPage = path.startsWith("/ar") || path.startsWith("/scan");
+  const isWarehousePage = path.startsWith("/warehouse");
 
   const { isDark } = useTheme();
   const [user, setUser] = useState(() => {
@@ -103,10 +105,10 @@ export default function App() {
 
   useEffect(() => {
     fetchUser();
-    if (!isModulesPage && !isMutasiPage && !isLocationsPage && !isDevicesPage && !isImportPage && !isExportPage && !isUsersPage && !isAuditPage && !isScanPage) {
+    if (!isModulesPage && !isMutasiPage && !isLocationsPage && !isDevicesPage && !isImportPage && !isExportPage && !isUsersPage && !isAuditPage && !isScanPage && !isWarehousePage) {
       fetchStats("30d");
     }
-  }, [isModulesPage, isMutasiPage, isLocationsPage, isDevicesPage, isImportPage, isExportPage, isUsersPage, isAuditPage]);
+  }, [isModulesPage, isMutasiPage, isLocationsPage, isDevicesPage, isImportPage, isExportPage, isUsersPage, isAuditPage, isScanPage, isWarehousePage]);
 
   const mainRef = useRef(null);
   const [scrollbarWidth, setScrollbarWidth] = useState(0);
@@ -145,7 +147,7 @@ export default function App() {
       if (observer) observer.disconnect();
       window.removeEventListener("resize", updateScrollbar);
     };
-  }, [path, isUsersPage, isMutasiPage, isModulesPage, isLocationsPage, isDevicesPage, isImportPage, isExportPage, isAuditPage, isScanPage, searchValue]);
+  }, [path, isUsersPage, isMutasiPage, isModulesPage, isLocationsPage, isDevicesPage, isImportPage, isExportPage, isAuditPage, isScanPage, isWarehousePage, searchValue]);
 
   const handlePeriodChange = (newPeriod) => {
     setPeriod(newPeriod);
@@ -269,6 +271,15 @@ export default function App() {
             /* HALAMAN AR SCAN & PANDUAN SLOT CHASSIS PERANGKAT         */
             /* ======================================================== */
             <ScanPage
+              user={user}
+              searchValue={searchValue}
+              onSearchChange={setSearchValue}
+            />
+          ) : isWarehousePage ? (
+            /* ======================================================== */
+            /* HALAMAN DATA WAREHOUSE & OLAP ANALYTICS (KIMBALL STAR)   */
+            /* ======================================================== */
+            <WarehousePage
               user={user}
               searchValue={searchValue}
               onSearchChange={setSearchValue}

@@ -23,22 +23,24 @@ export default function Sidebar({ user }) {
   const isExportActive = currentPath.startsWith("/export");
   const isAuditActive = currentPath.startsWith("/audit");
   const isScanActive = currentPath.startsWith("/ar") || currentPath.startsWith("/scan");
+  const isWarehouseActive = currentPath.startsWith("/warehouse");
   const isKelolaUserActive = currentPath.startsWith("/auth/admin/users") || currentPath.startsWith("/auth/admin/register-karyawan");
-  const isDashboardActive = (currentPath === "/" || currentPath === "") && !isModulActive && !isLokasiActive && !isPerangkatActive && !isImportActive && !isExportActive && !isMutasiActive && !isAuditActive && !isScanActive && !isKelolaUserActive;
+  const isDashboardActive = (currentPath === "/" || currentPath === "") && !isModulActive && !isLokasiActive && !isPerangkatActive && !isImportActive && !isExportActive && !isMutasiActive && !isAuditActive && !isScanActive && !isWarehouseActive && !isKelolaUserActive;
 
   let navItems = [];
 
   if (role === "teknisi") {
-    // TEKNISI (View-only): Dashboard, Perangkat, Modul, Lokasi, Scan
+    // TEKNISI (View-only): Dashboard, Perangkat, Modul, Lokasi, Scan, Data Warehouse
     navItems = [
       { id: "dashboard", label: "Dashboard", icon: "dashboard", href: "/", active: isDashboardActive },
       { id: "perangkat", label: "Perangkat", icon: "router", href: "/device/devices", active: isPerangkatActive },
       { id: "modul", label: "Modul", icon: "memory", href: "/modules/", active: isModulActive },
       { id: "lokasi", label: "Lokasi", icon: "location_on", href: "/device/locations", active: isLokasiActive },
       { id: "scan", label: "Scan", icon: "view_in_ar", href: "/ar/scan", active: isScanActive },
+      { id: "warehouse", label: "Data Warehouse", icon: "query_stats", href: "/warehouse", active: isWarehouseActive },
     ];
   } else if (role === "karyawan_tif") {
-    // KARYAWAN TIF: Dashboard, Perangkat, Modul, Lokasi, Mutasi Modul, Import Data, Export Data, Audit Log, Scan
+    // KARYAWAN TIF: Dashboard, Perangkat, Modul, Lokasi, Mutasi Modul, Import Data, Export Data, Audit Log, Scan, Data Warehouse
     navItems = [
       { id: "dashboard", label: "Dashboard", icon: "dashboard", href: "/", active: isDashboardActive },
       { id: "perangkat", label: "Perangkat", icon: "router", href: "/device/devices", active: isPerangkatActive },
@@ -49,9 +51,10 @@ export default function Sidebar({ user }) {
       { id: "export", label: "Export Data", icon: "download", href: "/export/", active: isExportActive },
       { id: "audit", label: "Audit Log", icon: "history", href: "/audit/", active: isAuditActive },
       { id: "scan", label: "Scan", icon: "view_in_ar", href: "/ar/scan", active: isScanActive },
+      { id: "warehouse", label: "Data Warehouse", icon: "query_stats", href: "/warehouse", active: isWarehouseActive },
     ];
   } else {
-    // SUPER ADMIN (admin): Dashboard, Perangkat, Modul, Lokasi, Mutasi Modul, Kelola User, Import Data, Export Data, Audit Log, Scan (10 items)
+    // SUPER ADMIN (admin): Dashboard, Perangkat, Modul, Lokasi, Mutasi Modul, Kelola User, Import Data, Export Data, Audit Log, Scan, Data Warehouse
     navItems = [
       { id: "dashboard", label: "Dashboard", icon: "dashboard", href: "/", active: isDashboardActive },
       { id: "perangkat", label: "Perangkat", icon: "router", href: "/device/devices", active: isPerangkatActive },
@@ -63,6 +66,7 @@ export default function Sidebar({ user }) {
       { id: "export", label: "Export Data", icon: "download", href: "/export/", active: isExportActive },
       { id: "audit", label: "Audit Log", icon: "history", href: "/audit/", active: isAuditActive },
       { id: "scan", label: "Scan", icon: "view_in_ar", href: "/ar/scan", active: isScanActive },
+      { id: "warehouse", label: "Data Warehouse", icon: "query_stats", href: "/warehouse", active: isWarehouseActive },
     ];
   }
 
