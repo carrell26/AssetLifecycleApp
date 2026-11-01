@@ -2285,10 +2285,10 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                 </div>
               )}
 
-              {/* Call-to-Action Baris: Aksi Pemasangan / Mutasi Cepat */}
+              {/* Call-to-Action Baris: Aksi Pemasangan / Mutasi Cepat (Struktur Komposisi Terkunci Saat Zoom-in/out) */}
               {selectedSlotForAction && (
                 <div
-                  className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-300 shadow-xl animate-slideIn ${selectedSlotForAction.occupied
+                  className={`p-3.5 sm:p-4 rounded-xl border flex flex-row items-center justify-between gap-4 transition-all duration-300 shadow-xl overflow-x-auto custom-scrollbar flex-nowrap whitespace-nowrap ${selectedSlotForAction.occupied
                       ? isDark
                         ? "bg-gradient-to-r from-[#1B1226] via-[#1E1736] to-[#0A1628] border-purple-500/50 text-purple-200"
                         : "bg-purple-50 border-purple-300 text-purple-900 shadow-purple-500/10"
@@ -2297,24 +2297,27 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                         : "bg-emerald-50 border-emerald-300 text-emerald-900 shadow-emerald-500/10"
                     }`}
                 >
-                  <div className="flex items-center gap-3.5">
+                  {/* Sisi Kiri: Ikon + Baris Informasi Terstruktur (Tanpa Wrapping ke Atas/Bawah) */}
+                  <div className="flex items-center gap-3.5 shrink-0 flex-nowrap">
                     <div
-                      className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border ${selectedSlotForAction.occupied
+                      className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0 border ${selectedSlotForAction.occupied
                           ? "bg-purple-500/20 border-purple-500/40 text-purple-300"
                           : "bg-emerald-500/20 border-emerald-500/40 text-emerald-300"
                         }`}
                     >
-                      <span className="material-symbols-outlined text-[26px]">
+                      <span className="material-symbols-outlined text-[24px] sm:text-[26px]">
                         {selectedSlotForAction.occupied ? "memory" : "add_box"}
                       </span>
                     </div>
-                    <div>
-                      <div className="font-bold text-sm flex items-center gap-2 flex-wrap min-w-0">
+
+                    <div className="flex flex-col justify-center shrink-0">
+                      {/* Baris 1: Slot # + Badge + Posisi Baris (Tetap 1 Garis Lurus Horizontal) */}
+                      <div className="font-bold text-sm flex items-center gap-2 flex-nowrap whitespace-nowrap">
                         <span className={`shrink-0 ${isDark ? "text-white" : "text-slate-900 font-extrabold"}`}>
                           Slot #{selectedSlotForAction.nomor_slot}
                         </span>
                         <span
-                          className={`shrink-0 text-xs px-3 py-1 rounded-full font-black uppercase border tracking-wide shadow-sm ${
+                          className={`shrink-0 text-[11px] sm:text-xs px-2.5 py-0.5 rounded-full font-black uppercase border tracking-wide shadow-sm flex items-center gap-1 whitespace-nowrap ${
                             selectedSlotForAction.occupied
                               ? isDark
                                 ? "bg-rose-500/20 text-rose-300 border-rose-500/40"
@@ -2324,62 +2327,64 @@ export default function ScanPage({ user, searchValue, onSearchChange }) {
                                 : "bg-emerald-600 text-white border-emerald-700 font-extrabold shadow-md"
                           }`}
                         >
-                          {selectedSlotForAction.occupied ? "🔴 Modul Terpasang" : "🟢 Slot Kosong (Ready)"}
+                          {selectedSlotForAction.occupied ? "🔴 MODUL TERPASANG" : "🟢 SLOT KOSONG (READY)"}
                         </span>
-                        <span className={`shrink-0 text-[11px] font-mono font-normal ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                        <span className={`shrink-0 text-[11px] font-mono font-normal whitespace-nowrap ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                           {parseInt(String(selectedSlotForAction.nomor_slot).replace(/[^\d.]/g, ""), 10) <= 16
                             ? "(Baris Atas)"
                             : "(Baris Bawah)"}
                         </span>
                       </div>
-                      <div className={`text-xs mt-1.5 flex flex-nowrap items-center gap-x-2 overflow-hidden ${
+
+                      {/* Baris 2: Data SN, Tipe, Kondisi (Tetap 1 Garis Lurus Horizontal) */}
+                      <div className={`text-xs mt-1 flex items-center gap-x-2 flex-nowrap whitespace-nowrap ${
                         isDark ? "text-slate-300" : "text-slate-800 font-semibold"
                       }`}>
                         {selectedSlotForAction.occupied ? (
                           <>
-                            <span className="shrink-0">
+                            <span className="shrink-0 whitespace-nowrap">
                               SN:{" "}
                               <strong className={`font-mono ${isDark ? "text-amber-300" : "text-amber-700 font-black"}`}>
                                 {selectedSlotForAction.module?.serial_number || "-"}
                               </strong>
                             </span>
-                            <span className="shrink-0">&nbsp;•</span>
-                            <span className="shrink-0">
+                            <span className="shrink-0 whitespace-nowrap">&nbsp;•</span>
+                            <span className="shrink-0 whitespace-nowrap">
                               Tipe: <strong className={isDark ? "text-white" : "text-slate-900 font-bold"}>{selectedSlotForAction.module?.tipe || "-"}</strong>
                             </span>
-                            <span className="shrink-0">&nbsp;•</span>
-                            <span className="shrink-0">
-                              Kondisi: <span className="capitalize font-semibold">{selectedSlotForAction.module?.kondisi || "-"}</span>
+                            <span className="shrink-0 whitespace-nowrap">&nbsp;•</span>
+                            <span className="shrink-0 whitespace-nowrap">
+                              Kondisi: <span className="uppercase font-semibold tracking-wide">{selectedSlotForAction.module?.kondisi || "AKTIF"}</span>
                             </span>
                           </>
                         ) : (
-                          <span className={isDark ? "text-emerald-200" : "text-emerald-950 font-bold text-xs"}>
+                          <span className={`shrink-0 whitespace-nowrap ${isDark ? "text-emerald-200" : "text-emerald-950 font-bold text-xs"}`}>
                             ✨ Slot ini kosong dan siap dialokasikan untuk penempatan modul baru di STO.
                           </span>
                         )}
                       </div>
-
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                  {/* Sisi Kanan: Tombol Aksi Mutasi/Pasang (Selalu Sejajar di Kanan, Tidak Pernah Pindah ke Bawah) */}
+                  <div className="flex items-center shrink-0 ml-auto pl-3 flex-nowrap whitespace-nowrap">
                     {!selectedSlotForAction.occupied ? (
                       <button
                         type="button"
                         onClick={() => handleNavigateToMutation(selectedSlotForAction, "pasang")}
-                        className="px-5 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white shadow-lg shadow-emerald-500/25 transition-all flex items-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0"
+                        className="px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white shadow-lg shadow-emerald-500/25 transition-all flex items-center gap-2 shrink-0 whitespace-nowrap transform hover:-translate-y-0.5 active:translate-y-0"
                       >
-                        <span className="material-symbols-outlined text-[17px]">add_task</span>
-                        <span>Ajukan Pasang di Slot Ini</span>
+                        <span className="material-symbols-outlined text-[17px] shrink-0">add_task</span>
+                        <span className="whitespace-nowrap">Ajukan Pasang di Slot Ini</span>
                       </button>
                     ) : (
                       <button
                         type="button"
                         onClick={() => handleNavigateToMutation(selectedSlotForAction, "pindah")}
-                        className="px-5 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-[#1677FF] to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+                        className="px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-[#1677FF] to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2 shrink-0 whitespace-nowrap transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
                       >
-                        <span className="material-symbols-outlined text-[17px]">swap_horiz</span>
-                        <span>Ajukan Mutasi / Lepas Modul Ini</span>
+                        <span className="material-symbols-outlined text-[17px] shrink-0">swap_horiz</span>
+                        <span className="whitespace-nowrap">Ajukan Mutasi / Lepas Modul Ini</span>
                       </button>
                     )}
                   </div>
