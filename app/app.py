@@ -243,4 +243,19 @@ def create_app(test_config=None):
             current_user=current_user,
         )
 
+    @app.after_request
+    def set_cache_headers(response):
+        if "text/html" in response.headers.get("Content-Type", ""):
+            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        return response
+
+    # Jalankan Telegram Bot Auto-Responder Daemon
+    try:
+        from .utils.telegram_daemon import start_telegram_daemon
+        start_telegram_daemon()
+    except Exception as e:
+        app.logger.warning("Gagal memulai Telegram daemon: %s", e)
+
     return app

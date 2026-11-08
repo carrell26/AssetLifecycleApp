@@ -1,12 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 export default function LoginPage() {
+  const [step, setStep] = useState("login"); // "login" | "otp"
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [remember, setRemember] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // OTP 2FA State
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [telegramDisplay, setTelegramDisplay] = useState("");
+  const [countdown, setCountdown] = useState(60);
+  const [frozenSeconds, setFrozenSeconds] = useState(0);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendNotice, setResendNotice] = useState("");
+  const otpInputRefs = useRef([]);
 
   // Modal Bantuan Admin
   const [contactModalOpen, setContactModalOpen] = useState(false);
@@ -28,6 +39,40 @@ export default function LoginPage() {
       .catch(() => {});
   }, []);
 
+  // Countdown timer pembekuan akun (freeze 15 menit jika salah OTP 3 kali)
+  useEffect(() => {
+    if (frozenSeconds <= 0) return;
+
+    const timer = setInterval(() => {
+      setFrozenSeconds((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [frozenSeconds]);
+
+  // Countdown timer 60 detik untuk OTP
+  useEffect(() => {
+    if (step !== "otp" || countdown <= 0 || frozenSeconds > 0) return;
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [step, countdown, frozenSeconds]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -40,12 +85,28 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (data.success) {
+        if (data.requires_otp) {
+          // Lanjut ke Step 2: Verifikasi OTP 60 Detik Telegram
+          setStep("otp");
+          setTelegramDisplay(data.telegram_display || "@asset_telkom_otp_bot");
+          setCountdown(data.expires_in || 60);
+          setFrozenSeconds(0);
+          setOtp(["", "", "", "", "", ""]);
+          setError("");
+          setTimeout(() => {
+            if (otpInputRefs.current[0]) {
+              otpInputRefs.current[0].focus();
+            }
+          }, 100);
+          return;
+        }
+
+        // Direct login jika tidak ada 2FA
         if (data.user) {
           try {
             localStorage.setItem("cached_user", JSON.stringify(data.user));
           } catch {}
         }
-        // Aktifkan tema tersimpan sebelum redirect agar transisi ke dashboard tanpa kedip/wink
         try {
           const savedTheme = localStorage.getItem("asset-app-theme") || "dark";
           if (savedTheme === "dark") {
@@ -58,12 +119,144 @@ export default function LoginPage() {
         } catch {}
         window.location.href = data.redirect || "/";
       } else {
+        if (data.frozen) {
+          setFrozenSeconds(data.remaining_seconds || 5 * 60);
+        }
         setError(data.message || "Email atau kata sandi salah.");
       }
     } catch {
       setError("Terjadi gangguan koneksi ke server. Silakan coba lagi.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (codeToVerify) => {
+    const finalOtp = codeToVerify || otp.join("");
+    if (finalOtp.length !== 6) {
+      setError("Silakan masukkan 6 digit kode OTP.");
+      return;
+    }
+    setError("");
+    setResendNotice("");
+    setOtpLoading(true);
+    try {
+      const res = await fetch("/auth/verify-otp-api", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp: finalOtp, remember }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFrozenSeconds(0);
+        if (data.user) {
+          try {
+            localStorage.setItem("cached_user", JSON.stringify(data.user));
+          } catch {}
+        }
+        try {
+          const savedTheme = localStorage.getItem("asset-app-theme") || "dark";
+          if (savedTheme === "dark") {
+            document.documentElement.classList.add("dark");
+            document.documentElement.classList.remove("light");
+          } else {
+            document.documentElement.classList.remove("dark");
+            document.documentElement.classList.add("light");
+          }
+        } catch {}
+        window.location.href = data.redirect || "/";
+      } else {
+        if (data.frozen) {
+          setFrozenSeconds(data.remaining_seconds || 5 * 60);
+          setOtp(["", "", "", "", "", ""]);
+        }
+        setError(data.message || "Kode OTP salah atau telah kedaluwarsa.");
+      }
+    } catch {
+      setError("Terjadi gangguan koneksi ke server. Silakan coba lagi.");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setResendLoading(true);
+    setError("");
+    setResendNotice("");
+    try {
+      const res = await fetch("/auth/resend-otp-api", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCountdown(data.expires_in || 60);
+        setOtp(["", "", "", "", "", ""]);
+        setResendNotice("Kode OTP baru telah dikirimkan ke Telegram Anda!");
+        setTimeout(() => setResendNotice(""), 5000);
+        if (otpInputRefs.current[0]) {
+          otpInputRefs.current[0].focus();
+        }
+      } else {
+        if (data.frozen) {
+          setFrozenSeconds(data.remaining_seconds || 5 * 60);
+        }
+        setError(data.message || "Gagal mengirim ulang kode OTP.");
+      }
+    } catch {
+      setError("Terjadi masalah jaringan saat meminta kode baru.");
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  const handleOtpChange = (index, value) => {
+    const digit = value.replace(/\D/g, "").slice(-1);
+    const newOtp = [...otp];
+    newOtp[index] = digit;
+    setOtp(newOtp);
+
+    if (digit && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+
+    if (digit && index === 5) {
+      const fullOtp = newOtp.join("");
+      if (fullOtp.length === 6) {
+        handleVerifyOtp(fullOtp);
+      }
+    }
+  };
+
+  const handleOtpKeyDown = (index, e) => {
+    if (e.key === "Backspace") {
+      if (!otp[index] && index > 0) {
+        otpInputRefs.current[index - 1]?.focus();
+      }
+    } else if (e.key === "ArrowLeft" && index > 0) {
+      otpInputRefs.current[index - 1]?.focus();
+    } else if (e.key === "ArrowRight" && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpPaste = (e) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (!pasted) return;
+
+    const newOtp = [...otp];
+    for (let i = 0; i < 6; i++) {
+      newOtp[i] = pasted[i] || "";
+    }
+    setOtp(newOtp);
+
+    if (pasted.length === 6) {
+      otpInputRefs.current[5]?.focus();
+      handleVerifyOtp(pasted);
+    } else {
+      otpInputRefs.current[pasted.length]?.focus();
     }
   };
 
@@ -176,6 +369,31 @@ export default function LoginPage() {
           transform: rotate(45deg);
           margin-top: -2px;
         }
+        .otp-box {
+          width: 44px;
+          height: 52px;
+          text-align: center;
+          font-size: 22px;
+          font-weight: 700;
+          border-radius: 8px;
+          background-color: #ffffff !important;
+          color: #0f172a !important;
+          -webkit-text-fill-color: #0f172a !important;
+          border: 1px solid #cbd5e1 !important;
+          outline: none !important;
+          transition: all 0.2s ease;
+          font-family: monospace;
+        }
+        .otp-box:focus {
+          border-color: #1677FF !important;
+          box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.25) !important;
+        }
+        .otp-box:disabled {
+          background-color: #e2e8f0 !important;
+          color: #94a3b8 !important;
+          -webkit-text-fill-color: #94a3b8 !important;
+          cursor: not-allowed;
+        }
       `}</style>
 
       <div style={styles.card}>
@@ -194,118 +412,264 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Heading */}
-          <h1 style={styles.heading}>Selamat datang kembali</h1>
-          <p style={styles.subtext}>Masuk untuk mengelola aset jaringan</p>
+          {step === "login" ? (
+            <>
+              {/* Heading */}
+              <h1 style={styles.heading}>Selamat datang kembali</h1>
+              <p style={styles.subtext}>Masuk untuk mengelola aset jaringan</p>
 
-          {/* Error flash */}
-          {error && <div style={styles.flashError}>{error}</div>}
+              {/* Error flash */}
+              {error && <div style={styles.flashError}>{error}</div>}
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} autoComplete="on">
-            {/* Email - Tanpa border */}
-            <div style={styles.formGroup}>
-              <label style={styles.label} htmlFor="email">
-                Email
-              </label>
-              <div style={styles.inputWrap}>
-                <span className="material-symbols-outlined" style={styles.inputIcon}>
-                  mail
-                </span>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Masukkan email"
-                  required
-                  autoFocus
-                  autoComplete="email"
-                  className="login-input"
-                  style={styles.input}
-                />
-              </div>
-            </div>
+              {/* Form */}
+              <form onSubmit={handleSubmit} autoComplete="on">
+                {/* Email - Tanpa border */}
+                <div style={styles.formGroup}>
+                  <label style={styles.label} htmlFor="email">
+                    Email
+                  </label>
+                  <div style={styles.inputWrap}>
+                    <span className="material-symbols-outlined" style={styles.inputIcon}>
+                      mail
+                    </span>
+                    <input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Masukkan email"
+                      required
+                      autoFocus
+                      autoComplete="email"
+                      className="login-input"
+                      style={styles.input}
+                    />
+                  </div>
+                </div>
 
-            {/* Password */}
-            <div style={styles.formGroup}>
-              <label style={styles.label} htmlFor="password">
-                Password
-              </label>
-              <div style={styles.inputWrap}>
-                <span className="material-symbols-outlined" style={styles.inputIcon}>
-                  lock
-                </span>
-                <input
-                  id="password"
-                  type={showPw ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Masukkan password"
-                  required
-                  autoComplete="current-password"
-                  className="login-input"
-                  style={styles.input}
-                />
+                {/* Password */}
+                <div style={styles.formGroup}>
+                  <label style={styles.label} htmlFor="password">
+                    Password
+                  </label>
+                  <div style={styles.inputWrap}>
+                    <span className="material-symbols-outlined" style={styles.inputIcon}>
+                      lock
+                    </span>
+                    <input
+                      id="password"
+                      type={showPw ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Masukkan password"
+                      required
+                      autoComplete="current-password"
+                      className="login-input"
+                      style={styles.input}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPw(!showPw)}
+                      style={styles.togglePw}
+                      aria-label="Toggle password"
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
+                        {showPw ? "visibility" : "visibility_off"}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Checkbox Ingat saya */}
+                <div style={styles.formRow}>
+                  <label style={styles.checkboxWrap}>
+                    <input
+                      type="checkbox"
+                      checked={remember}
+                      onChange={(e) => setRemember(e.target.checked)}
+                      className="login-custom-checkbox"
+                    />
+                    <span style={{ fontSize: 12, color: "#94A3B8", userSelect: "none" }}>Ingat saya</span>
+                  </label>
+                </div>
+
+                {/* Tombol Masuk */}
                 <button
-                  type="button"
-                  onClick={() => setShowPw(!showPw)}
-                  style={styles.togglePw}
-                  aria-label="Toggle password"
+                  type="submit"
+                  disabled={loading}
+                  style={{
+                    ...styles.btnLogin,
+                    ...(loading ? { opacity: 0.7, cursor: "not-allowed" } : {}),
+                  }}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
-                    {showPw ? "visibility" : "visibility_off"}
-                  </span>
+                  {loading ? "Memproses..." : "Masuk"}
                 </button>
+              </form>
+            </>
+          ) : (
+            <>
+              {/* Heading OTP */}
+              <h1 style={styles.heading}>Verifikasi Kode OTP</h1>
+              <p style={{ ...styles.subtext, marginBottom: 16 }}>
+                Kode 6-digit telah dikirimkan ke Telegram{" "}
+                <span style={{ color: "#38BDF8", fontWeight: 600 }}>{telegramDisplay}</span>
+              </p>
+
+              {/* Flash Messages */}
+              {error && <div style={styles.flashError}>{error}</div>}
+              {resendNotice && (
+                <div style={{
+                  ...styles.flashError,
+                  backgroundColor: "rgba(16, 185, 129, 0.12)",
+                  borderColor: "rgba(16, 185, 129, 0.3)",
+                  color: "#34D399"
+                }}>
+                  {resendNotice}
+                </div>
+              )}
+
+              {/* Hitungan Detik Masa Berlaku / Status Freeze (Di pojok kanan atas kotak input token, tanpa border card) */}
+              <div style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                alignItems: "center",
+                marginTop: 10,
+                marginBottom: 8
+              }}>
+                {frozenSeconds > 0 ? (
+                  <div
+                    title="Anda telah salah memasukkan token sebanyak 3 kali. Silakan coba lagi setelah 5 menit"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 5,
+                      color: "#EF4444",
+                      fontWeight: 700,
+                      fontSize: 13,
+                      fontFamily: "monospace",
+                      letterSpacing: "0.05em",
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: 16, color: "#EF4444" }}>
+                      lock_clock
+                    </span>
+                    <span>
+                      Freeze: {Math.floor(frozenSeconds / 60)}:{frozenSeconds % 60 < 10 ? "0" : ""}{frozenSeconds % 60}
+                    </span>
+                  </div>
+                ) : (
+                  <div
+                    title="Sisa masa berlaku kode OTP"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 5,
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{
+                      fontSize: 15,
+                      color: countdown > 15 ? "#38BDF8" : countdown > 0 ? "#F59E0B" : "#EF4444"
+                    }}>
+                      {countdown > 0 ? "timer" : "timer_off"}
+                    </span>
+                    <span style={{
+                      fontSize: 13,
+                      fontWeight: 700,
+                      fontFamily: "monospace",
+                      letterSpacing: "0.05em",
+                      color: countdown > 15 ? "#38BDF8" : countdown > 0 ? "#F59E0B" : "#EF4444"
+                    }}>
+                      {countdown > 0 ? `00:${countdown < 10 ? "0" + countdown : countdown}` : "00:00"}
+                    </span>
+                  </div>
+                )}
               </div>
-            </div>
 
-            {/* Checkbox Ingat saya */}
-            <div style={styles.formRow}>
-              <label style={styles.checkboxWrap}>
-                <input
-                  type="checkbox"
-                  checked={remember}
-                  onChange={(e) => setRemember(e.target.checked)}
-                  className="login-custom-checkbox"
-                />
-                <span style={{ fontSize: 12, color: "#94A3B8", userSelect: "none" }}>Ingat saya</span>
-              </label>
-            </div>
+              {/* 6 Digit OTP Inputs */}
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 8, margin: "0 0 20px" }}>
+                {otp.map((digit, idx) => (
+                  <input
+                    key={idx}
+                    ref={(el) => (otpInputRefs.current[idx] = el)}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={1}
+                    value={digit}
+                    disabled={frozenSeconds > 0 || countdown === 0 || otpLoading}
+                    onChange={(e) => handleOtpChange(idx, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                    onPaste={handleOtpPaste}
+                    className="otp-box"
+                    autoFocus={idx === 0}
+                  />
+                ))}
+              </div>
 
-            {/* Tombol Masuk */}
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                ...styles.btnLogin,
-                ...(loading ? { opacity: 0.7, cursor: "not-allowed" } : {}),
-              }}
-            >
-              {loading ? "Memproses..." : "Masuk"}
-            </button>
-          </form>
-
-          {/* Divider */}
-          <div style={styles.divider}>
-            <span style={styles.dividerLine} />
-            <span style={styles.dividerText}>atau</span>
-            <span style={styles.dividerLine} />
-          </div>
-
-          {/* Footer */}
-          <div style={styles.footer}>
-            <p style={styles.footerText}>
-              Butuh bantuan atau pembuatan akun?{" "}
+              {/* Tombol Verifikasi */}
               <button
                 type="button"
-                onClick={() => setContactModalOpen(true)}
-                style={styles.footerActionBtn}
+                onClick={() => handleVerifyOtp()}
+                disabled={frozenSeconds > 0 || otp.join("").length < 6 || countdown === 0 || otpLoading}
+                style={{
+                  ...styles.btnLogin,
+                  ...(frozenSeconds > 0 || otp.join("").length < 6 || countdown === 0 || otpLoading
+                    ? { opacity: 0.5, cursor: "not-allowed" }
+                    : {}),
+                }}
               >
-                Hubungi admin sistem
+                {frozenSeconds > 0
+                  ? `Akun Dibekukan (${Math.floor(frozenSeconds / 60)}m ${frozenSeconds % 60}s)`
+                  : otpLoading
+                  ? "Memverifikasi..."
+                  : "Verifikasi & Masuk"}
               </button>
-            </p>
-          </div>
+
+              {/* Action Links */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 22 }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep("login");
+                    setError("");
+                    setResendNotice("");
+                  }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#94A3B8",
+                    fontSize: 13,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "6px 0",
+                  }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: 18 }}>arrow_back</span>
+                  Kembali
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={frozenSeconds > 0 || resendLoading || countdown > 40}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: frozenSeconds > 0 || countdown > 40 ? "#64748B" : "#38BDF8",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: frozenSeconds > 0 || countdown > 40 ? "not-allowed" : "pointer",
+                    padding: "6px 0",
+                  }}
+                  title={frozenSeconds > 0 ? "Silakan coba lagi setelah 5 menit" : countdown > 40 ? `Tunggu ${countdown - 40}s sebelum kirim ulang` : "Kirim ulang kode OTP"}
+                >
+                  {resendLoading ? "Mengirim..." : "Kirim Ulang Kode"}
+                </button>
+              </div>
+            </>
+          )}
         </div>
 
         {/* ── RIGHT PANEL: Gambar Persis Sesuai Referensi & Kontras Tema Dark Blue ── */}
