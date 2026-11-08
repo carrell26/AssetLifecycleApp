@@ -1,11 +1,22 @@
 from flask import Flask
 from .extensions import db, migrate
+import os
 
 
 def create_app(test_config=None):
     app = Flask(__name__)
 
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+    database_url = os.environ.get("DATABASE_URL", "sqlite:///database.db")
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace(
+            "postgres://", "postgresql+psycopg://", 1
+        )
+    elif database_url.startswith("postgresql://"):
+        database_url = database_url.replace(
+            "postgresql://", "postgresql+psycopg://", 1
+        )
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SECRET_KEY"] = "ganti-dengan-secret-key-yang-aman"
 
@@ -16,8 +27,9 @@ def create_app(test_config=None):
     migrate.init_app(app, db)
 
     from . import models  # noqa: F401
-    with app.app_context():
-        db.create_all()
+    if app.config["SQLALCHEMY_DATABASE_URI"].startswith("sqlite:"):
+        with app.app_context():
+            db.create_all()
 
     from flask_login import LoginManager
 
