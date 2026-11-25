@@ -127,7 +127,7 @@
   </style>
   <script>
       (function () {
-        const savedTheme = localStorage.getItem('asset-app-theme') || 'dark';
+        const savedTheme = localStorage.getItem('asset-app-theme') || localStorage.getItem('theme') || 'dark';
         if (savedTheme === 'light') {
           document.documentElement.classList.remove('dark');
           document.documentElement.classList.add('light');
@@ -151,13 +151,12 @@
         <div class="h-[64px] px-5 border-b border-[#1A2E4C] flex flex-col justify-center bg-[#071426]"
           style="background-color:#071426!important;border-color:#1A2E4C!important;">
           <div class="flex items-center gap-2.5">
-            <div
-              class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white shadow-md bg-gradient-to-br from-[#1677FF] to-[#0D1F36]">
-              <span class="material-symbols-outlined text-[20px]">hub</span>
+            <div class="w-9 h-9 rounded-xl p-[2px] flex items-center justify-center bg-white shadow-md shrink-0 overflow-hidden">
+              <img src="/static/img/infranexia_logo.png" alt="infraNexia by Telkom Indonesia" class="w-full h-full object-contain select-none" />
             </div>
             <div class="flex flex-col">
-              <span class="text-sm font-bold tracking-tight leading-none text-[#E6EDF7]">AssetLifecycle</span>
-              <span class="text-[10px] font-medium leading-tight mt-1 text-[#38BDF8]">Telkom Infrastructure</span>
+              <span class="text-sm font-bold tracking-tight leading-none text-[#E6EDF7] whitespace-nowrap">Asset Lifecycle</span>
+              <span class="text-[10px] font-medium leading-tight mt-1 text-[#38BDF8] whitespace-nowrap">PT Telkom Infrastruktur</span>
             </div>
           </div>
         </div>
@@ -403,10 +402,12 @@
         document.documentElement.classList.remove('dark');
         document.documentElement.classList.add('light');
         localStorage.setItem('asset-app-theme', 'light');
+        localStorage.setItem('theme', 'light');
       } else {
         document.documentElement.classList.add('dark');
         document.documentElement.classList.remove('light');
         localStorage.setItem('asset-app-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
       }
     });
 

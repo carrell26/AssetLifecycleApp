@@ -16,8 +16,8 @@
             root.classList.remove('dark');
             root.classList.add('light');
           } else {
-            var saved = localStorage.getItem('asset-app-theme');
-            var theme = saved || 'dark';
+            var saved = localStorage.getItem('asset-app-theme') || localStorage.getItem('theme');
+            var theme = (saved === 'light' || saved === 'dark') ? saved : 'dark';
             if (theme === 'dark') {
               root.classList.add('dark');
               root.classList.remove('light');

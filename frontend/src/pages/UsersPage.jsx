@@ -6,9 +6,7 @@ import TableSortHeader from "../components/TableSortHeader";
 import kelolaUserBanner from "../assets/kelola_user_banner.svg";
 
 const DISTRICT_OPTIONS = [
-  "PALU1",
-  "PALU2",
-  "PALU3",
+  "PALU",
   "DONGGALA",
   "SIGI",
   "PARIGI",
@@ -33,6 +31,16 @@ const EDIT_STATUS_OPTIONS = [
   { value: "pending", label: "Pending", dotColor: "bg-amber-400" },
   { value: "nonaktif", label: "Nonaktif", dotColor: "bg-rose-400" },
 ];
+
+// Helper format nama district agar konsisten (Title Case: Palu, Sigi, Donggala, KTI)
+const formatDistrictName = (name) => {
+  if (!name || name === "-" || name === "all") return name === "all" ? "Semua District" : "-";
+  const s = String(name).trim();
+  const upper = s.toUpperCase();
+  if (upper === "KTI") return "KTI";
+  if (upper === "PALU" || upper === "PALU1" || upper === "PALU2" || upper === "PALU3") return "Palu";
+  return upper.charAt(0) + upper.slice(1).toLowerCase();
+};
 
 // Helper warna avatar dinamis agar persis dengan palet referensi
 const getAvatarColor = (name = "") => {
@@ -159,11 +167,12 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
   const [showRegPassword, setShowRegPassword] = useState(false);
   const [regSubmitting, setRegSubmitting] = useState(false);
   const [regError, setRegError] = useState("");
+  const [regTelegramChatId, setRegTelegramChatId] = useState("");
 
   // Modals State
   const [detailUser, setDetailUser] = useState(null);
   const [editUser, setEditUser] = useState(null);
-  const [editForm, setEditForm] = useState({ name: "", email: "", role: "", district: "", status: "" });
+  const [editForm, setEditForm] = useState({ name: "", email: "", role: "", district: "", status: "", telegram_chat_id: "" });
   const [editSubmitting, setEditSubmitting] = useState(false);
   const [editError, setEditError] = useState("");
 
@@ -254,7 +263,12 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
     const set = new Set(DISTRICT_OPTIONS);
     users.forEach((u) => {
       if (u.district && u.district.trim() && u.district !== "-") {
-        set.add(u.district.trim());
+        const d = u.district.trim();
+        if (d === "PALU1" || d === "PALU2" || d === "PALU3") {
+          set.add("PALU");
+        } else {
+          set.add(d);
+        }
       }
     });
     return Array.from(set).sort();
@@ -370,6 +384,7 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
           role: regRole,
           district: regDistrict,
           password: regPassword,
+          telegram_chat_id: regTelegramChatId.trim(),
         }),
       });
 
@@ -381,6 +396,7 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
         setRegDistrict("");
         setRegPassword("");
         setRegConfirmPassword("");
+        setRegTelegramChatId("");
         setViewMode("list");
         fetchUsers();
       } else {
@@ -402,6 +418,7 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
       role: u.role,
       district: u.district === "-" ? "" : u.district,
       status: u.status,
+      telegram_chat_id: u.telegram_chat_id || "",
     });
     setEditError("");
     setEditRoleDropdownOpen(false);
@@ -862,7 +879,7 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                     location_on
                   </span>
                   <span className={`truncate font-semibold ${!regDistrict ? (isDark ? "text-slate-400" : "text-slate-500") : ""}`}>
-                    {regDistrict || "Pilih District"}
+                    {regDistrict ? formatDistrictName(regDistrict) : "Pilih District"}
                   </span>
                   <span
                     className={`material-symbols-outlined text-[18px] text-[#94A3B8] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none select-none transition-transform duration-200 ${regDistrictDropdownOpen ? "rotate-180" : ""
@@ -891,7 +908,7 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                               setRegDistrict(d);
                               setRegDistrictDropdownOpen(false);
                             }}
-                            className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${isSelected
+                            className={`w-full px-3 py-2 rounded-lg text-left text-xs sm:text-sm font-medium flex items-center justify-between transition-colors cursor-pointer ${isSelected
                               ? isDark
                                 ? "bg-[#1677FF] text-white font-semibold"
                                 : "bg-blue-600 text-white font-semibold"
@@ -900,7 +917,12 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                                 : "hover:bg-slate-100 text-slate-700"
                               }`}
                           >
-                            <span className="truncate pr-2">{d}</span>
+                            <div className="flex items-center gap-2 truncate pr-2">
+                              <span className="material-symbols-outlined text-[16px] text-[#38BDF8] shrink-0">
+                                location_on
+                              </span>
+                              <span className="truncate">{formatDistrictName(d)}</span>
+                            </div>
                             {isSelected && (
                               <span className="material-symbols-outlined text-[16px] shrink-0">
                                 check
@@ -1013,6 +1035,39 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                   />
                 </div>
               </div>
+            </div>
+
+            {/* 5. Telegram Chat ID (Keamanan 2FA OTP - Opsional) */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label
+                  htmlFor="reg-telegram-id"
+                  className={`block text-[11px] font-bold uppercase tracking-wider ${isDark ? "text-[#7a94b3]" : "text-slate-600"
+                    }`}
+                >
+                  Telegram Chat ID (2FA OTP)
+                </label>
+                <span className="text-[11px] text-slate-500">Opsional</span>
+              </div>
+              <div className="relative">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px] text-[#38BDF8] pointer-events-none">
+                  send
+                </span>
+                <input
+                  id="reg-telegram-id"
+                  type="text"
+                  value={regTelegramChatId}
+                  onChange={(e) => setRegTelegramChatId(e.target.value.replace(/\D/g, ""))}
+                  placeholder="Masukkan chat ID"
+                  className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs sm:text-sm transition-all outline-none ${isDark
+                    ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF]"
+                    : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500"
+                    }`}
+                />
+              </div>
+              <p className="mt-1.5 text-[11px] text-slate-400">
+                💡 Masukkan Chat ID Telegram staf untuk mengaktifkan verifikasi OTP 60 detik saat login. Pengguna dapat melihat Chat ID mereka dengan mengetik <strong>/start</strong> di bot <strong>@asset_telkom_otp_bot</strong>.
+              </p>
             </div>
 
             {/* Tombol Aksi Form */}
@@ -1205,7 +1260,7 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                       location_on
                     </span>
                     <span className="truncate font-semibold">
-                      {districtFilter !== "all" ? districtFilter : "Semua District"}
+                      {districtFilter !== "all" ? formatDistrictName(districtFilter) : "Semua District"}
                     </span>
                   </div>
                   <span
@@ -1230,16 +1285,21 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                         setDistrictFilter("all");
                         setDistrictDropdownOpen(false);
                       }}
-                      className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${districtFilter === "all"
+                      className={`w-full px-3 py-2 rounded-lg text-left text-xs sm:text-sm font-medium flex items-center justify-between transition-colors cursor-pointer ${districtFilter === "all"
                         ? isDark
-                          ? "bg-[#1677FF] text-white"
-                          : "bg-blue-600 text-white"
+                          ? "bg-[#1677FF] text-white font-semibold"
+                          : "bg-blue-600 text-white font-semibold"
                         : isDark
                           ? "hover:bg-[#122846] text-[#CBD5E1]"
                           : "hover:bg-slate-100 text-slate-700"
                         }`}
                     >
-                      <span>Semua District</span>
+                      <div className="flex items-center gap-2 truncate pr-2">
+                        <span className="material-symbols-outlined text-[16px] text-[#38BDF8] shrink-0">
+                          map
+                        </span>
+                        <span className="truncate">Semua District</span>
+                      </div>
                       {districtFilter === "all" && (
                         <span className="material-symbols-outlined text-[16px] shrink-0">
                           check
@@ -1259,16 +1319,21 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                             setDistrictFilter(d);
                             setDistrictDropdownOpen(false);
                           }}
-                          className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${isSelected
+                          className={`w-full px-3 py-2 rounded-lg text-left text-xs sm:text-sm font-medium flex items-center justify-between transition-colors cursor-pointer ${isSelected
                             ? isDark
-                              ? "bg-[#1677FF] text-white"
-                              : "bg-blue-600 text-white"
+                              ? "bg-[#1677FF] text-white font-semibold"
+                              : "bg-blue-600 text-white font-semibold"
                             : isDark
                               ? "hover:bg-[#122846] text-[#CBD5E1]"
                               : "hover:bg-slate-100 text-slate-700"
                             }`}
                         >
-                          <span className="truncate pr-2">{d}</span>
+                          <div className="flex items-center gap-2 truncate pr-2">
+                            <span className="material-symbols-outlined text-[16px] text-[#38BDF8] shrink-0">
+                              location_on
+                            </span>
+                            <span className="truncate">{formatDistrictName(d)}</span>
+                          </div>
                           {isSelected && (
                             <span className="material-symbols-outlined text-[16px] shrink-0">
                               check
@@ -1473,6 +1538,15 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                                     Anda
                                   </span>
                                 )}
+                                {u.telegram_chat_id && (
+                                  <span
+                                    title={`2FA Telegram Aktif (ID: ${u.telegram_chat_id})`}
+                                    className="px-1.5 py-0.2 rounded text-[10px] font-bold shrink-0 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 inline-flex items-center gap-0.5"
+                                  >
+                                    <span className="material-symbols-outlined text-[11px]">verified_user</span>
+                                    2FA
+                                  </span>
+                                )}
                               </div>
                               <span
                                 className={`text-[11px] block truncate max-w-[170px] sm:max-w-[210px] mt-0.5 ${isDark ? "text-[#5d799b]" : "text-slate-500"
@@ -1526,17 +1600,23 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                         {/* 3. District */}
                         <td className="py-3.5 px-4 whitespace-nowrap text-left">
                           <div className="inline-flex items-center justify-start gap-1.5">
+                            <svg
+                              className={`w-4 h-4 shrink-0 ${isDark ? "text-[#38BDF8]" : "text-blue-500"}`}
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
+                              <circle cx="12" cy="10" r="2.5" fill="currentColor" stroke="none" />
+                            </svg>
                             <span
-                              className={`material-symbols-outlined text-[16px] ${isDark ? "text-[#4c678a]" : "text-slate-400"
+                              className={`text-xs font-medium ${isDark ? "text-[#CBD5E1]" : "text-slate-700"
                                 }`}
                             >
-                              location_on
-                            </span>
-                            <span
-                              className={`text-xs font-medium uppercase ${isDark ? "text-[#829bb8]" : "text-slate-700"
-                                }`}
-                            >
-                              {u.district || "-"}
+                              {formatDistrictName(u.district)}
                             </span>
                           </div>
                         </td>
@@ -1863,7 +1943,7 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                     }`}
                 >
                   <span className={isDark ? "text-slate-400" : "text-slate-500"}>District Penugasan</span>
-                  <span className="font-semibold">{detailUser.district || "-"}</span>
+                  <span className="font-semibold">{formatDistrictName(detailUser.district)}</span>
                 </div>
                 <div
                   className={`flex justify-between py-1.5 border-b ${isDark ? "border-slate-800/40" : "border-slate-100"
@@ -1871,6 +1951,20 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                 >
                   <span className={isDark ? "text-slate-400" : "text-slate-500"}>Status Akun</span>
                   <span className="font-semibold capitalize">{detailUser.status}</span>
+                </div>
+                <div
+                  className={`flex justify-between py-1.5 border-b ${isDark ? "border-slate-800/40" : "border-slate-100"
+                    }`}
+                >
+                  <span className={isDark ? "text-slate-400" : "text-slate-500"}>Keamanan 2FA Telegram</span>
+                  {detailUser.telegram_chat_id ? (
+                    <span className="font-mono text-emerald-400 font-semibold flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                      Aktif ({detailUser.telegram_chat_id})
+                    </span>
+                  ) : (
+                    <span className="text-slate-500 text-xs">Belum Ditautkan</span>
+                  )}
                 </div>
                 <div
                   className={`flex justify-between py-1.5 border-b ${isDark ? "border-slate-800/40" : "border-slate-100"
@@ -2288,7 +2382,7 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                         location_on
                       </span>
                       <span className={`truncate font-semibold ${!editForm.district ? (isDark ? "text-slate-400" : "text-slate-500") : ""}`}>
-                        {editForm.district || "Pilih District"}
+                        {editForm.district ? formatDistrictName(editForm.district) : "Pilih District"}
                       </span>
                     </div>
                     <span
@@ -2324,7 +2418,7 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                                 setEditForm({ ...editForm, district: d });
                                 setEditDistrictDropdownOpen(false);
                               }}
-                              className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
+                              className={`w-full px-3 py-2 rounded-lg text-left text-xs sm:text-sm font-medium flex items-center justify-between transition-colors cursor-pointer ${
                                 isSelected
                                   ? isDark
                                     ? "bg-[#1677FF] text-white font-semibold shadow-sm"
@@ -2334,7 +2428,12 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                                   : "hover:bg-slate-100 text-slate-700"
                               }`}
                             >
-                              <span className="truncate pr-2">{d}</span>
+                              <div className="flex items-center gap-2 truncate pr-2">
+                                <span className="material-symbols-outlined text-[16px] text-[#38BDF8] shrink-0">
+                                  location_on
+                                </span>
+                                <span className="truncate">{formatDistrictName(d)}</span>
+                              </div>
                               {isSelected && (
                                 <span className="material-symbols-outlined text-[16px] shrink-0">check</span>
                               )}
@@ -2361,6 +2460,41 @@ export default function UsersPage({ user: currentUser, searchValue = "", onSearc
                       <option key={d} value={d}>{d}</option>
                     ))}
                   </select>
+                </div>
+
+                {/* ID Chat Telegram (Keamanan 2FA OTP) */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className={`block font-semibold ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                      Telegram Chat ID (2FA OTP)
+                    </label>
+                    {editForm.telegram_chat_id ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        2FA Aktif
+                      </span>
+                    ) : (
+                      <span className="text-[11px] text-slate-500">Opsional</span>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <span className="material-symbols-outlined text-[18px] text-[#38BDF8] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none select-none">
+                      send
+                    </span>
+                    <input
+                      type="text"
+                      value={editForm.telegram_chat_id}
+                      onChange={(e) => setEditForm({ ...editForm, telegram_chat_id: e.target.value.replace(/\D/g, "") })}
+                      placeholder="Masukkan chat ID"
+                      className={`w-full h-11 pl-10 pr-3.5 rounded-xl border outline-none text-xs sm:text-sm font-medium transition-all ${isDark
+                        ? "bg-[#051122] border-[#0f2848] text-white focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF]"
+                        : "bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500 focus:bg-white"
+                        }`}
+                    />
+                  </div>
+                  <p className="mt-1.5 text-[11px] text-slate-400 leading-relaxed">
+                    💡 Masukkan Chat ID Telegram akun ini untuk mengaktifkan kode OTP 60 detik saat login. Pengguna dapat melihat Chat ID mereka dengan mengetik <strong>/start</strong> di bot <strong>@asset_telkom_otp_bot</strong>.
+                  </p>
                 </div>
 
                 {/* Footer Buttons */}

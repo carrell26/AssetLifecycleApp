@@ -18,7 +18,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from ...extensions import db
 from ...models import User
 from ...utils.decorators import role_required
-from ...utils.telegram_otp import send_otp_to_user, send_telegram_message
+from ...utils.telegram_otp import send_otp_to_user, send_telegram_message, is_telegram_configured
 
 logger = logging.getLogger(__name__)
 
@@ -91,12 +91,18 @@ def api_login():
             user.otp_failed_attempts = 0
             db.session.commit()
 
-    # Cek apakah user memiliki integrasi Telegram 2FA (wajib untuk Admin / user dengan telegram_chat_id)
-    if user.telegram_chat_id:
+    # Cek apakah user memiliki integrasi Telegram 2FA aktif dan token bot Telegram tersedia
+    if user.telegram_chat_id and is_telegram_configured():
         success, otp_res = send_otp_to_user(user)
         if success:
             db.session.commit()
-            telegram_display = f"@{user.telegram_username}" if user.telegram_username else "Telegram Terdaftar"
+            if user.telegram_username:
+                tg = user.telegram_username.strip()
+                telegram_display = tg if tg.startswith("@") else f"@{tg}"
+            elif user.name:
+                telegram_display = user.name
+            else:
+                telegram_display = "terdaftar Anda"
             return jsonify(
                 success=True,
                 requires_otp=True,

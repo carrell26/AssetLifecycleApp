@@ -86,7 +86,7 @@ export default function RecentActivities({ activities }) {
 
   return (
     <div
-      className={`rounded-2xl border shadow-sm p-5 transition-colors duration-300 ${
+      className={`rounded-2xl border shadow-sm p-5 transition-colors duration-300 overflow-hidden ${
         isDark
           ? "bg-[#0D1F36] border-[#1E3A5F] text-[#E6EDF7]"
           : "bg-white border-slate-200 text-slate-900"
@@ -141,7 +141,7 @@ export default function RecentActivities({ activities }) {
           return (
             <div
               key={act.id}
-              className={`py-3 flex items-center justify-between rounded-xl px-2.5 -mx-2.5 transition-colors gap-4 ${
+              className={`py-3 px-3 flex items-center justify-between rounded-xl transition-colors gap-3 sm:gap-4 ${
                 isDark ? "hover:bg-[#122846]/60" : "hover:bg-slate-50"
               }`}
             >
@@ -154,7 +154,7 @@ export default function RecentActivities({ activities }) {
                     {icon}
                   </span>
                 </div>
-                <div className="truncate">
+                <div className="min-w-0 flex-1 truncate">
                   <p className="text-xs font-semibold leading-snug truncate">
                     {act.title}
                   </p>
@@ -168,11 +168,11 @@ export default function RecentActivities({ activities }) {
                 </div>
               </div>
 
-              {/* Kolom Kanan: Tanggal & Waktu Sejajar Rapi + Badge Status */}
-              <div className="flex items-center gap-4 shrink-0">
-                {/* Tanggal & Waktu dengan lebar tetap agar vertikal sejajar lurus */}
+              {/* Kolom Kanan: Tanggal & Waktu Sejajar Rapi + Badge Status (Auto-fit, tidak pernah terpotong/terkeluar) */}
+              <div className="flex items-center gap-3 sm:gap-4 shrink-0 pl-2">
+                {/* Tanggal & Waktu */}
                 <span
-                  className={`text-[11px] font-mono w-36 text-left shrink-0 ${
+                  className={`text-[11px] font-mono whitespace-nowrap shrink-0 text-right ${
                     isDark ? "text-[#94A3B8]" : "text-slate-500"
                   }`}
                 >
@@ -180,12 +180,13 @@ export default function RecentActivities({ activities }) {
                 </span>
 
                 {/* Badge Keterangan Status */}
-                <div className="w-28 flex justify-center shrink-0">
+                <div className="min-w-[80px] max-w-[140px] flex justify-end shrink-0">
                   <span
-                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1.5 whitespace-nowrap ${badgeClass}`}
+                    title={act.badge}
+                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1.5 max-w-full truncate ${badgeClass}`}
                   >
                     <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotColor}`}></span>
-                    {act.badge}
+                    <span className="truncate">{act.badge}</span>
                   </span>
                 </div>
               </div>

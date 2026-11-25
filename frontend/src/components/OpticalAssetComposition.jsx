@@ -4,12 +4,12 @@ import { useTheme } from "../context/ThemeContext";
 export default function OpticalAssetComposition({ data }) {
   const { isDark } = useTheme();
 
-  const cardsCount = data?.cards_count ?? 45;
-  const sfpsCount = data?.transceivers_count ?? 60;
+  const cardsCount = data?.cards_count ?? 0;
+  const sfpsCount = data?.transceivers_count ?? 0;
   const totalAssets = data?.total_assets ?? (cardsCount + sfpsCount);
 
-  const cardsPct = totalAssets > 0 ? ((cardsCount / totalAssets) * 100).toFixed(1) : "42.9";
-  const sfpsPct = totalAssets > 0 ? ((sfpsCount / totalAssets) * 100).toFixed(1) : "57.1";
+  const cardsPct = totalAssets > 0 ? ((cardsCount / totalAssets) * 100).toFixed(1) : "0.0";
+  const sfpsPct = totalAssets > 0 ? ((sfpsCount / totalAssets) * 100).toFixed(1) : "0.0";
 
   return (
     <div

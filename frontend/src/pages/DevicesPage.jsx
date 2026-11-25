@@ -5,18 +5,25 @@ import statLocation from "../assets/stat_location.jpg";
 import TableSortHeader from "../components/TableSortHeader";
 import TablePagination from "../components/TablePagination";
 import ModalPortal from "../components/ModalPortal";
+import ChassisSubrackModal from "../components/ChassisSubrackModal";
 import { sortData } from "../utils/sortUtils";
 
 const deviceColumnNames = {
   nama_perangkat: "Nama Perangkat",
-  tipe: "Tipe",
   lokasi: "Lokasi",
+  model_perangkat: "Model Perangkat",
+  vendor: "Vendor",
+  total_slots: "Jumlah Slot",
+  occupied_slots: "Slot Terisi",
 };
 
 const deviceColumnTypes = {
   nama_perangkat: "text",
-  tipe: "text",
   lokasi: "text",
+  model_perangkat: "text",
+  vendor: "text",
+  total_slots: "number",
+  occupied_slots: "number",
 };
 
 export default function DevicesPage({ user, searchValue, onSearchChange }) {
@@ -36,11 +43,26 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
     types: [],
   });
 
-  // Filter internal state
-  const [selectedLocation, setSelectedLocation] = useState("");
-  const [selectedType, setSelectedType] = useState("");
+  // Filter internal state (sinkron instan dari URL query params pada initial mount)
+  const [selectedLocation, setSelectedLocation] = useState(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("location_id") || "";
+    } catch {
+      return "";
+    }
+  });
+  const [selectedType, setSelectedType] = useState(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("device_type_id") || "";
+    } catch {
+      return "";
+    }
+  });
   const [localSearch, setLocalSearch] = useState(searchValue || "");
   const searchTimeoutRef = useRef(null);
+  const fetchRequestIdRef = useRef(0);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(15);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
@@ -101,6 +123,51 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Sinkronisasi perubahan URL query params jika tombol Back/Forward browser ditekan
+  useEffect(() => {
+    const handlePopState = () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const locId = params.get("location_id") || "";
+        const typeId = params.get("device_type_id") || "";
+        setSelectedLocation(locId);
+        setSelectedType(typeId);
+      } catch (e) {
+        console.error("Error reading URL search params on popstate:", e);
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  const handleLocationSelect = (locId) => {
+    setSelectedLocation(locId);
+    setLocationDropdownOpen(false);
+    try {
+      const url = new URL(window.location.href);
+      if (locId) {
+        url.searchParams.set("location_id", locId);
+      } else {
+        url.searchParams.delete("location_id");
+      }
+      window.history.replaceState({}, "", url.toString());
+    } catch {}
+  };
+
+  const handleTypeSelect = (typeId) => {
+    setSelectedType(typeId);
+    setTypeDropdownOpen(false);
+    try {
+      const url = new URL(window.location.href);
+      if (typeId) {
+        url.searchParams.set("device_type_id", typeId);
+      } else {
+        url.searchParams.delete("device_type_id");
+      }
+      window.history.replaceState({}, "", url.toString());
+    } catch {}
+  };
+
   // Sync external search prop if changed from topbar
   useEffect(() => {
     if (searchValue !== undefined && searchValue !== localSearch) {
@@ -122,12 +189,13 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
     }, 300);
   };
 
-  // Fetch devices from backend API
+  // Fetch devices from backend API dengan pengaman race-condition request ID
   const fetchDevices = async (
     locId = selectedLocation,
     typeId = selectedType,
     query = localSearch
   ) => {
+    const currentReqId = ++fetchRequestIdRef.current;
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -141,6 +209,10 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
         return;
       }
       const data = await res.json();
+      // Cegah race condition: jika ada request baru yang dibuat setelah ini, abaikan respons lama
+      if (currentReqId !== fetchRequestIdRef.current) {
+        return;
+      }
       if (data.success) {
         setDevices(data.items || []);
         if (data.stats) {
@@ -153,10 +225,14 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
         showToast(data.error || "Gagal memuat data perangkat", "error");
       }
     } catch (err) {
-      console.error("Fetch devices error:", err);
-      showToast("Terjadi gangguan jaringan saat memuat data perangkat", "error");
+      if (currentReqId === fetchRequestIdRef.current) {
+        console.error("Fetch devices error:", err);
+        showToast("Terjadi gangguan jaringan saat memuat data perangkat", "error");
+      }
     } finally {
-      setLoading(false);
+      if (currentReqId === fetchRequestIdRef.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -186,15 +262,39 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
     setPage(1);
   };
 
+  // Client-side filtering proteksi ganda: memastikan baris tabel selalu sinkron 100% dengan filter aktif
+  const filteredDevices = useMemo(() => {
+    let result = devices;
+    if (selectedLocation) {
+      result = result.filter(
+        (d) =>
+          String(d.location_id) === String(selectedLocation) ||
+          String(d.lokasi_id) === String(selectedLocation) ||
+          (d.lokasi && (
+            (String(selectedLocation) === "9" && d.lokasi.includes("1")) ||
+            (String(selectedLocation) === "8" && d.lokasi.includes("2"))
+          ))
+      );
+    }
+    if (selectedType) {
+      result = result.filter(
+        (d) =>
+          String(d.device_type_id) === String(selectedType) ||
+          String(d.tipe_id) === String(selectedType)
+      );
+    }
+    return result;
+  }, [devices, selectedLocation, selectedType]);
+
   // Sorting applied before pagination
   const sortedDevices = useMemo(() => {
     return sortData(
-      devices,
+      filteredDevices,
       sortConfig.key,
       sortConfig.direction,
       deviceColumnTypes
     );
-  }, [devices, sortConfig]);
+  }, [filteredDevices, sortConfig]);
 
   // Pagination calculations based on sorted result
   const totalItems = sortedDevices.length;
@@ -293,7 +393,7 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
                 {stats.total_devices}
               </span>
               <span className={`px-2.5 py-1 text-xs font-semibold rounded-md ${isDark ? "bg-[#0F294D] text-[#38BDF8] border border-[#1E4378]" : "bg-blue-50 text-blue-700 border border-blue-200"}`}>
-                UNIT
+                Unit
               </span>
             </div>
 
@@ -339,7 +439,7 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
                 {stats.total_locations}
               </span>
               <span className={`px-2.5 py-1 text-xs font-semibold rounded-md ${isDark ? "bg-[#0A2E24] text-[#6EE7B7] border border-[#15604B]" : "bg-emerald-50 text-emerald-700 border border-emerald-200"}`}>
-                TITIK STO
+                Titik STO
               </span>
             </div>
 
@@ -391,7 +491,7 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
               id="deviceSearchInput"
               value={localSearch}
               onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder="Cari nama perangkat, tipe, atau lokasi..."
+              placeholder="Cari nama perangkat, model, vendor..."
               className={`w-full h-11 pl-10 pr-9 rounded-xl border text-xs sm:text-sm outline-none transition-all duration-200 ease-in-out ${isDark
                 ? "bg-[#0A182B] border-[#1E3A5F] text-[#E6EDF7] placeholder-[#4d6686] focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF]"
                 : "bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:bg-white"
@@ -451,10 +551,7 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
                 >
                   <button
                     type="button"
-                    onClick={() => {
-                      setSelectedLocation("");
-                      setLocationDropdownOpen(false);
-                    }}
+                    onClick={() => handleLocationSelect("")}
                     className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${selectedLocation === ""
                       ? isDark
                         ? "bg-[#1677FF] text-white font-semibold"
@@ -480,10 +577,7 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
                       <button
                         key={loc.id}
                         type="button"
-                        onClick={() => {
-                          setSelectedLocation(String(loc.id));
-                          setLocationDropdownOpen(false);
-                        }}
+                        onClick={() => handleLocationSelect(String(loc.id))}
                         className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${isSelected
                           ? isDark
                             ? "bg-[#1677FF] text-white font-semibold"
@@ -546,10 +640,7 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
                 >
                   <button
                     type="button"
-                    onClick={() => {
-                      setSelectedType("");
-                      setTypeDropdownOpen(false);
-                    }}
+                    onClick={() => handleTypeSelect("")}
                     className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${selectedType === ""
                       ? isDark
                         ? "bg-[#1677FF] text-white font-semibold"
@@ -575,10 +666,7 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
                       <button
                         key={tp.id}
                         type="button"
-                        onClick={() => {
-                          setSelectedType(String(tp.id));
-                          setTypeDropdownOpen(false);
-                        }}
+                        onClick={() => handleTypeSelect(String(tp.id))}
                         className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${isSelected
                           ? isDark
                             ? "bg-[#1677FF] text-white font-semibold"
@@ -612,13 +700,6 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
                 >
                   <span className="material-symbols-outlined text-[19px]">add</span>
                   <span>Tambah</span>
-                  <span
-                    className={`material-symbols-outlined text-[18px] transition-transform duration-200 ${
-                      addMenuOpen ? "rotate-180" : ""
-                    }`}
-                  >
-                    expand_more
-                  </span>
                 </button>
 
                 {/* Popup Menu Tambah */}
@@ -704,7 +785,7 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
           </div>
         </div>
 
-        {/* Tabel Perangkat: 100% Mengikuti Standar Struktur Tabel Lokasi */}
+        {/* Tabel Perangkat: Sesuai Referensi Gambar */}
         <div className="overflow-x-auto custom-scrollbar">
           <table
             id="devicesTable"
@@ -712,10 +793,13 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
             style={{ tableLayout: "fixed", width: "100%" }}
           >
             <colgroup>
-              <col style={{ width: '36%' }} /> {/* 1. NAMA PERANGKAT */}
-              <col style={{ width: '22%' }} /> {/* 2. TIPE */}
-              <col style={{ width: '28%' }} /> {/* 3. LOKASI */}
-              <col style={{ width: '14%' }} /> {/* 4. AKSI */}
+              <col style={{ width: '20%' }} /> {/* 1. NAMA PERANGKAT */}
+              <col style={{ width: '18%' }} /> {/* 2. LOKASI */}
+              <col style={{ width: '16%' }} /> {/* 3. MODEL PERANGKAT */}
+              <col style={{ width: '12%' }} /> {/* 4. VENDOR */}
+              <col style={{ width: '10%' }} /> {/* 5. JUMLAH SLOT */}
+              <col style={{ width: '14%' }} /> {/* 6. SLOT TERISI */}
+              <col style={{ width: '10%' }} /> {/* 7. AKSI */}
             </colgroup>
             <thead className={`rounded-t-xl ${isDark ? "bg-[#071426]" : "bg-slate-50"}`}>
               <tr
@@ -726,7 +810,7 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
               >
                 <th
                   className="py-3.5 pl-6 pr-4 text-left select-none rounded-tl-xl"
-                  style={{ width: "36%" }}
+                  style={{ width: "20%" }}
                 >
                   <TableSortHeader
                     title="NAMA PERANGKAT"
@@ -738,20 +822,7 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
                 </th>
                 <th
                   className="py-3.5 px-4 text-left select-none"
-                  style={{ width: "22%" }}
-                >
-                  <TableSortHeader
-                    title="TIPE"
-                    sortKey="tipe"
-                    currentSort={sortConfig}
-                    onSort={handleSort}
-                    align="left"
-                    isDark={isDark}
-                  />
-                </th>
-                <th
-                  className="py-3.5 px-4 text-left select-none"
-                  style={{ width: "28%" }}
+                  style={{ width: "18%" }}
                 >
                   <TableSortHeader
                     title="LOKASI"
@@ -763,8 +834,60 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
                   />
                 </th>
                 <th
-                  className="py-3.5 pl-3 pr-6 text-center select-none rounded-tr-xl"
+                  className="py-3.5 px-4 text-left select-none"
+                  style={{ width: "16%" }}
+                >
+                  <TableSortHeader
+                    title="MODEL PERANGKAT"
+                    sortKey="model_perangkat"
+                    currentSort={sortConfig}
+                    onSort={handleSort}
+                    align="left"
+                    isDark={isDark}
+                  />
+                </th>
+                <th
+                  className="py-3.5 px-4 text-left select-none"
+                  style={{ width: "12%" }}
+                >
+                  <TableSortHeader
+                    title="VENDOR"
+                    sortKey="vendor"
+                    currentSort={sortConfig}
+                    onSort={handleSort}
+                    align="left"
+                    isDark={isDark}
+                  />
+                </th>
+                <th
+                  className="py-3.5 px-4 text-left select-none"
+                  style={{ width: "10%" }}
+                >
+                  <TableSortHeader
+                    title="JUMLAH SLOT"
+                    sortKey="total_slots"
+                    currentSort={sortConfig}
+                    onSort={handleSort}
+                    align="left"
+                    isDark={isDark}
+                  />
+                </th>
+                <th
+                  className="py-3.5 px-4 text-left select-none"
                   style={{ width: "14%" }}
+                >
+                  <TableSortHeader
+                    title="SLOT TERISI"
+                    sortKey="occupied_slots"
+                    currentSort={sortConfig}
+                    onSort={handleSort}
+                    align="left"
+                    isDark={isDark}
+                  />
+                </th>
+                <th
+                  className="py-3.5 pl-3 pr-6 text-center select-none rounded-tr-xl"
+                  style={{ width: "10%" }}
                 >
                   <span className={`font-extrabold uppercase tracking-wider text-[11px] ${isDark ? "text-[#38BDF8]" : "text-blue-600"}`}>
                     AKSI
@@ -775,7 +898,7 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
             <tbody className={`divide-y text-xs ${isDark ? "divide-[#0F2238]" : "divide-slate-100"}`}>
               {loading ? (
                 <tr>
-                  <td colSpan="4" className={`py-16 text-center ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
+                  <td colSpan="7" className={`py-16 text-center ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
                     <div className="flex flex-col items-center justify-center gap-3">
                       <span className="material-symbols-outlined text-4xl animate-spin text-[#1677FF]">
                         progress_activity
@@ -786,7 +909,7 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
                 </tr>
               ) : paginatedDevices.length === 0 ? (
                 <tr>
-                  <td colSpan="4" className={`py-14 text-center ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
+                  <td colSpan="7" className={`py-14 text-center ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
                     <div className="flex flex-col items-center justify-center gap-2">
                       <span className="material-symbols-outlined text-4xl text-[#64748B]">
                         inbox
@@ -809,48 +932,67 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
                       : "border-slate-100 hover:bg-slate-50/80 text-slate-800"
                       }`}
                   >
-                    {/* 1. NAMA PERANGKAT */}
-                    <td className={`py-3.5 pl-6 pr-4 font-semibold whitespace-nowrap ${isDark ? "text-[#E6EDF7]" : "text-slate-800"
-                      }`}>
-                      <div className="flex items-center gap-2.5">
-                        <div className={`w-5 h-5 rounded-md flex items-center justify-center text-[13px] shrink-0 border ${isDark
-                          ? "bg-[#0D264A] text-[#38BDF8] border-[#164375]"
-                          : "bg-blue-50 text-blue-600 border-blue-200"
-                          }`}>
-                          <span className="material-symbols-outlined text-[14px]">
-                            dns
-                          </span>
+                    {/* 1. NAMA PERANGKAT (Clickable Blue Link to Detail) */}
+                    <td className="py-3.5 pl-6 pr-4 whitespace-nowrap text-left">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenDetail(item)}
+                        className="font-bold tracking-wide text-[#38BDF8] hover:text-[#00E5FF] hover:underline transition-colors cursor-pointer text-left font-mono"
+                        title="Klik untuk melihat detail perangkat & tampilan subrack 2D"
+                      >
+                        {item.nama_perangkat}
+                      </button>
+                    </td>
+
+                    {/* 2. LOKASI (SITE): STO Palu 1 / PLA · Palu */}
+                    <td className="py-3.5 px-4 whitespace-nowrap text-left">
+                      <div>
+                        <div className={`font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
+                          {item.lokasi}
                         </div>
-                        <span className={`font-bold tracking-wide ${isDark ? "text-white" : "text-slate-900"
-                          }`}>
-                          {item.nama_perangkat}
-                        </span>
+                        <div className={`text-[11px] font-medium ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
+                          {item.kode_site || (item.lokasi && item.lokasi.includes("1") ? "PLA" : "PLB")} · {(item.district || "PALU").toUpperCase()}
+                        </div>
                       </div>
                     </td>
 
-                    {/* 2. TIPE */}
+                    {/* 3. MODEL PERANGKAT */}
                     <td className="py-3.5 px-4 whitespace-nowrap text-left">
-                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${isDark
-                        ? "bg-[#0C2548] border-[#1A4378] text-[#38BDF8]"
-                        : "bg-blue-50 border-blue-200 text-blue-700"
-                        }`}>
-                        {item.tipe}
+                      <span className={`text-xs font-semibold ${isDark ? "text-[#CBD5E1]" : "text-slate-700"}`}>
+                        {item.model_perangkat || "1830 PSS24X"}
                       </span>
                     </td>
 
-                    {/* 3. LOKASI */}
+                    {/* 4. VENDOR */}
                     <td className="py-3.5 px-4 whitespace-nowrap text-left">
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[16px] text-[#38BDF8] shrink-0">
-                          location_on
-                        </span>
-                        <span className={`font-semibold ${isDark ? "text-[#E6EDF7]" : "text-slate-800"}`}>
-                          {item.lokasi}
+                      <span className={`text-xs font-bold tracking-wide uppercase ${isDark ? "text-[#94A3B8]" : "text-slate-600"}`}>
+                        {item.vendor || "NOKIA"}
+                      </span>
+                    </td>
+
+                    {/* 5. JUMLAH SLOT */}
+                    <td className="py-3.5 px-4 whitespace-nowrap text-left">
+                      <span className={`font-mono text-xs font-bold ${isDark ? "text-[#CBD5E1]" : "text-slate-800"}`}>
+                        {item.total_slots || 29}
+                      </span>
+                    </td>
+
+                    {/* 6. SLOT TERISI (Progress bar + ratio) */}
+                    <td className="py-3.5 px-4 whitespace-nowrap text-left">
+                      <div className="flex items-center gap-2.5">
+                        <div className={`w-20 sm:w-24 h-2 rounded-full overflow-hidden ${isDark ? "bg-[#0E2442]" : "bg-slate-200"}`}>
+                          <div
+                            className="h-full rounded-full bg-[#1677FF] transition-all duration-300"
+                            style={{ width: `${Math.min(item.slot_occupancy_percent || 0, 100)}%` }}
+                          />
+                        </div>
+                        <span className={`font-mono text-xs font-bold ${isDark ? "text-[#CBD5E1]" : "text-slate-700"}`}>
+                          {item.slot_occupancy_ratio || `${item.occupied_slots || 0}/29`}
                         </span>
                       </div>
                     </td>
 
-                    {/* 4. AKSI */}
+                    {/* 7. AKSI */}
                     <td className="py-3.5 pl-3 pr-6 whitespace-nowrap text-center">
                       <div className="flex items-center justify-center gap-1.5 flex-nowrap shrink-0">
                         {/* Detail */}
@@ -978,16 +1120,17 @@ export default function DevicesPage({ user, searchValue, onSearchChange }) {
       )}
 
       {/* ============================================================ */}
-      {/* MODAL: DETAIL PERANGKAT                                      */}
+      {/* MODAL: DETAIL PERANGKAT (NOKIA 1830 PSS-24 CHASSIS SUBRACK)  */}
       {/* ============================================================ */}
       {detailModalOpen && selectedForDetail && (
-        <DetailDeviceModal
+        <ChassisSubrackModal
           item={selectedForDetail}
           onClose={() => {
             setDetailModalOpen(false);
             setSelectedForDetail(null);
           }}
           isDark={isDark}
+          currentUser={user}
         />
       )}
 
@@ -1605,6 +1748,12 @@ function EditDeviceModal({ deviceData, filterOptions, onClose, onSuccess, isDark
     deviceData.device_type_id || ""
   );
   const [locationId, setLocationId] = useState(deviceData.location_id || "");
+  const [vendor, setVendor] = useState(
+    deviceData.vendor || "Nokia"
+  );
+  const [modelPerangkat, setModelPerangkat] = useState(
+    deviceData.model_perangkat || deviceData.model_full || "1830 PSS-24"
+  );
 
   const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
   const [stoDropdownOpen, setStoDropdownOpen] = useState(false);
@@ -1645,6 +1794,8 @@ function EditDeviceModal({ deviceData, filterOptions, onClose, onSuccess, isDark
           hostname: namaPerangkat.trim(),
           device_type_id: deviceTypeId,
           location_id: locationId,
+          vendor: vendor.trim(),
+          model_perangkat: modelPerangkat.trim(),
         }),
       });
 
@@ -1934,6 +2085,68 @@ function EditDeviceModal({ deviceData, filterOptions, onClose, onSuccess, isDark
                     })}
                   </div>
                 )}
+              </div>
+
+              {/* Vendor */}
+              <div>
+                <label
+                  className={`block text-xs font-semibold mb-1.5 ${
+                    isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                  }`}
+                >
+                  Vendor
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={vendor}
+                    onChange={(e) => setVendor(e.target.value)}
+                    placeholder="Contoh: Nokia"
+                    className={`w-full h-11 px-4 pl-10 rounded-xl border text-xs sm:text-sm outline-none transition-all duration-200 ${
+                      isDark
+                        ? "bg-[#071426] border-[#1E3A5F] text-white placeholder-[#64748B] focus:border-[#1677FF]"
+                        : "bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:bg-white"
+                    }`}
+                  />
+                  <span
+                    className={`material-symbols-outlined text-[18px] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none ${
+                      isDark ? "text-[#38BDF8]" : "text-blue-600"
+                    }`}
+                  >
+                    domain
+                  </span>
+                </div>
+              </div>
+
+              {/* Model Perangkat */}
+              <div>
+                <label
+                  className={`block text-xs font-semibold mb-1.5 ${
+                    isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                  }`}
+                >
+                  Model Perangkat
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={modelPerangkat}
+                    onChange={(e) => setModelPerangkat(e.target.value)}
+                    placeholder="Contoh: 1830 PSS-24"
+                    className={`w-full h-11 px-4 pl-10 rounded-xl border text-xs sm:text-sm outline-none transition-all duration-200 ${
+                      isDark
+                        ? "bg-[#071426] border-[#1E3A5F] text-white placeholder-[#64748B] focus:border-[#1677FF]"
+                        : "bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:bg-white"
+                    }`}
+                  />
+                  <span
+                    className={`material-symbols-outlined text-[18px] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none ${
+                      isDark ? "text-[#38BDF8]" : "text-blue-600"
+                    }`}
+                  >
+                    router
+                  </span>
+                </div>
               </div>
             </div>
 

@@ -54,6 +54,14 @@ def create_app(test_config=None):
     app.register_blueprint(api_bp)
     app.register_blueprint(warehouse_bp)
 
+    @app.after_request
+    def set_cache_headers(response):
+        if response.content_type and "text/html" in response.content_type:
+            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        return response
+
     # ==========================================
     # CLI: CREATE ADMIN
     # ==========================================

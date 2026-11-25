@@ -50,7 +50,7 @@ const moduleColumnNames = {
   shelf: "Shelf",
   slot: "Slot",
   port: "Port",
-  unit_part_number: "Unit Part Number",
+  unit_part_number: "Part Number",
   serial_number: "Serial Number",
   date_str: "Date",
 };
@@ -231,12 +231,31 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
     });
   }, [allModules, selectedDevice, searchValue, localSearch]);
 
-  // Dynamic stats calculation when device is selected
+  // Dynamic stats calculation when device is selected (menghitung seluruh modul card fisik, termasuk modul utilitas belakang)
   const displayStats = useMemo(() => {
-    if (!selectedDevice) return stats;
-    const devModules = allModules.filter((m) => m.ne_name === selectedDevice);
+    const isCard = (m) => {
+      // Pastikan bukan transceiver SFP (menghitung seluruh modul card fisik termasuk utilitas belakang)
+      const p = m.port !== null && m.port !== undefined ? String(m.port).trim() : "";
+      const isSfp =
+        m.asset_category === "TRANSCEIVER" ||
+        m.category === "SFP" ||
+        (p !== "" && p !== "-" && p.toLowerCase() !== "null" && p.toLowerCase() !== "none");
+      return !isSfp;
+    };
+
+    if (!selectedDevice) {
+      const cardModules = allModules.filter(isCard);
+      return {
+        total_modules: cardModules.length,
+        total_devices: stats?.total_devices || 2,
+        total_locations: stats?.total_locations || 2,
+      };
+    }
+    const devCardModules = allModules.filter(
+      (m) => m.ne_name === selectedDevice && isCard(m)
+    );
     return {
-      total_modules: devModules.length,
+      total_modules: devCardModules.length,
       total_devices: 1,
       total_locations: 1,
     };
@@ -685,7 +704,7 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
               <col style={{ width: '4.5%' }} />  {/* 5. SHELF */}
               <col style={{ width: '4.5%' }} />  {/* 6. SLOT */}
               <col style={{ width: '4.5%' }} />  {/* 7. PORT */}
-              <col style={{ width: '12%' }} />   {/* 8. UNIT PART NUMBER */}
+              <col style={{ width: '12%' }} />   {/* 8. PART NUMBER */}
               <col style={{ width: '12.5%' }} /> {/* 9. SERIAL NUMBER */}
               <col style={{ width: '9%' }} />    {/* 10. DATE */}
               <col style={{ width: '11.5%' }} /> {/* 11. AKSI */}
@@ -798,13 +817,13 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
                   />
                 </th>
 
-                {/* 8. UNIT PART NUMBER */}
+                {/* 8. PART NUMBER */}
                 <th
                   className="py-3.5 px-3 text-left select-none"
                   style={{ width: "12%" }}
                 >
                   <TableSortHeader
-                    title="UNIT PART NUMBER"
+                    title="PART NUMBER"
                     sortKey="unit_part_number"
                     currentSort={sortConfig}
                     onSort={handleSort}
@@ -970,7 +989,7 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
                       </span>
                     </td>
 
-                    {/* 8. UNIT PART NUMBER */}
+                    {/* 8. PART NUMBER */}
                     <td className={`py-3.5 px-3 font-mono text-xs tracking-wide whitespace-nowrap ${isDark ? "text-[#94A3B8]" : "text-slate-600"
                       }`}>
                       {item.unit_part_number}
@@ -1236,34 +1255,37 @@ export default function ModulesPage({ user, searchValue, onSearchChange }) {
 // ==============================================================
 // SUBCOMPONENT: CREATE MODULE MODAL
 // ==============================================================
-// ==============================================================
-// SUBCOMPONENT: CREATE MODULE MODAL
-// ==============================================================
 function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
   const { isDark } = useTheme();
-  // 1. Perangkat State & Refs
+
+  // 1. Lokasi State & Refs
+  const [selectedLocation, setSelectedLocation] = useState("");
+  const [locationDropdownOpen, setLocationDropdownOpen] = useState(false);
+  const locationDropdownRef = useRef(null);
+
+  // 2. Perangkat State & Refs
   const [deviceId, setDeviceId] = useState("");
   const [deviceDropdownOpen, setDeviceDropdownOpen] = useState(false);
   const [deviceSearchQuery, setDeviceSearchQuery] = useState("");
   const deviceDropdownRef = useRef(null);
 
-  // 2. Unit Type State & Refs
+  // 3. Unit Type State & Refs
   const [unitType, setUnitType] = useState("");
   const [showTypeSuggestions, setShowTypeSuggestions] = useState(false);
   const typeDropdownRef = useRef(null);
   const typeInputRef = useRef(null);
 
-  // 3. Serial Number State & Refs
+  // 4. Serial Number State & Refs
   const [serialNumber, setSerialNumber] = useState("");
   const [serialDropdownOpen, setSerialDropdownOpen] = useState(false);
   const serialDropdownRef = useRef(null);
   const serialInputRef = useRef(null);
 
-  // 4. Form States
-  const [unitPartNumber, setUnitPartNumber] = useState("");
-  const [slot, setSlot] = useState("");
+  // 5. Form States: Shelf, Slot, Port, Part Number, Date
   const [shelf, setShelf] = useState("1");
+  const [slot, setSlot] = useState("");
   const [port, setPort] = useState("");
+  const [unitPartNumber, setUnitPartNumber] = useState("");
   const [date, setDate] = useState(() => {
     const today = new Date();
     const yyyy = today.getFullYear();
@@ -1275,9 +1297,39 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Available locations derived from meta or devices
+  const availableLocations = useMemo(() => {
+    const list = (meta.locations && meta.locations.length > 0)
+      ? meta.locations
+      : (meta.palu_devices || []).map((d) => ({
+          id: d.id,
+          nama: d.location,
+          district: "PALU",
+        }));
+    const seen = new Set();
+    const result = [];
+    for (const loc of list) {
+      const name = typeof loc === "string" ? loc : (loc.nama || loc.nama_lokasi || "");
+      if (name && !seen.has(name)) {
+        seen.add(name);
+        result.push(typeof loc === "object" ? loc : { id: name, nama: name, district: "PALU" });
+      }
+    }
+    return result;
+  }, [meta.locations, meta.palu_devices]);
+
+  // Selected device object
+  const selectedDeviceObj = useMemo(() => {
+    if (!deviceId) return null;
+    return (meta.palu_devices || []).find((d) => String(d.id) === String(deviceId));
+  }, [deviceId, meta.palu_devices]);
+
   // Close dropdowns on click outside
   useEffect(() => {
     function handleClickOutside(e) {
+      if (locationDropdownRef.current && !locationDropdownRef.current.contains(e.target)) {
+        setLocationDropdownOpen(false);
+      }
       if (deviceDropdownRef.current && !deviceDropdownRef.current.contains(e.target)) {
         setDeviceDropdownOpen(false);
       }
@@ -1292,15 +1344,11 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Selected device object
-  const selectedDeviceObj = useMemo(() => {
-    if (!deviceId) return null;
-    return (meta.palu_devices || []).find((d) => String(d.id) === String(deviceId));
-  }, [deviceId, meta.palu_devices]);
-
-  // Filtered devices for popup
+  // Filtered devices for popup: show all available devices!
   const filteredDevices = useMemo(() => {
-    const list = meta.palu_devices || [];
+    const list = (meta.palu_devices && meta.palu_devices.length > 0)
+      ? meta.palu_devices
+      : (meta.all_devices || []);
     if (!deviceSearchQuery.trim()) return list;
     const q = deviceSearchQuery.toLowerCase().trim();
     return list.filter(
@@ -1309,7 +1357,20 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
         (d.location && d.location.toLowerCase().includes(q)) ||
         (d.nama && d.nama.toLowerCase().includes(q))
     );
-  }, [meta.palu_devices, deviceSearchQuery]);
+  }, [meta.palu_devices, meta.all_devices, deviceSearchQuery]);
+
+  // Handle Location selection
+  const handleSelectLocation = (locName) => {
+    setSelectedLocation(locName);
+    setLocationDropdownOpen(false);
+    const devsInLoc = (meta.palu_devices || []).filter((d) => d.location === locName);
+    if (devsInLoc.length > 0) {
+      const currentMatches = devsInLoc.some((d) => String(d.id) === String(deviceId));
+      if (!currentMatches) {
+        setDeviceId(String(devsInLoc[0].id));
+      }
+    }
+  };
 
   // Filtered module types for autocomplete
   const filteredModuleTypes = useMemo(() => {
@@ -1319,7 +1380,7 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
     return types.filter((mt) => mt.nama.toLowerCase().includes(q));
   }, [meta.module_types, unitType]);
 
-  // Matching serial numbers from inventory/active modules (unique serial numbers only)
+  // Matching serial numbers from inventory/active modules
   const matchingSerialList = useMemo(() => {
     const q = serialNumber.toLowerCase().trim();
     const seen = new Set();
@@ -1341,10 +1402,11 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
     e.preventDefault();
     setError(null);
 
+    if (!selectedLocation) return setError("Silakan pilih lokasi.");
     if (!deviceId) return setError("Silakan pilih perangkat terlebih dahulu.");
+    if (!slot.trim()) return setError("Nomor slot wajib diisi.");
     if (!unitType.trim()) return setError("Unit Type wajib diisi.");
     if (!serialNumber.trim()) return setError("Serial number wajib diisi.");
-    if (!slot.trim()) return setError("Nomor slot wajib diisi.");
     if (!date) return setError("Tanggal wajib dipilih.");
 
     setLoading(true);
@@ -1357,8 +1419,8 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
           unit_type: unitType.trim(),
           serial_number: serialNumber.trim(),
           unit_part_number: unitPartNumber.trim(),
-          slot: slot.trim(),
           shelf: shelf.trim() || "1",
+          slot: slot.trim(),
           port: port.trim() || "-",
           date: date.trim(),
         }),
@@ -1399,17 +1461,17 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
             <div className="flex items-center gap-3">
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
                 isDark
-                  ? "bg-[#1677FF]/15 border-[#1677FF]/30 text-[#38BDF8]"
+                  ? "bg-[#1677FF]/15 border-[#1677FF]/30 text-[#1677FF]"
                   : "bg-blue-50 border-blue-200 text-blue-600"
               }`}>
-                <span className="material-symbols-outlined text-[22px]">add_circle</span>
+                <span className="material-symbols-outlined text-[22px]">add_box</span>
               </div>
               <div>
                 <h3 className={`text-base font-bold font-sans ${isDark ? "text-white" : "text-slate-900"}`}>
                   Pasang Modul Baru
                 </h3>
                 <p className={`text-xs font-sans ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
-                  Pasang modul fisik baru pada perangkat jaringan yang aktif
+                  Masukkan detail modul dan tentukan perangkat & slot tujuan
                 </p>
               </div>
             </div>
@@ -1438,8 +1500,106 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* ROW 1: LOKASI & PERANGKAT (NE) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* 1. PERANGKAT (NE) - Custom Container Box Dropdown & Popup Menu Filter */}
+              {/* LOKASI - Custom Container Box Dropdown with Popup Filter */}
+              <div className="relative" ref={locationDropdownRef}>
+                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                }`}>
+                  Lokasi *
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLocationDropdownOpen(!locationDropdownOpen);
+                    setDeviceDropdownOpen(false);
+                    setSerialDropdownOpen(false);
+                    setShowTypeSuggestions(false);
+                  }}
+                  className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center justify-between text-xs font-medium font-sans transition-all duration-200 cursor-pointer ${
+                    locationDropdownOpen
+                      ? isDark
+                        ? "bg-[#0A182B] border-[#1677FF] ring-2 ring-[#1677FF]/25 text-[#E6EDF7]"
+                        : "bg-white border-[#1677FF] ring-2 ring-[#1677FF]/20 text-slate-900"
+                      : isDark
+                        ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF]/70 hover:bg-[#0A182B]"
+                        : "bg-slate-50 border-slate-200 text-slate-800 hover:border-blue-400 hover:bg-white"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 truncate pr-2">
+                    <span className={`material-symbols-outlined text-[19px] shrink-0 ${
+                      isDark ? "text-[#38BDF8]" : "text-blue-600"
+                    }`}>
+                      location_on
+                    </span>
+                    <span
+                      className={`truncate ${
+                        selectedLocation
+                          ? isDark ? "font-semibold text-white" : "font-semibold text-slate-900"
+                          : isDark ? "text-[#64748B]" : "text-slate-400"
+                      }`}
+                    >
+                      {selectedLocation || "Pilih Lokasi"}
+                    </span>
+                  </div>
+                  <span
+                    className={`material-symbols-outlined text-[19px] transition-transform duration-200 shrink-0 ${
+                      locationDropdownOpen
+                        ? isDark ? "rotate-180 text-[#38BDF8]" : "rotate-180 text-blue-600"
+                        : isDark ? "text-[#94A3B8]" : "text-slate-400"
+                    }`}
+                  >
+                    expand_more
+                  </span>
+                </button>
+
+                {/* Custom Filter Dropdown Menu Lokasi */}
+                {locationDropdownOpen && (
+                  <div className={`absolute left-0 top-full mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-50 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-md font-sans animate-dropdown ${
+                    isDark
+                      ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7]"
+                      : "border-slate-200 bg-white text-slate-800"
+                  }`}>
+                    {availableLocations.map((loc) => {
+                      const locName = typeof loc === "string" ? loc : (loc.nama || loc.nama_lokasi || "");
+                      const isSelected = selectedLocation === locName;
+                      return (
+                        <button
+                          key={loc.id || locName}
+                          type="button"
+                          onClick={() => handleSelectLocation(locName)}
+                          className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium font-sans flex items-center justify-between transition-colors cursor-pointer ${
+                            isSelected
+                              ? "bg-[#1677FF] text-white font-semibold"
+                              : isDark
+                                ? "hover:bg-[#122846] text-[#CBD5E1]"
+                                : "hover:bg-blue-50 text-slate-700"
+                          }`}
+                        >
+                          <div className="flex flex-col truncate pr-2">
+                            <span className="font-semibold">{locName}</span>
+                            {loc.district && (
+                              <span className={`text-[10px] ${
+                                isSelected ? "text-blue-100" : isDark ? "text-[#64748B]" : "text-slate-400"
+                              }`}>
+                                {loc.district}
+                              </span>
+                            )}
+                          </div>
+                          {isSelected && (
+                            <span className="material-symbols-outlined text-[16px] shrink-0">
+                              check
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* PERANGKAT (NE) - Custom Container Box Dropdown */}
               <div className="relative" ref={deviceDropdownRef}>
                 <label className={`block text-xs font-semibold mb-1.5 font-sans ${
                   isDark ? "text-[#CBD5E1]" : "text-slate-700"
@@ -1450,6 +1610,7 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
                   type="button"
                   onClick={() => {
                     setDeviceDropdownOpen(!deviceDropdownOpen);
+                    setLocationDropdownOpen(false);
                     setSerialDropdownOpen(false);
                     setShowTypeSuggestions(false);
                   }}
@@ -1492,7 +1653,7 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
                   </span>
                 </button>
 
-                {/* Custom Filter Dropdown Menu Perangkat */}
+                {/* Custom Filter Dropdown Menu Perangkat - Shows ALL Devices */}
                 {deviceDropdownOpen && (
                   <div
                     className={`absolute left-0 top-full mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-50 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-md font-sans animate-dropdown ${
@@ -1501,7 +1662,7 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
                         : "border-slate-200 bg-white text-slate-800"
                     }`}
                   >
-                    {meta.palu_devices && meta.palu_devices.length > 5 && (
+                    {filteredDevices && filteredDevices.length > 5 && (
                       <div className={`px-1.5 pb-1.5 mb-1 border-b ${
                         isDark ? "border-[#1A3358]" : "border-slate-100"
                       }`}>
@@ -1534,6 +1695,9 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
                           type="button"
                           onClick={() => {
                             setDeviceId(String(d.id));
+                            if (d.location) {
+                              setSelectedLocation(d.location);
+                            }
                             setDeviceDropdownOpen(false);
                           }}
                           className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium font-sans flex items-center justify-between transition-colors cursor-pointer ${
@@ -1550,7 +1714,7 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
                               className={`text-[10px] ${
                                 isSelected
                                   ? "text-blue-100"
-                                  : isDark ? "text-[#64748B]" : "text-slate-400"
+                                  : isDark ? "text-[#94A3B8]" : "text-slate-500"
                               }`}
                             >
                               {d.location}
@@ -1567,8 +1731,140 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
                   </div>
                 )}
               </div>
+            </div>
 
-              {/* 2. UNIT TYPE - Custom Container Box with Autocomplete Popup */}
+            {/* ROW 2: POSISI MODUL (SHELF, NOMOR SLOT, PORT) - Grouped Sub-Card */}
+            <div className={`p-4 rounded-2xl border transition-colors ${
+              isDark
+                ? "bg-[#071629]/70 border-[#1B3557]"
+                : "bg-slate-50/90 border-slate-200"
+            }`}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className={`material-symbols-outlined text-[18px] ${
+                    isDark ? "text-[#38BDF8]" : "text-blue-600"
+                  }`}>
+                    developer_board
+                  </span>
+                  <span className={`text-xs font-bold font-sans ${
+                    isDark ? "text-white" : "text-slate-900"
+                  }`}>
+                    Posisi Modul
+                  </span>
+                  <span className={`text-[11px] font-sans ${
+                    isDark ? "text-[#94A3B8]" : "text-slate-500"
+                  }`}>
+                    (Shelf · Slot · Port)
+                  </span>
+                </div>
+                <span className={`text-[10px] font-semibold font-mono px-2.5 py-0.5 rounded-md border ${
+                  isDark
+                    ? "bg-[#0A1F38] text-[#38BDF8] border-[#1E3A5F]"
+                    : "bg-blue-50 text-blue-700 border-blue-200"
+                }`}>
+                  Shelf {shelf || "1"} · Slot {slot || "-"} · Port {port || "-"}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* 3. SHELF */}
+                <div>
+                  <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                    isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                  }`}>
+                    Shelf
+                  </label>
+                  <div
+                    className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center gap-2.5 text-xs font-medium font-sans transition-all duration-200 cursor-text ${
+                      isDark
+                        ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF]/70 hover:bg-[#0A182B] focus-within:bg-[#0A182B] focus-within:border-[#1677FF] focus-within:ring-2 focus-within:ring-[#1677FF]/25"
+                        : "bg-slate-50 border-slate-200 text-slate-800 hover:border-blue-400 hover:bg-white focus-within:bg-white focus-within:border-[#1677FF] focus-within:ring-2 focus-within:ring-[#1677FF]/20"
+                    }`}
+                  >
+                    <span className={`material-symbols-outlined text-[19px] shrink-0 pointer-events-none transition-colors ${
+                      isDark ? "text-[#38BDF8]" : "text-blue-600"
+                    }`}>
+                      layers
+                    </span>
+                    <input
+                      type="text"
+                      placeholder="1"
+                      value={shelf}
+                      onChange={(e) => setShelf(e.target.value)}
+                      className={`w-full bg-transparent outline-none text-xs font-medium font-sans ${
+                        isDark ? "text-white placeholder-[#64748B]" : "text-slate-900 placeholder-slate-400"
+                      }`}
+                    />
+                  </div>
+                </div>
+
+                {/* 4. NOMOR SLOT */}
+                <div>
+                  <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                    isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                  }`}>
+                    Nomor Slot *
+                  </label>
+                  <div
+                    className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center gap-2.5 text-xs font-medium font-sans transition-all duration-200 cursor-text ${
+                      isDark
+                        ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF]/70 hover:bg-[#0A182B] focus-within:bg-[#0A182B] focus-within:border-[#1677FF] focus-within:ring-2 focus-within:ring-[#1677FF]/25"
+                        : "bg-slate-50 border-slate-200 text-slate-800 hover:border-blue-400 hover:bg-white focus-within:bg-white focus-within:border-[#1677FF] focus-within:ring-2 focus-within:ring-[#1677FF]/20"
+                    }`}
+                  >
+                    <span className={`material-symbols-outlined text-[19px] shrink-0 pointer-events-none transition-colors ${
+                      isDark ? "text-[#38BDF8]" : "text-blue-600"
+                    }`}>
+                      grid_view
+                    </span>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Nomor slot..."
+                      value={slot}
+                      onChange={(e) => setSlot(e.target.value)}
+                      className={`w-full bg-transparent outline-none text-xs font-medium font-sans ${
+                        isDark ? "text-white placeholder-[#64748B]" : "text-slate-900 placeholder-slate-400"
+                      }`}
+                    />
+                  </div>
+                </div>
+
+                {/* 5. PORT */}
+                <div>
+                  <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                    isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                  }`}>
+                    Port
+                  </label>
+                  <div
+                    className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center gap-2.5 text-xs font-medium font-sans transition-all duration-200 cursor-text ${
+                      isDark
+                        ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF]/70 hover:bg-[#0A182B] focus-within:bg-[#0A182B] focus-within:border-[#1677FF] focus-within:ring-2 focus-within:ring-[#1677FF]/25"
+                        : "bg-slate-50 border-slate-200 text-slate-800 hover:border-blue-400 hover:bg-white focus-within:bg-white focus-within:border-[#1677FF] focus-within:ring-2 focus-within:ring-[#1677FF]/20"
+                    }`}
+                  >
+                    <span className={`material-symbols-outlined text-[19px] shrink-0 pointer-events-none transition-colors ${
+                      isDark ? "text-[#38BDF8]" : "text-blue-600"
+                    }`}>
+                      lan
+                    </span>
+                    <input
+                      type="text"
+                      placeholder="-"
+                      value={port}
+                      onChange={(e) => setPort(e.target.value)}
+                      className={`w-full bg-transparent outline-none text-xs font-medium font-sans ${
+                        isDark ? "text-white placeholder-[#64748B]" : "text-slate-900 placeholder-slate-400"
+                      }`}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ROW 3: UNIT TYPE & PART NUMBER */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* 6. UNIT TYPE - Autocomplete Dropdown */}
               <div className="relative" ref={typeDropdownRef}>
                 <label className={`block text-xs font-semibold mb-1.5 font-sans ${
                   isDark ? "text-[#CBD5E1]" : "text-slate-700"
@@ -1579,6 +1875,7 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
                   onClick={() => {
                     setShowTypeSuggestions(true);
                     setDeviceDropdownOpen(false);
+                    setLocationDropdownOpen(false);
                     setSerialDropdownOpen(false);
                     typeInputRef.current?.focus();
                   }}
@@ -1612,6 +1909,7 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
                       onFocus={() => {
                         setShowTypeSuggestions(true);
                         setDeviceDropdownOpen(false);
+                        setLocationDropdownOpen(false);
                         setSerialDropdownOpen(false);
                       }}
                       className={`w-full bg-transparent outline-none text-xs font-medium font-sans ${
@@ -1647,6 +1945,7 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
                         e.stopPropagation();
                         setShowTypeSuggestions(!showTypeSuggestions);
                         setDeviceDropdownOpen(false);
+                        setLocationDropdownOpen(false);
                         setSerialDropdownOpen(false);
                         if (!showTypeSuggestions) {
                           typeInputRef.current?.focus();
@@ -1717,7 +2016,43 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
                 )}
               </div>
 
-              {/* 3. SERIAL NUMBER - Custom Container Box with Dropdown Popup Filter */}
+              {/* 7. PART NUMBER */}
+              <div>
+                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                }`}>
+                  Part Number
+                </label>
+                <div
+                  className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center gap-2.5 text-xs font-medium font-sans transition-all duration-200 cursor-text ${
+                    isDark
+                      ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF]/70 hover:bg-[#0A182B] focus-within:bg-[#0A182B] focus-within:border-[#1677FF] focus-within:ring-2 focus-within:ring-[#1677FF]/25"
+                      : "bg-slate-50 border-slate-200 text-slate-800 hover:border-blue-400 hover:bg-white focus-within:bg-white focus-within:border-[#1677FF] focus-within:ring-2 focus-within:ring-[#1677FF]/20"
+                  }`}
+                >
+                  <span className={`material-symbols-outlined text-[19px] shrink-0 pointer-events-none transition-colors ${
+                    isDark ? "text-[#38BDF8]" : "text-blue-600"
+                  }`}>
+                    tag
+                  </span>
+                  <input
+                    type="text"
+                    placeholder="Part number..."
+                    value={unitPartNumber}
+                    onChange={(e) => setUnitPartNumber(e.target.value)}
+                    className={`w-full bg-transparent outline-none text-xs font-medium font-sans ${
+                      isDark
+                        ? "text-white placeholder-[#64748B]"
+                        : "text-slate-900 placeholder-slate-400"
+                    }`}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* ROW 4: SERIAL NUMBER & TANGGAL PASANG / DATE */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* 8. SERIAL NUMBER - Custom Container Box with Dropdown Popup Filter */}
               <div className="relative" ref={serialDropdownRef}>
                 <label className={`block text-xs font-semibold mb-1.5 font-sans ${
                   isDark ? "text-[#CBD5E1]" : "text-slate-700"
@@ -1728,6 +2063,7 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
                   onClick={() => {
                     setSerialDropdownOpen(true);
                     setDeviceDropdownOpen(false);
+                    setLocationDropdownOpen(false);
                     setShowTypeSuggestions(false);
                     serialInputRef.current?.focus();
                   }}
@@ -1737,8 +2073,8 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
                         ? "bg-[#0A182B] border-[#1677FF] ring-2 ring-[#1677FF]/25 text-[#E6EDF7]"
                         : "bg-white border-[#1677FF] ring-2 ring-[#1677FF]/20 text-slate-900"
                       : isDark
-                        ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF]/70 hover:bg-[#0A182B]"
-                        : "bg-slate-50 border-slate-200 text-slate-800 hover:border-blue-400 hover:bg-white"
+                        ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF]/70 hover:bg-[#0A182B] focus-within:bg-[#0A182B] focus-within:border-[#1677FF] focus-within:ring-2 focus-within:ring-[#1677FF]/25"
+                        : "bg-slate-50 border-slate-200 text-slate-800 hover:border-blue-400 hover:bg-white focus-within:bg-white focus-within:border-[#1677FF] focus-within:ring-2 focus-within:ring-[#1677FF]/20"
                   }`}
                 >
                   <div className="flex items-center gap-2.5 flex-1 min-w-0 pr-2">
@@ -1759,6 +2095,7 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
                       onFocus={() => {
                         setSerialDropdownOpen(true);
                         setDeviceDropdownOpen(false);
+                        setLocationDropdownOpen(false);
                         setShowTypeSuggestions(false);
                       }}
                       placeholder="Serial number..."
@@ -1796,6 +2133,7 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
                         e.stopPropagation();
                         setSerialDropdownOpen(!serialDropdownOpen);
                         setDeviceDropdownOpen(false);
+                        setLocationDropdownOpen(false);
                         setShowTypeSuggestions(false);
                         if (!serialDropdownOpen) {
                           serialInputRef.current?.focus();
@@ -1816,7 +2154,7 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
                   </div>
                 </div>
 
-                {/* Floating Popup Menu Filter Serial Number */}
+                {/* Custom Filter Dropdown Menu Serial Number */}
                 {serialDropdownOpen && (
                   <div className={`absolute left-0 top-full mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-50 max-h-56 overflow-y-auto custom-scrollbar backdrop-blur-md font-sans animate-dropdown ${
                     isDark
@@ -1824,8 +2162,8 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
                       : "border-slate-200 bg-white text-slate-800"
                   }`}>
                     {matchingSerialList.length === 0 ? (
-                      <div className={`px-3 py-2.5 text-xs font-sans ${
-                        isDark ? "text-[#94A3B8]" : "text-slate-500"
+                      <div className={`px-3 py-2 text-xs font-sans ${
+                        isDark ? "text-[#64748B]" : "text-slate-400"
                       }`}>
                         Tidak ada serial number yang cocok
                       </div>
@@ -1878,105 +2216,37 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
                 )}
               </div>
 
-              {/* 4. UNIT PART NUMBER */}
-              <div>
-                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
-                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
-                }`}>
-                  Unit Part Number
-                </label>
-                <input
-                  type="text"
-                  placeholder="Part number..."
-                  value={unitPartNumber}
-                  onChange={(e) => setUnitPartNumber(e.target.value)}
-                  className={`w-full h-11 px-3.5 rounded-xl border text-xs font-medium focus:outline-none focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF] font-sans transition-all ${
-                    isDark
-                      ? "bg-[#071426] border-[#1E3A5F] text-white placeholder-[#64748B]"
-                      : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white"
-                  }`}
-                />
-              </div>
-
-              {/* 5. NOMOR SLOT */}
-              <div>
-                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
-                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
-                }`}>
-                  Nomor Slot *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Nomor slot..."
-                  value={slot}
-                  onChange={(e) => setSlot(e.target.value)}
-                  className={`w-full h-11 px-3.5 rounded-xl border text-xs font-medium focus:outline-none focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF] font-sans transition-all ${
-                    isDark
-                      ? "bg-[#071426] border-[#1E3A5F] text-white placeholder-[#64748B]"
-                      : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white"
-                  }`}
-                />
-              </div>
-
-              {/* 6. SHELF */}
-              <div>
-                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
-                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
-                }`}>
-                  Shelf
-                </label>
-                <input
-                  type="text"
-                  placeholder="1"
-                  value={shelf}
-                  onChange={(e) => setShelf(e.target.value)}
-                  className={`w-full h-11 px-3.5 rounded-xl border text-xs font-medium focus:outline-none focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF] font-sans transition-all ${
-                    isDark
-                      ? "bg-[#071426] border-[#1E3A5F] text-white placeholder-[#64748B]"
-                      : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white"
-                  }`}
-                />
-              </div>
-
-              {/* 7. PORT */}
-              <div>
-                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
-                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
-                }`}>
-                  Port
-                </label>
-                <input
-                  type="text"
-                  placeholder="Port..."
-                  value={port}
-                  onChange={(e) => setPort(e.target.value)}
-                  className={`w-full h-11 px-3.5 rounded-xl border text-xs font-medium focus:outline-none focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF] font-sans transition-all ${
-                    isDark
-                      ? "bg-[#071426] border-[#1E3A5F] text-white placeholder-[#64748B]"
-                      : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white"
-                  }`}
-                />
-              </div>
-
-              {/* 8. TANGGAL PASANG / DATE */}
+              {/* 9. TANGGAL PASANG / DATE */}
               <div>
                 <label className={`block text-xs font-semibold mb-1.5 font-sans ${
                   isDark ? "text-[#CBD5E1]" : "text-slate-700"
                 }`}>
                   Tanggal Pasang / Date *
                 </label>
-                <input
-                  type="date"
-                  required
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className={`w-full h-11 px-3.5 rounded-xl border text-xs font-medium focus:outline-none focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF] font-sans cursor-pointer transition-all ${
+                <div
+                  className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center gap-2.5 text-xs font-medium font-sans transition-all duration-200 cursor-pointer ${
                     isDark
-                      ? "bg-[#071426] border-[#1E3A5F] text-white [color-scheme:dark]"
-                      : "bg-slate-50 border-slate-200 text-slate-900 [color-scheme:light] focus:bg-white"
+                      ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF]/70 hover:bg-[#0A182B] focus-within:bg-[#0A182B] focus-within:border-[#1677FF] focus-within:ring-2 focus-within:ring-[#1677FF]/25"
+                      : "bg-slate-50 border-slate-200 text-slate-800 hover:border-blue-400 hover:bg-white focus-within:bg-white focus-within:border-[#1677FF] focus-within:ring-2 focus-within:ring-[#1677FF]/20"
                   }`}
-                />
+                >
+                  <span className={`material-symbols-outlined text-[19px] shrink-0 pointer-events-none transition-colors ${
+                    isDark ? "text-[#38BDF8]" : "text-blue-600"
+                  }`}>
+                    calendar_today
+                  </span>
+                  <input
+                    type="date"
+                    required
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className={`w-full bg-transparent outline-none text-xs font-medium font-sans cursor-pointer ${
+                      isDark
+                        ? "text-white [color-scheme:dark]"
+                        : "text-slate-900 [color-scheme:light]"
+                    }`}
+                  />
+                </div>
               </div>
             </div>
 
@@ -1999,7 +2269,9 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="h-11 px-6 rounded-xl bg-[#1677FF] hover:bg-[#0E65D9] text-white text-xs font-semibold font-sans flex items-center gap-2 shadow-lg shadow-[#1677FF]/30 transition-all cursor-pointer disabled:opacity-50"
+                className={`h-11 px-6 rounded-xl bg-[#1677FF] hover:bg-[#0E65D9] text-white font-semibold text-xs font-sans flex items-center gap-2 shadow-lg transition-all cursor-pointer disabled:opacity-50 ${
+                  isDark ? "shadow-blue-950/40" : "shadow-blue-500/25"
+                }`}
               >
                 {loading ? (
                   <>
@@ -2010,7 +2282,7 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
                   </>
                 ) : (
                   <>
-                    <span className="material-symbols-outlined text-[18px]">check</span>
+                    <span className="material-symbols-outlined text-[18px]">add_circle</span>
                     <span>Pasang Modul</span>
                   </>
                 )}
@@ -2023,18 +2295,23 @@ function CreateModuleModal({ meta, allModules = [], onClose, onSuccess }) {
   );
 }
 
-// ==============================================================
 // SUBCOMPONENT: EDIT MODULE MODAL
 // ==============================================================
 function EditModuleModal({ moduleData, meta, allModules = [], onClose, onSuccess }) {
   const { isDark } = useTheme();
-  // 1. Perangkat State & Refs
+
+  // 1. Lokasi State & Refs
+  const [selectedLocation, setSelectedLocation] = useState(moduleData.location_name || "");
+  const [locationDropdownOpen, setLocationDropdownOpen] = useState(false);
+  const locationDropdownRef = useRef(null);
+
+  // 2. Perangkat State & Refs
   const [deviceId, setDeviceId] = useState(moduleData.device_id || "");
   const [deviceDropdownOpen, setDeviceDropdownOpen] = useState(false);
   const [deviceSearchQuery, setDeviceSearchQuery] = useState("");
   const deviceDropdownRef = useRef(null);
 
-  // 2. Unit Type State & Refs
+  // 3. Unit Type State & Refs
   const [unitType, setUnitType] = useState(
     moduleData.unit_type !== "-" ? moduleData.unit_type : ""
   );
@@ -2042,27 +2319,64 @@ function EditModuleModal({ moduleData, meta, allModules = [], onClose, onSuccess
   const typeDropdownRef = useRef(null);
   const typeInputRef = useRef(null);
 
-  // 3. Serial Number State & Refs
+  // 4. Serial Number State & Refs
   const [serialNumber, setSerialNumber] = useState(moduleData.serial_number || "");
   const [serialDropdownOpen, setSerialDropdownOpen] = useState(false);
   const serialDropdownRef = useRef(null);
   const serialInputRef = useRef(null);
 
-  // 4. Form States
+  // 5. Form States: Shelf, Slot, Port, Part Number, Date
+  const [shelf, setShelf] = useState(moduleData.shelf !== "-" ? moduleData.shelf : "1");
+  const [slot, setSlot] = useState(moduleData.slot !== "-" ? moduleData.slot : "1");
+  const [port, setPort] = useState(moduleData.port !== "-" ? moduleData.port : "");
   const [unitPartNumber, setUnitPartNumber] = useState(
     moduleData.unit_part_number !== "-" ? moduleData.unit_part_number : ""
   );
-  const [slot, setSlot] = useState(moduleData.slot !== "-" ? moduleData.slot : "1");
-  const [shelf, setShelf] = useState(moduleData.shelf !== "-" ? moduleData.shelf : "1");
-  const [port, setPort] = useState(moduleData.port !== "-" ? moduleData.port : "");
   const [date, setDate] = useState(() => toInputDateFormat(moduleData.date_str));
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Available locations derived from meta or devices
+  const availableLocations = useMemo(() => {
+    const list = (meta.locations && meta.locations.length > 0)
+      ? meta.locations
+      : (meta.palu_devices || []).map((d) => ({
+          id: d.id,
+          nama: d.location,
+          district: "PALU",
+        }));
+    const seen = new Set();
+    const result = [];
+    for (const loc of list) {
+      const name = typeof loc === "string" ? loc : (loc.nama || loc.nama_lokasi || "");
+      if (name && !seen.has(name)) {
+        seen.add(name);
+        result.push(typeof loc === "object" ? loc : { id: name, nama: name, district: "PALU" });
+      }
+    }
+    return result;
+  }, [meta.locations, meta.palu_devices]);
+
+  // Selected device object
+  const selectedDeviceObj = useMemo(() => {
+    if (!deviceId) return null;
+    return (meta.palu_devices || []).find((d) => String(d.id) === String(deviceId));
+  }, [deviceId, meta.palu_devices]);
+
+  // Synchronize initial location if empty
+  useEffect(() => {
+    if (!selectedLocation && selectedDeviceObj?.location) {
+      setSelectedLocation(selectedDeviceObj.location);
+    }
+  }, [selectedDeviceObj, selectedLocation]);
+
   // Close dropdowns on click outside
   useEffect(() => {
     function handleClickOutside(e) {
+      if (locationDropdownRef.current && !locationDropdownRef.current.contains(e.target)) {
+        setLocationDropdownOpen(false);
+      }
       if (deviceDropdownRef.current && !deviceDropdownRef.current.contains(e.target)) {
         setDeviceDropdownOpen(false);
       }
@@ -2077,15 +2391,11 @@ function EditModuleModal({ moduleData, meta, allModules = [], onClose, onSuccess
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Selected device object
-  const selectedDeviceObj = useMemo(() => {
-    if (!deviceId) return null;
-    return (meta.palu_devices || []).find((d) => String(d.id) === String(deviceId));
-  }, [deviceId, meta.palu_devices]);
-
-  // Filtered devices for popup
+  // Filtered devices for popup: show all available devices!
   const filteredDevices = useMemo(() => {
-    const list = meta.palu_devices || [];
+    const list = (meta.palu_devices && meta.palu_devices.length > 0)
+      ? meta.palu_devices
+      : (meta.all_devices || []);
     if (!deviceSearchQuery.trim()) return list;
     const q = deviceSearchQuery.toLowerCase().trim();
     return list.filter(
@@ -2094,7 +2404,21 @@ function EditModuleModal({ moduleData, meta, allModules = [], onClose, onSuccess
         (d.location && d.location.toLowerCase().includes(q)) ||
         (d.nama && d.nama.toLowerCase().includes(q))
     );
-  }, [meta.palu_devices, deviceSearchQuery]);
+  }, [meta.palu_devices, meta.all_devices, deviceSearchQuery]);
+
+  // Handle Location selection
+  const handleSelectLocation = (locName) => {
+    setSelectedLocation(locName);
+    setLocationDropdownOpen(false);
+    // Find matching device in that location and update deviceId
+    const devsInLoc = (meta.palu_devices || []).filter((d) => d.location === locName);
+    if (devsInLoc.length > 0) {
+      const currentMatches = devsInLoc.some((d) => String(d.id) === String(deviceId));
+      if (!currentMatches) {
+        setDeviceId(String(devsInLoc[0].id));
+      }
+    }
+  };
 
   // Filtered module types for autocomplete
   const filteredModuleTypes = useMemo(() => {
@@ -2108,10 +2432,11 @@ function EditModuleModal({ moduleData, meta, allModules = [], onClose, onSuccess
     e.preventDefault();
     setError(null);
 
+    if (!selectedLocation) return setError("Silakan pilih lokasi.");
     if (!deviceId) return setError("Silakan pilih perangkat.");
+    if (!slot.trim()) return setError("Nomor slot wajib diisi.");
     if (!unitType.trim()) return setError("Unit Type wajib diisi.");
     if (!serialNumber.trim()) return setError("Serial number wajib diisi.");
-    if (!slot.trim()) return setError("Nomor slot wajib diisi.");
     if (!date) return setError("Tanggal wajib dipilih.");
 
     setLoading(true);
@@ -2124,8 +2449,8 @@ function EditModuleModal({ moduleData, meta, allModules = [], onClose, onSuccess
           unit_type: unitType.trim(),
           serial_number: serialNumber.trim(),
           unit_part_number: unitPartNumber.trim(),
+          shelf: shelf.trim() || "1",
           slot: slot.trim(),
-          shelf: shelf.trim(),
           port: port.trim(),
           date: date.trim(),
         }),
@@ -2205,8 +2530,106 @@ function EditModuleModal({ moduleData, meta, allModules = [], onClose, onSuccess
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* ROW 1: LOKASI & PERANGKAT (NE) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* 1. PERANGKAT (NE) - Custom Container Box Dropdown */}
+              {/* 1. LOKASI - Custom Container Box Dropdown with Popup Filter */}
+              <div className="relative" ref={locationDropdownRef}>
+                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                }`}>
+                  Lokasi *
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLocationDropdownOpen(!locationDropdownOpen);
+                    setDeviceDropdownOpen(false);
+                    setShowTypeSuggestions(false);
+                    setSerialDropdownOpen(false);
+                  }}
+                  className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center justify-between text-xs font-medium font-sans transition-all duration-200 cursor-pointer ${
+                    locationDropdownOpen
+                      ? isDark
+                        ? "bg-[#0A182B] border-[#1677FF] ring-2 ring-[#1677FF]/25 text-[#E6EDF7]"
+                        : "bg-white border-[#1677FF] ring-2 ring-[#1677FF]/20 text-slate-900"
+                      : isDark
+                        ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF]/70 hover:bg-[#0A182B]"
+                        : "bg-slate-50 border-slate-200 text-slate-800 hover:border-blue-400 hover:bg-white"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 truncate pr-2">
+                    <span className={`material-symbols-outlined text-[19px] shrink-0 ${
+                      isDark ? "text-[#38BDF8]" : "text-blue-600"
+                    }`}>
+                      location_on
+                    </span>
+                    <span
+                      className={`truncate ${
+                        selectedLocation
+                          ? isDark ? "font-semibold text-white" : "font-semibold text-slate-900"
+                          : isDark ? "text-[#64748B]" : "text-slate-400"
+                      }`}
+                    >
+                      {selectedLocation || "Pilih Lokasi"}
+                    </span>
+                  </div>
+                  <span
+                    className={`material-symbols-outlined text-[19px] transition-transform duration-200 shrink-0 ${
+                      locationDropdownOpen
+                        ? isDark ? "rotate-180 text-[#38BDF8]" : "rotate-180 text-blue-600"
+                        : isDark ? "text-[#94A3B8]" : "text-slate-400"
+                    }`}
+                  >
+                    expand_more
+                  </span>
+                </button>
+
+                {/* Custom Filter Dropdown Menu Lokasi */}
+                {locationDropdownOpen && (
+                  <div className={`absolute left-0 top-full mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-50 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-md font-sans animate-dropdown ${
+                    isDark
+                      ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7]"
+                      : "border-slate-200 bg-white text-slate-800"
+                  }`}>
+                    {availableLocations.map((loc) => {
+                      const locName = typeof loc === "string" ? loc : (loc.nama || loc.nama_lokasi || "");
+                      const isSelected = selectedLocation === locName;
+                      return (
+                        <button
+                          key={loc.id || locName}
+                          type="button"
+                          onClick={() => handleSelectLocation(locName)}
+                          className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium font-sans flex items-center justify-between transition-colors cursor-pointer ${
+                            isSelected
+                              ? "bg-[#1677FF] text-white font-semibold"
+                              : isDark
+                                ? "hover:bg-[#122846] text-[#CBD5E1]"
+                                : "hover:bg-blue-50 text-slate-700"
+                          }`}
+                        >
+                          <div className="flex flex-col truncate pr-2">
+                            <span className="font-semibold">{locName}</span>
+                            {loc.district && (
+                              <span className={`text-[10px] ${
+                                isSelected ? "text-blue-100" : isDark ? "text-[#64748B]" : "text-slate-400"
+                              }`}>
+                                {loc.district}
+                              </span>
+                            )}
+                          </div>
+                          {isSelected && (
+                            <span className="material-symbols-outlined text-[16px] shrink-0">
+                              check
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* 2. PERANGKAT (NE) - Custom Container Box Dropdown */}
               <div className="relative" ref={deviceDropdownRef}>
                 <label className={`block text-xs font-semibold mb-1.5 font-sans ${
                   isDark ? "text-[#CBD5E1]" : "text-slate-700"
@@ -2217,6 +2640,7 @@ function EditModuleModal({ moduleData, meta, allModules = [], onClose, onSuccess
                   type="button"
                   onClick={() => {
                     setDeviceDropdownOpen(!deviceDropdownOpen);
+                    setLocationDropdownOpen(false);
                     setShowTypeSuggestions(false);
                     setSerialDropdownOpen(false);
                   }}
@@ -2259,14 +2683,14 @@ function EditModuleModal({ moduleData, meta, allModules = [], onClose, onSuccess
                   </span>
                 </button>
 
-                {/* Custom Filter Dropdown Menu */}
+                {/* Custom Filter Dropdown Menu - Shows ALL Devices */}
                 {deviceDropdownOpen && (
                   <div className={`absolute left-0 top-full mt-1.5 w-full rounded-xl border shadow-2xl p-1.5 z-50 max-h-60 overflow-y-auto custom-scrollbar backdrop-blur-md font-sans animate-dropdown ${
                     isDark
                       ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7]"
                       : "border-slate-200 bg-white text-slate-800"
                   }`}>
-                    {meta.palu_devices && meta.palu_devices.length > 5 && (
+                    {filteredDevices && filteredDevices.length > 5 && (
                       <div className={`px-1.5 pb-1.5 mb-1 border-b ${
                         isDark ? "border-[#1A3358]" : "border-slate-100"
                       }`}>
@@ -2299,6 +2723,9 @@ function EditModuleModal({ moduleData, meta, allModules = [], onClose, onSuccess
                           type="button"
                           onClick={() => {
                             setDeviceId(String(d.id));
+                            if (d.location) {
+                              setSelectedLocation(d.location);
+                            }
                             setDeviceDropdownOpen(false);
                           }}
                           className={`w-full px-3 py-2 rounded-lg text-left text-xs font-medium font-sans flex items-center justify-between transition-colors cursor-pointer ${
@@ -2315,7 +2742,7 @@ function EditModuleModal({ moduleData, meta, allModules = [], onClose, onSuccess
                               className={`text-[10px] ${
                                 isSelected
                                   ? "text-blue-100"
-                                  : isDark ? "text-[#64748B]" : "text-slate-400"
+                                  : isDark ? "text-[#94A3B8]" : "text-slate-500"
                               }`}
                             >
                               {d.location}
@@ -2332,8 +2759,140 @@ function EditModuleModal({ moduleData, meta, allModules = [], onClose, onSuccess
                   </div>
                 )}
               </div>
+            </div>
 
-              {/* 2. UNIT TYPE - Autocomplete Dropdown */}
+            {/* ROW 2: POSISI MODUL (SHELF, NOMOR SLOT, PORT) - Grouped Sub-Card */}
+            <div className={`p-4 rounded-2xl border transition-colors ${
+              isDark
+                ? "bg-[#071629]/70 border-[#1B3557]"
+                : "bg-slate-50/90 border-slate-200"
+            }`}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className={`material-symbols-outlined text-[18px] ${
+                    isDark ? "text-[#38BDF8]" : "text-blue-600"
+                  }`}>
+                    developer_board
+                  </span>
+                  <span className={`text-xs font-bold font-sans ${
+                    isDark ? "text-white" : "text-slate-900"
+                  }`}>
+                    Posisi Modul
+                  </span>
+                  <span className={`text-[11px] font-sans ${
+                    isDark ? "text-[#94A3B8]" : "text-slate-500"
+                  }`}>
+                    (Shelf · Slot · Port)
+                  </span>
+                </div>
+                <span className={`text-[10px] font-semibold font-mono px-2.5 py-0.5 rounded-md border ${
+                  isDark
+                    ? "bg-[#0A1F38] text-[#38BDF8] border-[#1E3A5F]"
+                    : "bg-blue-50 text-blue-700 border-blue-200"
+                }`}>
+                  Shelf {shelf || "1"} · Slot {slot || "-"} · Port {port || "-"}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* 3. SHELF */}
+                <div>
+                  <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                    isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                  }`}>
+                    Shelf
+                  </label>
+                  <div
+                    className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center gap-2.5 text-xs font-medium font-sans transition-all duration-200 cursor-text ${
+                      isDark
+                        ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF]/70 hover:bg-[#0A182B] focus-within:bg-[#0A182B] focus-within:border-[#1677FF] focus-within:ring-2 focus-within:ring-[#1677FF]/25"
+                        : "bg-slate-50 border-slate-200 text-slate-800 hover:border-blue-400 hover:bg-white focus-within:bg-white focus-within:border-[#1677FF] focus-within:ring-2 focus-within:ring-[#1677FF]/20"
+                    }`}
+                  >
+                    <span className={`material-symbols-outlined text-[19px] shrink-0 pointer-events-none transition-colors ${
+                      isDark ? "text-[#38BDF8]" : "text-blue-600"
+                    }`}>
+                      layers
+                    </span>
+                    <input
+                      type="text"
+                      placeholder="1"
+                      value={shelf}
+                      onChange={(e) => setShelf(e.target.value)}
+                      className={`w-full bg-transparent outline-none text-xs font-medium font-sans ${
+                        isDark ? "text-white placeholder-[#64748B]" : "text-slate-900 placeholder-slate-400"
+                      }`}
+                    />
+                  </div>
+                </div>
+
+                {/* 4. NOMOR SLOT */}
+                <div>
+                  <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                    isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                  }`}>
+                    Nomor Slot *
+                  </label>
+                  <div
+                    className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center gap-2.5 text-xs font-medium font-sans transition-all duration-200 cursor-text ${
+                      isDark
+                        ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF]/70 hover:bg-[#0A182B] focus-within:bg-[#0A182B] focus-within:border-[#1677FF] focus-within:ring-2 focus-within:ring-[#1677FF]/25"
+                        : "bg-slate-50 border-slate-200 text-slate-800 hover:border-blue-400 hover:bg-white focus-within:bg-white focus-within:border-[#1677FF] focus-within:ring-2 focus-within:ring-[#1677FF]/20"
+                    }`}
+                  >
+                    <span className={`material-symbols-outlined text-[19px] shrink-0 pointer-events-none transition-colors ${
+                      isDark ? "text-[#38BDF8]" : "text-blue-600"
+                    }`}>
+                      grid_view
+                    </span>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Nomor slot..."
+                      value={slot}
+                      onChange={(e) => setSlot(e.target.value)}
+                      className={`w-full bg-transparent outline-none text-xs font-medium font-sans ${
+                        isDark ? "text-white placeholder-[#64748B]" : "text-slate-900 placeholder-slate-400"
+                      }`}
+                    />
+                  </div>
+                </div>
+
+                {/* 5. PORT */}
+                <div>
+                  <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                    isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                  }`}>
+                    Port
+                  </label>
+                  <div
+                    className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center gap-2.5 text-xs font-medium font-sans transition-all duration-200 cursor-text ${
+                      isDark
+                        ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF]/70 hover:bg-[#0A182B] focus-within:bg-[#0A182B] focus-within:border-[#1677FF] focus-within:ring-2 focus-within:ring-[#1677FF]/25"
+                        : "bg-slate-50 border-slate-200 text-slate-800 hover:border-blue-400 hover:bg-white focus-within:bg-white focus-within:border-[#1677FF] focus-within:ring-2 focus-within:ring-[#1677FF]/20"
+                    }`}
+                  >
+                    <span className={`material-symbols-outlined text-[19px] shrink-0 pointer-events-none transition-colors ${
+                      isDark ? "text-[#38BDF8]" : "text-blue-600"
+                    }`}>
+                      lan
+                    </span>
+                    <input
+                      type="text"
+                      placeholder="-"
+                      value={port}
+                      onChange={(e) => setPort(e.target.value)}
+                      className={`w-full bg-transparent outline-none text-xs font-medium font-sans ${
+                        isDark ? "text-white placeholder-[#64748B]" : "text-slate-900 placeholder-slate-400"
+                      }`}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ROW 3: UNIT TYPE & PART NUMBER */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* 6. UNIT TYPE - Autocomplete Dropdown */}
               <div className="relative" ref={typeDropdownRef}>
                 <label className={`block text-xs font-semibold mb-1.5 font-sans ${
                   isDark ? "text-[#CBD5E1]" : "text-slate-700"
@@ -2344,6 +2903,7 @@ function EditModuleModal({ moduleData, meta, allModules = [], onClose, onSuccess
                   onClick={() => {
                     setShowTypeSuggestions(true);
                     setDeviceDropdownOpen(false);
+                    setLocationDropdownOpen(false);
                     setSerialDropdownOpen(false);
                     typeInputRef.current?.focus();
                   }}
@@ -2377,6 +2937,7 @@ function EditModuleModal({ moduleData, meta, allModules = [], onClose, onSuccess
                       onFocus={() => {
                         setShowTypeSuggestions(true);
                         setDeviceDropdownOpen(false);
+                        setLocationDropdownOpen(false);
                         setSerialDropdownOpen(false);
                       }}
                       className={`w-full bg-transparent outline-none text-xs font-medium font-sans ${
@@ -2412,6 +2973,7 @@ function EditModuleModal({ moduleData, meta, allModules = [], onClose, onSuccess
                         e.stopPropagation();
                         setShowTypeSuggestions(!showTypeSuggestions);
                         setDeviceDropdownOpen(false);
+                        setLocationDropdownOpen(false);
                         setSerialDropdownOpen(false);
                         if (!showTypeSuggestions) {
                           typeInputRef.current?.focus();
@@ -2482,121 +3044,107 @@ function EditModuleModal({ moduleData, meta, allModules = [], onClose, onSuccess
                 )}
               </div>
 
-              {/* 3. SERIAL NUMBER */}
+              {/* 7. PART NUMBER */}
+              <div>
+                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
+                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
+                }`}>
+                  Part Number
+                </label>
+                <div
+                  className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center gap-2.5 text-xs font-medium font-sans transition-all duration-200 cursor-text ${
+                    isDark
+                      ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF]/70 hover:bg-[#0A182B] focus-within:bg-[#0A182B] focus-within:border-[#1677FF] focus-within:ring-2 focus-within:ring-[#1677FF]/25"
+                      : "bg-slate-50 border-slate-200 text-slate-800 hover:border-blue-400 hover:bg-white focus-within:bg-white focus-within:border-[#1677FF] focus-within:ring-2 focus-within:ring-[#1677FF]/20"
+                  }`}
+                >
+                  <span className={`material-symbols-outlined text-[19px] shrink-0 pointer-events-none transition-colors ${
+                    isDark ? "text-[#38BDF8]" : "text-blue-600"
+                  }`}>
+                    tag
+                  </span>
+                  <input
+                    type="text"
+                    placeholder="Part number..."
+                    value={unitPartNumber}
+                    onChange={(e) => setUnitPartNumber(e.target.value)}
+                    className={`w-full bg-transparent outline-none text-xs font-medium font-sans ${
+                      isDark
+                        ? "text-white placeholder-[#64748B]"
+                        : "text-slate-900 placeholder-slate-400"
+                    }`}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* ROW 4: SERIAL NUMBER & TANGGAL PASANG / DATE */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* 8. SERIAL NUMBER */}
               <div>
                 <label className={`block text-xs font-semibold mb-1.5 font-sans ${
                   isDark ? "text-[#CBD5E1]" : "text-slate-700"
                 }`}>
                   Serial Number *
                 </label>
-                <input
-                  type="text"
-                  required
-                  value={serialNumber}
-                  onChange={(e) => setSerialNumber(e.target.value)}
-                  className={`w-full h-11 px-3.5 rounded-xl border text-xs font-medium focus:outline-none focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF] font-sans transition-all ${
+                <div
+                  className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center gap-2.5 text-xs font-medium font-sans transition-all duration-200 cursor-text ${
                     isDark
-                      ? "bg-[#071426] border-[#1E3A5F] text-white placeholder-[#64748B]"
-                      : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white"
+                      ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF]/70 hover:bg-[#0A182B] focus-within:bg-[#0A182B] focus-within:border-[#1677FF] focus-within:ring-2 focus-within:ring-[#1677FF]/25"
+                      : "bg-slate-50 border-slate-200 text-slate-800 hover:border-blue-400 hover:bg-white focus-within:bg-white focus-within:border-[#1677FF] focus-within:ring-2 focus-within:ring-[#1677FF]/20"
                   }`}
-                />
+                >
+                  <span className={`material-symbols-outlined text-[19px] shrink-0 pointer-events-none transition-colors ${
+                    isDark ? "text-[#38BDF8]" : "text-blue-600"
+                  }`}>
+                    memory
+                  </span>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Serial number..."
+                    value={serialNumber}
+                    onChange={(e) => setSerialNumber(e.target.value)}
+                    className={`w-full bg-transparent outline-none text-xs font-medium font-sans ${
+                      isDark
+                        ? "text-white placeholder-[#64748B]"
+                        : "text-slate-900 placeholder-slate-400"
+                    }`}
+                  />
+                </div>
               </div>
 
-              {/* 4. UNIT PART NUMBER */}
-              <div>
-                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
-                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
-                }`}>
-                  Unit Part Number
-                </label>
-                <input
-                  type="text"
-                  value={unitPartNumber}
-                  onChange={(e) => setUnitPartNumber(e.target.value)}
-                  className={`w-full h-11 px-3.5 rounded-xl border text-xs font-medium focus:outline-none focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF] font-sans transition-all ${
-                    isDark
-                      ? "bg-[#071426] border-[#1E3A5F] text-white placeholder-[#64748B]"
-                      : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white"
-                  }`}
-                />
-              </div>
-
-              {/* 5. NOMOR SLOT */}
-              <div>
-                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
-                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
-                }`}>
-                  Nomor Slot *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={slot}
-                  onChange={(e) => setSlot(e.target.value)}
-                  className={`w-full h-11 px-3.5 rounded-xl border text-xs font-medium focus:outline-none focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF] font-sans transition-all ${
-                    isDark
-                      ? "bg-[#071426] border-[#1E3A5F] text-white placeholder-[#64748B]"
-                      : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white"
-                  }`}
-                />
-              </div>
-
-              {/* 6. SHELF */}
-              <div>
-                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
-                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
-                }`}>
-                  Shelf
-                </label>
-                <input
-                  type="text"
-                  value={shelf}
-                  onChange={(e) => setShelf(e.target.value)}
-                  className={`w-full h-11 px-3.5 rounded-xl border text-xs font-medium focus:outline-none focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF] font-sans transition-all ${
-                    isDark
-                      ? "bg-[#071426] border-[#1E3A5F] text-white placeholder-[#64748B]"
-                      : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white"
-                  }`}
-                />
-              </div>
-
-              {/* 7. PORT */}
-              <div>
-                <label className={`block text-xs font-semibold mb-1.5 font-sans ${
-                  isDark ? "text-[#CBD5E1]" : "text-slate-700"
-                }`}>
-                  Port
-                </label>
-                <input
-                  type="text"
-                  value={port}
-                  onChange={(e) => setPort(e.target.value)}
-                  className={`w-full h-11 px-3.5 rounded-xl border text-xs font-medium focus:outline-none focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF] font-sans transition-all ${
-                    isDark
-                      ? "bg-[#071426] border-[#1E3A5F] text-white placeholder-[#64748B]"
-                      : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white"
-                  }`}
-                />
-              </div>
-
-              {/* 8. TANGGAL PASANG / DATE */}
+              {/* 9. TANGGAL PASANG / DATE */}
               <div>
                 <label className={`block text-xs font-semibold mb-1.5 font-sans ${
                   isDark ? "text-[#CBD5E1]" : "text-slate-700"
                 }`}>
                   Tanggal Pasang / Date *
                 </label>
-                <input
-                  type="date"
-                  required
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className={`w-full h-11 px-3.5 rounded-xl border text-xs font-medium focus:outline-none focus:border-[#1677FF] focus:ring-1 focus:ring-[#1677FF] font-sans cursor-pointer transition-all ${
+                <div
+                  className={`relative w-full h-11 px-3.5 rounded-xl border flex items-center gap-2.5 text-xs font-medium font-sans transition-all duration-200 cursor-pointer ${
                     isDark
-                      ? "bg-[#071426] border-[#1E3A5F] text-white [color-scheme:dark]"
-                      : "bg-slate-50 border-slate-200 text-slate-900 [color-scheme:light] focus:bg-white"
+                      ? "bg-[#071426] border-[#1E3A5F] text-[#E6EDF7] hover:border-[#1677FF]/70 hover:bg-[#0A182B] focus-within:bg-[#0A182B] focus-within:border-[#1677FF] focus-within:ring-2 focus-within:ring-[#1677FF]/25"
+                      : "bg-slate-50 border-slate-200 text-slate-800 hover:border-blue-400 hover:bg-white focus-within:bg-white focus-within:border-[#1677FF] focus-within:ring-2 focus-within:ring-[#1677FF]/20"
                   }`}
-                />
+                >
+                  <span className={`material-symbols-outlined text-[19px] shrink-0 pointer-events-none transition-colors ${
+                    isDark ? "text-[#38BDF8]" : "text-blue-600"
+                  }`}>
+                    calendar_today
+                  </span>
+                  <input
+                    type="date"
+                    required
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className={`w-full bg-transparent outline-none text-xs font-medium font-sans cursor-pointer ${
+                      isDark
+                        ? "text-white [color-scheme:dark]"
+                        : "text-slate-900 [color-scheme:light]"
+                    }`}
+                  />
+                </div>
               </div>
             </div>
 
@@ -2645,7 +3193,6 @@ function EditModuleModal({ moduleData, meta, allModules = [], onClose, onSuccess
   );
 }
 
-// ==============================================================
 // SUBCOMPONENT: DETAIL MODULE MODAL
 // ==============================================================
 function DetailModuleModal({ item, loading, onClose }) {
@@ -2760,7 +3307,7 @@ function DetailModuleModal({ item, loading, onClose }) {
                   </div>
                   <div>
                     <span className={`text-[11px] block ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
-                      Unit Part Number
+                      Part Number
                     </span>
                     <span className={`font-mono ${isDark ? "text-[#CBD5E1]" : "text-slate-600"}`}>
                       {item.unit_part_number || "-"}

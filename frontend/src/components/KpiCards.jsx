@@ -5,10 +5,10 @@ export default function KpiCards({ kpi }) {
   const { isDark } = useTheme();
 
   const totalDevices = kpi?.total_devices ?? 0;
-  const totalLocations = kpi?.total_locations ?? 2;
+  const totalLocations = kpi?.total_locations ?? 0;
   const modulTerpasang = kpi?.modul_terpasang ?? 0;
   const totalMutasi = kpi?.total_mutasi ?? 0;
-  const activePercentage = kpi?.active_percentage ?? 100;
+  const activePercentage = kpi?.active_percentage ?? 0;
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import infranexiaLogo from "../assets/infranexia_logo.png";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -146,14 +147,30 @@ export default function RegisterPage() {
         <div style={styles.left}>
           {/* Logo Header */}
           <div style={styles.logo}>
-            <div style={styles.logoIcon}>
-              <span className="material-symbols-outlined" style={{ fontSize: 22, color: "#fff" }}>
-                hub
-              </span>
+            <div
+              style={{
+                width: 38,
+                height: 38,
+                padding: 2,
+                borderRadius: 11,
+                background: "#ffffff",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 4px 14px rgba(0,0,0,0.25)",
+                flexShrink: 0,
+                overflow: "hidden",
+              }}
+            >
+              <img
+                src={infranexiaLogo}
+                alt="infraNexia by Telkom Indonesia"
+                style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+              />
             </div>
             <div>
               <div style={styles.logoTitle}>Asset Lifecycle</div>
-              <div style={styles.logoSub}>TELKOM INFRASTRUCTURE</div>
+              <div style={styles.logoSub}>PT TELKOM INFRASTRUKTUR</div>
             </div>
           </div>
 
