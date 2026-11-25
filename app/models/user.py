@@ -15,12 +15,15 @@ class User(db.Model, UserMixin):
     district = db.Column(db.String(100))
     status = db.Column(db.String(20), default="aktif")  # 'aktif' / 'pending'
     avatar_path = db.Column(db.String(255), nullable=True)  # path relatif ke static/avatars/
+
+    # 2FA Telegram OTP & Freeze Policy
     telegram_chat_id = db.Column(db.String(50), nullable=True)
     telegram_username = db.Column(db.String(100), nullable=True)
     otp_code = db.Column(db.String(10), nullable=True)
     otp_expires_at = db.Column(db.DateTime, nullable=True)
     otp_failed_attempts = db.Column(db.Integer, default=0)
     otp_locked_until = db.Column(db.DateTime, nullable=True)
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
 

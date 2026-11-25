@@ -1,28 +1,38 @@
 """
 Telegram Bot Auto-Responder Daemon.
-Berjalan otomatis sebagai background thread di Flask application.
-Secara otomatis membalas setiap pesan /start atau chat yang masuk ke @asset_telkom_otp_bot
+Berjalan otomatis sebagai background thread di aplikasi Flask apabila
+TELEGRAM_BOT_TOKEN tersedia di environment variable.
+Secara otomatis membalas setiap pesan /start atau chat yang masuk ke bot
 secara real-time dengan memberikan nomor Chat ID unik pengguna.
 """
-import time
-import threading
 import html
-import urllib.request
-import urllib.parse
 import json
+import logging
+import os
+import threading
+import time
+import urllib.parse
+import urllib.request
 
-TELEGRAM_BOT_TOKEN = "9163519875:AAFic1fh5oYstTFc5cdPVCcG0c1ZVNo8yU8"
+logger = logging.getLogger(__name__)
+
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 _daemon_started = False
 _lock = threading.Lock()
 
 
-def _telegram_worker():
-    print("[Telegram Bot Daemon] Service started listening for updates...")
+def _get_bot_token():
+    """Mengambil token bot Telegram dari environment variable atau modul konfigurasi."""
+    return (os.environ.get("TELEGRAM_BOT_TOKEN") or TELEGRAM_BOT_TOKEN or "").strip()
+
+
+def _telegram_worker(token):
+    logger.info("[Telegram Bot Daemon] Service started listening for updates...")
     offset = 0
 
     while True:
         try:
-            url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getUpdates?offset={offset}&timeout=15"
+            url = f"https://api.telegram.org/bot{token}/getUpdates?offset={offset}&timeout=15"
             req = urllib.request.Request(url)
             with urllib.request.urlopen(req, timeout=20) as response:
                 res_data = json.loads(response.read().decode("utf-8"))
@@ -60,7 +70,7 @@ def _telegram_worker():
                         f"<i>Pesan ini dikirim otomatis oleh sistem Asset Lifecycle Telkom.</i>"
                     )
 
-                    send_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+                    send_url = f"https://api.telegram.org/bot{token}/sendMessage"
                     payload = {
                         "chat_id": str(chat_id),
                         "text": reply_html,
@@ -69,21 +79,32 @@ def _telegram_worker():
                     data = urllib.parse.urlencode(payload).encode("utf-8")
                     send_req = urllib.request.Request(send_url, data=data, method="POST")
                     try:
-                        with urllib.request.urlopen(send_req, timeout=10) as s_res:
-                            print(f"[Telegram Bot Daemon] Replied to {full_name} ({chat_id}) successfully.")
+                        with urllib.request.urlopen(send_req, timeout=10):
+                            logger.info("[Telegram Bot Daemon] Replied to %s (%s) successfully.", full_name, chat_id)
                     except Exception as err:
-                        print(f"[Telegram Bot Daemon] Error sending to {chat_id}: {err}")
-        except Exception as e:
-            # Jika timeout getUpdates atau koneksi sejenak terputus
-            time.sleep(2)
+                        logger.warning("[Telegram Bot Daemon] Error sending to %s: %s", chat_id, err)
+        except Exception as err:
+            # Jika timeout getUpdates, gangguan jaringan, atau error API sementara, jangan hentikan Flask
+            logger.debug("[Telegram Bot Daemon] Polling error (retrying): %s", err)
+            time.sleep(5)
 
 
 def start_telegram_daemon():
-    """Memulai worker thread background Telegram daemon sekali saja."""
+    """Memulai thread polling Telegram bot sekali saja apabila TELEGRAM_BOT_TOKEN tersedia."""
     global _daemon_started
+    token = _get_bot_token()
+    if not token:
+        logger.info("TELEGRAM_BOT_TOKEN tidak ditemukan di environment. Telegram daemon tidak dijalankan.")
+        return
+
     with _lock:
         if not _daemon_started:
-            t = threading.Thread(target=_telegram_worker, daemon=True, name="TelegramBotDaemon")
+            t = threading.Thread(
+                target=_telegram_worker,
+                args=(token,),
+                daemon=True,
+                name="TelegramBotDaemon",
+            )
             t.start()
             _daemon_started = True
-            print("[Telegram Bot Daemon] Thread spawned successfully.")
+            logger.info("[Telegram Bot Daemon] Thread spawned successfully.")
