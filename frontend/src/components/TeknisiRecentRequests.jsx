@@ -5,55 +5,7 @@ export default function TeknisiRecentRequests({ requests }) {
   const { isDark } = useTheme();
   const [expanded, setExpanded] = useState(false);
 
-  const defaultRequests = [
-    {
-      id: 1,
-      title: "Perpindahan Modul SFP",
-      description: "Modul SFP-10G-01 · Lokasi Tujuan: Palu",
-      date: "12 Apr 2026 09:15",
-      badge: "Menunggu",
-      badge_color: "amber",
-      status_raw: "PENDING",
-    },
-    {
-      id: 2,
-      title: "Perpindahan Modul DCU",
-      description: "Modul DCU-40G-02 · Lokasi Tujuan: Donggala",
-      date: "10 Apr 2026 14:32",
-      badge: "Disetujui",
-      badge_color: "emerald",
-      status_raw: "APPROVED",
-    },
-    {
-      id: 3,
-      title: "Perpindahan Modul OLT",
-      description: "Modul OLT-100G-01 · Lokasi Tujuan: Palu",
-      date: "08 Apr 2026 11:05",
-      badge: "Ditolak",
-      badge_color: "rose",
-      status_raw: "REJECTED",
-    },
-    {
-      id: 4,
-      title: "Perpindahan Modul SFP",
-      description: "Modul SFP-10G-05 · Lokasi Tujuan: Donggala",
-      date: "05 Apr 2026 08:47",
-      badge: "Disetujui",
-      badge_color: "emerald",
-      status_raw: "APPROVED",
-    },
-    {
-      id: 5,
-      title: "Perpindahan Modul DCU",
-      description: "Modul DCU-40G-09 · Lokasi Tujuan: Palu",
-      date: "01 Apr 2026 16:20",
-      badge: "Menunggu",
-      badge_color: "amber",
-      status_raw: "PENDING",
-    },
-  ];
-
-  const list = requests && requests.length > 0 ? requests : defaultRequests;
+  const list = Array.isArray(requests) ? requests : [];
   const displayItems = expanded ? list : list.slice(0, 5);
 
   const getThemeStyles = (colorType) => {
@@ -108,7 +60,7 @@ export default function TeknisiRecentRequests({ requests }) {
 
   return (
     <div
-      className={`rounded-2xl border shadow-sm p-5 transition-colors duration-300 ${
+      className={`rounded-2xl border shadow-sm p-5 transition-colors duration-300 overflow-hidden ${
         isDark
           ? "bg-[#0D1F36] border-[#1E3A5F] text-[#E6EDF7]"
           : "bg-white border-slate-200 text-slate-900 shadow-sm"
@@ -159,7 +111,11 @@ export default function TeknisiRecentRequests({ requests }) {
           isDark ? "divide-[#1A2E4C]" : "divide-slate-100"
         }`}
       >
-        {displayItems.map((item) => {
+        {displayItems.length === 0 ? (
+          <div className={`py-8 text-center text-xs ${isDark ? "text-[#94A3B8]" : "text-slate-500"}`}>
+            Belum ada pengajuan mutasi modul tercatat di database.
+          </div>
+        ) : displayItems.map((item) => {
           const { iconClass, badgeClass, dotColor, iconName } = getThemeStyles(
             item.badge_color
           );
@@ -167,7 +123,7 @@ export default function TeknisiRecentRequests({ requests }) {
           return (
             <div
               key={item.id}
-              className={`py-3 flex items-center justify-between rounded-xl px-2.5 -mx-2.5 transition-colors gap-4 ${
+              className={`py-3 px-3 flex items-center justify-between rounded-xl transition-colors gap-3 sm:gap-4 ${
                 isDark ? "hover:bg-[#122846]/60" : "hover:bg-slate-50"
               }`}
             >
@@ -180,7 +136,7 @@ export default function TeknisiRecentRequests({ requests }) {
                     {iconName}
                   </span>
                 </div>
-                <div className="truncate">
+                <div className="min-w-0 flex-1 truncate">
                   <p className="text-xs font-semibold leading-snug truncate">
                     {item.title}
                   </p>
@@ -194,11 +150,11 @@ export default function TeknisiRecentRequests({ requests }) {
                 </div>
               </div>
 
-              {/* Kolom Kanan: Tanggal & Waktu Sejajar Rapi (w-36 text-left) + Badge Status (w-28) */}
-              <div className="flex items-center gap-4 shrink-0">
+              {/* Kolom Kanan: Tanggal & Waktu Sejajar Rapi + Badge Status (Auto-fit tidak terpotong) */}
+              <div className="flex items-center gap-3 sm:gap-4 shrink-0 pl-2">
                 {/* Tanggal + Waktu: dua baris, date di atas, time di bawah */}
                 <div
-                  className={`font-mono w-36 shrink-0 text-left ${
+                  className={`font-mono shrink-0 text-right ${
                     isDark ? "text-[#94A3B8]" : "text-slate-500"
                   }`}
                 >
@@ -228,14 +184,15 @@ export default function TeknisiRecentRequests({ requests }) {
                   })()}
                 </div>
 
-                <div className="w-28 flex justify-center shrink-0">
+                <div className="min-w-[80px] max-w-[140px] flex justify-end shrink-0">
                   <span
-                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1.5 whitespace-nowrap ${badgeClass}`}
+                    title={item.badge}
+                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1.5 max-w-full truncate ${badgeClass}`}
                   >
                     <span
                       className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotColor}`}
                     ></span>
-                    {item.badge}
+                    <span className="truncate">{item.badge}</span>
                   </span>
                 </div>
               </div>

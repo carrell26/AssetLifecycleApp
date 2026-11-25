@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
+import infranexiaLogo from "../assets/infranexia_logo.png";
 
 export default function LoginPage() {
   const [step, setStep] = useState("login"); // "login" | "otp"
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
-  const [remember, setRemember] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -81,7 +81,7 @@ export default function LoginPage() {
       const res = await fetch("/auth/login-api", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, remember }),
+        body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
       if (data.success) {
@@ -144,7 +144,7 @@ export default function LoginPage() {
       const res = await fetch("/auth/verify-otp-api", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp: finalOtp, remember }),
+        body: JSON.stringify({ email, otp: finalOtp }),
       });
       const data = await res.json();
       if (data.success) {
@@ -334,41 +334,6 @@ export default function LoginPage() {
           border-color: #1677FF !important;
           box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.25) !important;
         }
-        .login-custom-checkbox {
-          appearance: none;
-          -webkit-appearance: none;
-          width: 16px;
-          height: 16px;
-          background-color: #0b1a2e;
-          border: 1px solid #1e3a5f !important;
-          border-radius: 4px;
-          cursor: pointer;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          position: relative;
-          transition: all 0.2s ease;
-          flex-shrink: 0;
-          margin: 0;
-        }
-        .login-custom-checkbox:hover {
-          box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.25);
-          border-color: #1677FF !important;
-        }
-        .login-custom-checkbox:checked {
-          background-color: #1677FF;
-          border-color: #1677FF !important;
-        }
-        .login-custom-checkbox:checked::after {
-          content: "";
-          position: absolute;
-          width: 4px;
-          height: 8px;
-          border: solid #ffffff;
-          border-width: 0 2px 2px 0;
-          transform: rotate(45deg);
-          margin-top: -2px;
-        }
         .otp-box {
           width: 44px;
           height: 52px;
@@ -401,14 +366,30 @@ export default function LoginPage() {
         <div style={styles.left}>
           {/* 1. Logo ditengahkan */}
           <div style={styles.logo}>
-            <div style={styles.logoIcon}>
-              <span className="material-symbols-outlined" style={{ fontSize: 22, color: "#fff" }}>
-                hub
-              </span>
+            <div
+              style={{
+                width: 38,
+                height: 38,
+                padding: 2,
+                borderRadius: 11,
+                background: "#ffffff",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 4px 14px rgba(0,0,0,0.25)",
+                flexShrink: 0,
+                overflow: "hidden",
+              }}
+            >
+              <img
+                src={infranexiaLogo}
+                alt="infraNexia by Telkom Indonesia"
+                style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+              />
             </div>
             <div>
               <div style={styles.logoTitle}>Asset Lifecycle</div>
-              <div style={styles.logoSub}>TELKOM INFRASTRUCTURE</div>
+              <div style={styles.logoSub}>PT TELKOM INFRASTRUKTUR</div>
             </div>
           </div>
 
@@ -448,7 +429,7 @@ export default function LoginPage() {
                 </div>
 
                 {/* Password */}
-                <div style={styles.formGroup}>
+                <div style={{ ...styles.formGroup, marginBottom: 22 }}>
                   <label style={styles.label} htmlFor="password">
                     Password
                   </label>
@@ -480,19 +461,6 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                {/* Checkbox Ingat saya */}
-                <div style={styles.formRow}>
-                  <label style={styles.checkboxWrap}>
-                    <input
-                      type="checkbox"
-                      checked={remember}
-                      onChange={(e) => setRemember(e.target.checked)}
-                      className="login-custom-checkbox"
-                    />
-                    <span style={{ fontSize: 12, color: "#94A3B8", userSelect: "none" }}>Ingat saya</span>
-                  </label>
-                </div>
-
                 {/* Tombol Masuk */}
                 <button
                   type="submit"
@@ -512,7 +480,15 @@ export default function LoginPage() {
               <h1 style={styles.heading}>Verifikasi Kode OTP</h1>
               <p style={{ ...styles.subtext, marginBottom: 16 }}>
                 Kode 6-digit telah dikirimkan ke Telegram{" "}
-                <span style={{ color: "#38BDF8", fontWeight: 600 }}>{telegramDisplay}</span>
+                <span style={{ color: "#38BDF8", fontWeight: 600 }}>
+                  {telegramDisplay && telegramDisplay !== "Telegram Terdaftar"
+                    ? telegramDisplay.startsWith("@")
+                      ? telegramDisplay
+                      : telegramDisplay.includes(" ")
+                      ? telegramDisplay
+                      : `@${telegramDisplay}`
+                    : "terdaftar Anda"}
+                </span>
               </p>
 
               {/* Flash Messages */}
@@ -927,20 +903,6 @@ const styles = {
     display: "flex",
     alignItems: "center",
     padding: 0,
-  },
-  formRow: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    gap: 8,
-    marginBottom: 20,
-    marginTop: 6,
-  },
-  checkboxWrap: {
-    display: "flex",
-    alignItems: "center",
-    gap: 7,
-    cursor: "pointer",
   },
   btnLogin: {
     width: "100%",

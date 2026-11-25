@@ -9,6 +9,7 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
   const { isDark } = useTheme();
   const [movements, setMovements] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [stats, setStats] = useState({
     total: 0,
@@ -206,9 +207,10 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
 
   const canMutate = user?.role === "admin" || user?.role === "karyawan_tif";
 
-  const fetchMovements = useCallback(async () => {
+  const fetchMovements = useCallback(async (isManualRefresh = false) => {
     try {
       setLoading(true);
+      if (isManualRefresh) setRefreshing(true);
       setError(null);
       const params = new URLSearchParams();
       if (searchValue) params.append("q", searchValue);
@@ -236,6 +238,10 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
       console.error("Fetch movements error:", err);
       setError("Terjadi kesalahan jaringan saat memuat riwayat mutasi.");
     } finally {
+      if (isManualRefresh) {
+        await new Promise((r) => setTimeout(r, 500));
+        setRefreshing(false);
+      }
       setLoading(false);
     }
   }, [searchValue, jenisFilter, deviceFilter]);
@@ -265,6 +271,18 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
     window.addEventListener("focus", handleFocus);
     return () => window.removeEventListener("focus", handleFocus);
   }, [fetchMovements]);
+
+  // Close modals on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        if (selectedMovementDetail) setSelectedMovementDetail(null);
+        if (moveModalOpen) setMoveModalOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedMovementDetail, moveModalOpen]);
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -581,20 +599,20 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
               )}
             </div>
 
-            {/* Refresh Button */}
+            {/* Refresh Button - Ikon saja tanpa teks 'Segarkan' */}
             <button
               type="button"
-              onClick={fetchMovements}
-              title="Muat ulang data"
-              className={`h-11 px-3.5 rounded-xl border flex items-center gap-1.5 text-xs font-semibold transition-all cursor-pointer ${isDark
+              onClick={() => fetchMovements(true)}
+              disabled={loading || refreshing}
+              title="Segarkan data"
+              className={`h-11 w-11 rounded-xl border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${isDark
                 ? "bg-[#0A182B] border-[#1E3A5F] text-[#94A3B8] hover:text-white hover:border-[#1677FF]"
                 : "bg-slate-50 border-slate-300 text-slate-600 hover:text-slate-900 hover:border-blue-500"
-                }`}
+                } ${loading || refreshing ? "opacity-60 cursor-not-allowed" : "active:scale-95"}`}
             >
-              <span className={`material-symbols-outlined text-[18px] ${loading ? "animate-spin text-[#1677FF]" : ""}`}>
+              <span className={`material-symbols-outlined text-[19px] ${loading || refreshing ? "animate-spin text-[#1677FF]" : ""}`}>
                 refresh
               </span>
-              <span>Segarkan</span>
             </button>
           </div>
         </div>
@@ -603,19 +621,19 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
         <div className="overflow-x-auto custom-scrollbar rounded-t-xl">
           <table
             id="moduleMovementTable"
-            className="w-full text-left border-collapse min-w-[1140px] table-fixed"
+            className="w-full text-left border-collapse table-fixed"
             style={{ tableLayout: "fixed", width: "100%" }}
           >
             <colgroup>
-              <col style={{ width: "3.5%" }} />
+              <col style={{ width: "3%" }} />
               <col style={{ width: "12%" }} />
-              <col style={{ width: "11%" }} />
-              <col style={{ width: "10%" }} />
-              <col style={{ width: "12.5%" }} />
-              <col style={{ width: "12.5%" }} />
               <col style={{ width: "10.5%" }} />
+              <col style={{ width: "9%" }} />
+              <col style={{ width: "15%" }} />
+              <col style={{ width: "15%" }} />
+              <col style={{ width: "8.5%" }} />
+              <col style={{ width: "11.5%" }} />
               <col style={{ width: "11%" }} />
-              <col style={{ width: "12.5%" }} />
               <col style={{ width: "4.5%" }} />
             </colgroup>
             <thead className={`rounded-t-xl ${isDark ? "bg-[#071426]" : "bg-slate-50"}`}>
@@ -627,8 +645,8 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
               >
                 {/* No Index: Selaras Warna Biru & Sudut Kiri Melengkung */}
                 <th
-                  className="py-3 px-3 text-center select-none rounded-tl-xl"
-                  style={{ width: "3.5%" }}
+                  className="py-3 px-2.5 text-center select-none rounded-tl-xl"
+                  style={{ width: "3%" }}
                 >
                   <span className={`font-extrabold uppercase tracking-wider text-[11px] ${isDark ? "text-[#38BDF8]" : "text-blue-600"}`}>
                     No
@@ -636,7 +654,7 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
                 </th>
                 <th
                   onClick={() => handleSort("tanggal")}
-                  className="py-3 px-3.5 text-left select-none cursor-pointer"
+                  className="py-3 px-2.5 text-left select-none cursor-pointer"
                   style={{ width: "12%" }}
                 >
                   <TableSortHeader
@@ -650,8 +668,8 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
                 </th>
                 <th
                   onClick={() => handleSort("serial_number")}
-                  className="py-3 px-3.5 text-left select-none cursor-pointer"
-                  style={{ width: "11%" }}
+                  className="py-3 px-2.5 text-left select-none cursor-pointer"
+                  style={{ width: "10.5%" }}
                 >
                   <TableSortHeader
                     title="SERIAL NUMBER"
@@ -665,8 +683,8 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
                 {/* Kolom UNIT TYPE disamping kanan SERIAL NUMBER */}
                 <th
                   onClick={() => handleSort("unit_type")}
-                  className="py-3 px-3.5 text-left select-none cursor-pointer"
-                  style={{ width: "10%" }}
+                  className="py-3 px-2.5 text-left select-none cursor-pointer"
+                  style={{ width: "9%" }}
                 >
                   <TableSortHeader
                     title="UNIT TYPE"
@@ -677,11 +695,11 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
                     isDark={isDark}
                   />
                 </th>
-                {/* POSISI ASAL: 12.5% agar hostname single-line rapi pada zoom 100% */}
+                {/* POSISI ASAL */}
                 <th
                   onClick={() => handleSort("from_hostname")}
-                  className="py-3 px-3.5 text-left select-none cursor-pointer"
-                  style={{ width: "12.5%" }}
+                  className="py-3 px-2.5 text-left select-none cursor-pointer"
+                  style={{ width: "15%" }}
                 >
                   <TableSortHeader
                     title="POSISI ASAL"
@@ -692,11 +710,11 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
                     isDark={isDark}
                   />
                 </th>
-                {/* POSISI TUJUAN: 12.5% agar hostname single-line rapi pada zoom 100% */}
+                {/* POSISI TUJUAN */}
                 <th
                   onClick={() => handleSort("to_hostname")}
-                  className="py-3 px-3.5 text-left select-none cursor-pointer"
-                  style={{ width: "12.5%" }}
+                  className="py-3 px-2.5 text-left select-none cursor-pointer"
+                  style={{ width: "15%" }}
                 >
                   <TableSortHeader
                     title="POSISI TUJUAN"
@@ -707,11 +725,11 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
                     isDark={isDark}
                   />
                 </th>
-                {/* AKTIVITAS: 10.5% agar badge tidak mepet dengan Pelaksana */}
+                {/* AKTIVITAS */}
                 <th
                   onClick={() => handleSort("jenis_perubahan")}
-                  className="py-3 px-3 text-center select-none cursor-pointer"
-                  style={{ width: "10.5%" }}
+                  className="py-3 px-2.5 text-center select-none cursor-pointer"
+                  style={{ width: "8.5%" }}
                 >
                   <TableSortHeader
                     title="AKTIVITAS"
@@ -722,11 +740,11 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
                     isDark={isDark}
                   />
                 </th>
-                {/* PELAKSANA: 11% dengan pl-6 untuk jeda lega terhadap badge Aktivitas */}
+                {/* PELAKSANA */}
                 <th
                   onClick={() => handleSort("actor_name")}
-                  className="py-3 pl-6 pr-3 text-left select-none cursor-pointer"
-                  style={{ width: "11%" }}
+                  className="py-3 px-2.5 text-left select-none cursor-pointer"
+                  style={{ width: "11.5%" }}
                 >
                   <TableSortHeader
                     title="PELAKSANA"
@@ -739,8 +757,8 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
                 </th>
                 <th
                   onClick={() => handleSort("keterangan")}
-                  className="py-3 px-3.5 text-left select-none cursor-pointer"
-                  style={{ width: "12.5%" }}
+                  className="py-3 px-2.5 text-left select-none cursor-pointer"
+                  style={{ width: "11%" }}
                 >
                   <TableSortHeader
                     title="KETERANGAN"
@@ -753,7 +771,7 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
                 </th>
                 {/* Kolom AKSI: Selaras Warna Biru & Sudut Kanan Melengkung */}
                 <th
-                  className="py-3 px-3 text-center select-none rounded-tr-xl"
+                  className="py-3 px-2.5 text-center select-none rounded-tr-xl"
                   style={{ width: "4.5%" }}
                 >
                   <span className={`font-extrabold uppercase tracking-wider text-[11px] ${isDark ? "text-[#38BDF8]" : "text-blue-600"}`}>
@@ -766,7 +784,7 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
               className={`divide-y text-xs ${isDark ? "divide-[#0F2238]" : "divide-slate-100"
                 }`}
             >
-              {loading ? (
+              {loading || refreshing ? (
                 <tr>
                   <td colSpan="10" className="py-14 text-center text-slate-400">
                     <div className="flex flex-col items-center justify-center gap-2">
@@ -809,24 +827,24 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
                         }`}
                     >
                       {/* # Index */}
-                      <td className="py-3 px-4 text-center font-mono text-slate-400 dark:text-[#64748B] text-xs font-semibold">
+                      <td className="py-3 px-2.5 text-center font-mono text-slate-400 dark:text-[#64748B] text-xs font-semibold">
                         {rowNum}
                       </td>
 
                       {/* Waktu */}
-                      <td className="py-3 px-4 font-mono text-xs text-slate-600 dark:text-[#CBD5E1] whitespace-nowrap">
+                      <td className="py-3 px-2.5 font-mono text-xs text-slate-600 dark:text-[#CBD5E1] whitespace-nowrap">
                         {m.tanggal}
                       </td>
 
                       {/* SERIAL NUMBER */}
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-2.5">
                         <div className={`font-semibold font-mono ${isDark ? "text-white" : "text-slate-900"}`}>
                           {m.serial_number}
                         </div>
                       </td>
 
                       {/* UNIT TYPE (Kolom Disamping Kanan Serial Number - Light & Dark Mode Adapted) */}
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-2.5">
                         <div className={`font-semibold ${isDark ? "text-slate-200" : "text-slate-800"}`}>
                           {m.unit_type || "-"}
                         </div>
@@ -838,19 +856,19 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
                       </td>
 
                       {/* Posisi Asal */}
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-2.5">
                         {m.from_hostname !== "-" ? (
                           <div className="space-y-0.5">
                             <div className={`font-semibold whitespace-nowrap ${isDark ? "text-white" : "text-slate-900"}`}>
                               {m.from_hostname}
                             </div>
-                            <div className={`text-[11px] font-mono whitespace-nowrap ${isDark ? "text-[#38BDF8]" : "text-blue-600 font-medium"}`}>
+                            <div className={`text-[11px] font-mono whitespace-nowrap tracking-tight ${isDark ? "text-[#38BDF8]" : "text-blue-600 font-medium"}`}>
                               Slot {m.from_slot}
                               {m.from_shelf && m.from_shelf !== "-" && ` · Shelf ${m.from_shelf}`}
                               {m.from_port && m.from_port !== "-" && ` · Port ${m.from_port}`}
                             </div>
                             <div className={`text-[10px] whitespace-nowrap ${isDark ? "text-[#64748B]" : "text-slate-500"}`}>
-                              {m.from_location_name}
+                              {m.from_location_name}{m.from_kode_site && m.from_kode_site !== "-" ? ` · ${m.from_kode_site}` : ""}
                             </div>
                           </div>
                         ) : (
@@ -861,19 +879,19 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
                       </td>
 
                       {/* Posisi Tujuan */}
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-2.5">
                         {m.to_hostname !== "-" ? (
                           <div className="space-y-0.5">
                             <div className={`font-semibold whitespace-nowrap ${isDark ? "text-white" : "text-slate-900"}`}>
                               {m.to_hostname}
                             </div>
-                            <div className={`text-[11px] font-mono whitespace-nowrap ${isDark ? "text-[#38BDF8]" : "text-blue-600 font-medium"}`}>
+                            <div className={`text-[11px] font-mono whitespace-nowrap tracking-tight ${isDark ? "text-[#38BDF8]" : "text-blue-600 font-medium"}`}>
                               Slot {m.to_slot}
                               {m.to_shelf && m.to_shelf !== "-" && ` · Shelf ${m.to_shelf}`}
                               {m.to_port && m.to_port !== "-" && ` · Port ${m.to_port}`}
                             </div>
                             <div className={`text-[10px] whitespace-nowrap ${isDark ? "text-[#64748B]" : "text-slate-500"}`}>
-                              {m.to_location_name}
+                              {m.to_location_name}{m.to_kode_site && m.to_kode_site !== "-" ? ` · ${m.to_kode_site}` : ""}
                             </div>
                           </div>
                         ) : (
@@ -884,12 +902,12 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
                       </td>
 
                       {/* Aktivitas Badge */}
-                      <td className="py-3 px-3 text-center whitespace-nowrap">
+                      <td className="py-3 px-2.5 text-center whitespace-nowrap">
                         {renderAktivitasBadge(m.jenis_perubahan)}
                       </td>
 
                       {/* Pelaksana */}
-                      <td className="py-3 pl-6 pr-3 whitespace-nowrap">
+                      <td className="py-3 px-2.5 whitespace-nowrap">
                         <div className="inline-flex items-center gap-2 truncate">
                           {(() => {
                             const isSelf = user && (user.name === m.actor_name || user.user_id === m.user_id);
@@ -928,12 +946,12 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
                       </td>
 
                       {/* Keterangan */}
-                      <td className="py-3 px-4 truncate text-slate-500 dark:text-[#94A3B8]" title={m.keterangan}>
+                      <td className="py-3 px-2.5 truncate text-slate-500 dark:text-[#94A3B8]" title={m.keterangan}>
                         {m.keterangan || "-"}
                       </td>
 
                       {/* Detail Action Button (Ikon Mata) */}
-                      <td className="py-3 px-4 text-center whitespace-nowrap">
+                      <td className="py-3 px-2.5 text-center whitespace-nowrap">
                         <button
                           type="button"
                           onClick={() => setSelectedMovementDetail(m)}
@@ -972,9 +990,13 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
       {/* ── MODAL DETAIL MUTASI MODUL (MATCHING AUDIT LOG DETAIL MODAL) ── */}
       {selectedMovementDetail && (
         <ModalPortal>
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
+          <div
+            onClick={() => setSelectedMovementDetail(null)}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn cursor-pointer"
+          >
             <div
-              className={`w-full max-w-2xl rounded-2xl border shadow-2xl overflow-hidden flex flex-col max-h-[90vh] transition-all duration-300 ${isDark
+              onClick={(e) => e.stopPropagation()}
+              className={`w-full max-w-2xl rounded-2xl border shadow-2xl overflow-hidden flex flex-col max-h-[90vh] transition-all duration-300 cursor-default ${isDark
                 ? "border-[#1E3A5F] bg-[#0A182B] text-[#E6EDF7]"
                 : "border-slate-200 bg-white text-slate-800"
                 }`}
@@ -1014,40 +1036,45 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
 
               {/* Modal Body */}
               <div className="p-5 overflow-y-auto space-y-4 custom-scrollbar">
-                {/* 4 KPI Quick Summary */}
+                {/* 4 KPI Quick Summary (Tersusun Horizontal Sebaris & Rata Sempurna) */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  {/* Card 1: Waktu Mutasi */}
                   <div
-                    className={`p-3 rounded-xl border flex flex-col justify-between ${isDark ? "border-[#1E3A5F] bg-[#071426]" : "border-slate-200 bg-slate-50"
+                    className={`p-3 rounded-xl border flex flex-col justify-between h-[74px] ${isDark ? "border-[#1E3A5F] bg-[#071426]" : "border-slate-200 bg-slate-50"
                       }`}
                   >
-                    <span className={`text-[10px] uppercase font-bold tracking-wider ${isDark ? "text-[#64748B]" : "text-slate-500"}`}>
+                    <span className={`text-[10px] uppercase font-bold tracking-wider leading-none ${isDark ? "text-[#64748B]" : "text-slate-500"}`}>
                       Waktu Mutasi
                     </span>
-                    <span className={`font-mono text-xs font-semibold mt-1 ${isDark ? "text-white" : "text-slate-900"}`}>
-                      {selectedMovementDetail.tanggal}
-                    </span>
+                    <div className="h-7 flex items-center">
+                      <span className={`font-mono text-[11px] font-semibold whitespace-nowrap ${isDark ? "text-white" : "text-slate-900"}`}>
+                        {selectedMovementDetail.tanggal}
+                      </span>
+                    </div>
                   </div>
 
+                  {/* Card 2: Jenis Aktivitas */}
                   <div
-                    className={`p-3 rounded-xl border flex flex-col justify-between ${isDark ? "border-[#1E3A5F] bg-[#071426]" : "border-slate-200 bg-slate-50"
+                    className={`p-3 rounded-xl border flex flex-col justify-between h-[74px] ${isDark ? "border-[#1E3A5F] bg-[#071426]" : "border-slate-200 bg-slate-50"
                       }`}
                   >
-                    <span className={`text-[10px] uppercase font-bold tracking-wider ${isDark ? "text-[#64748B]" : "text-slate-500"}`}>
+                    <span className={`text-[10px] uppercase font-bold tracking-wider leading-none ${isDark ? "text-[#64748B]" : "text-slate-500"}`}>
                       Jenis Aktivitas
                     </span>
-                    <div className="mt-1">
+                    <div className="h-7 flex items-center">
                       {renderAktivitasBadge(selectedMovementDetail.jenis_perubahan)}
                     </div>
                   </div>
 
+                  {/* Card 3: Pelaksana */}
                   <div
-                    className={`p-3 rounded-xl border flex flex-col justify-between ${isDark ? "border-[#1E3A5F] bg-[#071426]" : "border-slate-200 bg-slate-50"
+                    className={`p-3 rounded-xl border flex flex-col justify-between h-[74px] ${isDark ? "border-[#1E3A5F] bg-[#071426]" : "border-slate-200 bg-slate-50"
                       }`}
                   >
-                    <span className={`text-[10px] uppercase font-bold tracking-wider ${isDark ? "text-[#64748B]" : "text-slate-500"}`}>
+                    <span className={`text-[10px] uppercase font-bold tracking-wider leading-none ${isDark ? "text-[#64748B]" : "text-slate-500"}`}>
                       Pelaksana
                     </span>
-                    <div className="flex items-center gap-2 mt-1 min-w-0">
+                    <div className="h-7 flex items-center gap-1.5 min-w-0">
                       {(() => {
                         const isSelf = user && (user.name === selectedMovementDetail.actor_name || user.user_id === selectedMovementDetail.user_id);
                         const avatarSrc = (isSelf && user?.avatar_url) ? user.avatar_url : selectedMovementDetail.actor_avatar_url;
@@ -1066,35 +1093,38 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
                                   const fb = e.currentTarget.nextElementSibling;
                                   if (fb) fb.style.display = "flex";
                                 }}
-                                className="w-9 h-9 rounded-full object-cover object-top ring-2 ring-[#1677FF] shadow-sm shrink-0"
+                                className="w-6 h-6 rounded-full object-cover object-top ring-1.5 ring-[#1677FF] shadow-xs shrink-0"
                               />
                             ) : null}
                             <div
                               style={{ display: avatarSrc ? "none" : "flex" }}
-                              className="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/40 text-[#1677FF] dark:text-[#38BDF8] border border-blue-200 dark:border-blue-700/50 items-center justify-center text-xs font-bold shrink-0"
+                              className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/40 text-[#1677FF] dark:text-[#38BDF8] border border-blue-200 dark:border-blue-700/50 items-center justify-center text-[10px] font-bold shrink-0"
                             >
                               {initial}
                             </div>
                           </>
                         );
                       })()}
-                      <span className={`text-xs font-semibold truncate ${isDark ? "text-white" : "text-slate-900"}`}>
+                      <span className={`text-xs font-semibold truncate whitespace-nowrap ${isDark ? "text-white" : "text-slate-900"}`}>
                         {selectedMovementDetail.actor_name}
                       </span>
                     </div>
                   </div>
 
+                  {/* Card 4: Status Ledger */}
                   <div
-                    className={`p-3 rounded-xl border flex flex-col justify-between ${isDark ? "border-[#1E3A5F] bg-[#071426]" : "border-slate-200 bg-slate-50"
+                    className={`p-3 rounded-xl border flex flex-col justify-between h-[74px] ${isDark ? "border-[#1E3A5F] bg-[#071426]" : "border-slate-200 bg-slate-50"
                       }`}
                   >
-                    <span className={`text-[10px] uppercase font-bold tracking-wider ${isDark ? "text-[#64748B]" : "text-slate-500"}`}>
+                    <span className={`text-[10px] uppercase font-bold tracking-wider leading-none ${isDark ? "text-[#64748B]" : "text-slate-500"}`}>
                       Status Ledger
                     </span>
-                    <span className={`text-xs font-bold mt-1 flex items-center gap-1 ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
-                      <span className="material-symbols-outlined text-[14px]">verified</span>
-                      VALID
-                    </span>
+                    <div className="h-7 flex items-center">
+                      <span className={`text-xs font-bold flex items-center gap-1 whitespace-nowrap ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
+                        <span className="material-symbols-outlined text-[15px]">verified</span>
+                        VALID
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -1160,10 +1190,7 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
                         <div className="space-y-1.5 text-xs">
                           <div>
                             <span className={`text-[10px] block font-medium ${isDark ? "text-[#64748B]" : "text-slate-500"}`}>Perangkat (Hostname):</span>
-                            <span className={`font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>{selectedMovementDetail.from_hostname}</span>
-                            {selectedMovementDetail.from_device_name && selectedMovementDetail.from_device_name !== "-" && (
-                              <span className={`text-[11px] block font-medium ${isDark ? "text-[#94A3B8]" : "text-slate-600"}`}>({selectedMovementDetail.from_device_name})</span>
-                            )}
+                            <span className={`font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>{selectedMovementDetail.from_hostname || selectedMovementDetail.from_device_name || "-"}</span>
                           </div>
                           <div>
                             <span className={`text-[10px] block font-medium ${isDark ? "text-[#64748B]" : "text-slate-500"}`}>Slot / Shelf / Port:</span>
@@ -1175,7 +1202,10 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
                           </div>
                           <div>
                             <span className={`text-[10px] block font-medium ${isDark ? "text-[#64748B]" : "text-slate-500"}`}>Lokasi:</span>
-                            <span className={`font-medium ${isDark ? "text-slate-300" : "text-slate-800"}`}>{selectedMovementDetail.from_location_name || "-"}</span>
+                            <span className={`font-medium ${isDark ? "text-slate-300" : "text-slate-800"}`}>
+                              {selectedMovementDetail.from_location_name || "-"}
+                              {selectedMovementDetail.from_kode_site && selectedMovementDetail.from_kode_site !== "-" ? ` · ${selectedMovementDetail.from_kode_site}` : ""}
+                            </span>
                           </div>
                         </div>
                       ) : (
@@ -1198,10 +1228,7 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
                         <div className="space-y-1.5 text-xs">
                           <div>
                             <span className={`text-[10px] block font-medium ${isDark ? "text-[#64748B]" : "text-slate-500"}`}>Perangkat (Hostname):</span>
-                            <span className={`font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>{selectedMovementDetail.to_hostname}</span>
-                            {selectedMovementDetail.to_device_name && selectedMovementDetail.to_device_name !== "-" && (
-                              <span className={`text-[11px] block font-medium ${isDark ? "text-[#94A3B8]" : "text-slate-600"}`}>({selectedMovementDetail.to_device_name})</span>
-                            )}
+                            <span className={`font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>{selectedMovementDetail.to_hostname || selectedMovementDetail.to_device_name || "-"}</span>
                           </div>
                           <div>
                             <span className={`text-[10px] block font-medium ${isDark ? "text-[#64748B]" : "text-slate-500"}`}>Slot / Shelf / Port:</span>
@@ -1213,7 +1240,10 @@ export default function ModuleMovementsPage({ user, searchValue, onSearchChange 
                           </div>
                           <div>
                             <span className={`text-[10px] block font-medium ${isDark ? "text-[#64748B]" : "text-slate-500"}`}>Lokasi:</span>
-                            <span className={`font-medium ${isDark ? "text-slate-300" : "text-slate-800"}`}>{selectedMovementDetail.to_location_name || "-"}</span>
+                            <span className={`font-medium ${isDark ? "text-slate-300" : "text-slate-800"}`}>
+                              {selectedMovementDetail.to_location_name || "-"}
+                              {selectedMovementDetail.to_kode_site && selectedMovementDetail.to_kode_site !== "-" ? ` · ${selectedMovementDetail.to_kode_site}` : ""}
+                            </span>
                           </div>
                         </div>
                       ) : (
@@ -1512,14 +1542,24 @@ function CreateDirectMutationModal({ onClose, onSuccess, initialData }) {
 
   return (
     <ModalPortal>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in overflow-y-auto">
-        <div className={`relative w-full max-w-xl rounded-2xl shadow-2xl p-6 my-8 transition-colors ${isDark
-            ? "bg-[#0D1F36] border border-[#1E3A5F] text-white"
-            : "bg-white border border-slate-200 text-slate-800 shadow-2xl"
-          }`}>
-          {/* Header */}
-          <div className={`flex items-center justify-between pb-4 border-b ${isDark ? "border-[#1A2E4C]" : "border-slate-200"
-            }`}>
+      <div
+        onClick={onClose}
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/75 backdrop-blur-sm animate-fade-in cursor-pointer"
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className={`relative w-full max-w-xl max-h-[85vh] flex flex-col rounded-2xl shadow-2xl transition-colors overflow-hidden cursor-default ${
+            isDark
+              ? "bg-[#0D1F36] border border-[#1E3A5F] text-white"
+              : "bg-white border border-slate-200 text-slate-800 shadow-2xl"
+          }`}
+        >
+          {/* Header (Docked) */}
+          <div
+            className={`flex items-center justify-between p-5 pb-4 border-b shrink-0 ${
+              isDark ? "border-[#1A2E4C]" : "border-slate-200"
+            }`}
+          >
             <div className="flex items-center gap-2.5">
               <div className="w-10 h-10 rounded-xl bg-[#1677FF]/15 border border-[#1677FF]/30 text-[#38BDF8] flex items-center justify-center">
                 <span className="material-symbols-outlined text-[22px]">sync_alt</span>
@@ -1536,55 +1576,74 @@ function CreateDirectMutationModal({ onClose, onSuccess, initialData }) {
             <button
               type="button"
               onClick={onClose}
-              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${isDark
+              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                isDark
                   ? "text-[#94A3B8] hover:text-white hover:bg-[#1A2E4C]"
                   : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
-                }`}
+              }`}
             >
               <span className="material-symbols-outlined text-[20px]">close</span>
             </button>
           </div>
 
-          {error && (
-            <div className="mt-4 p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px] shrink-0 text-rose-400">error</span>
-              <span>{error}</span>
-            </div>
-          )}
+          {/* Form Container (Scrollable) */}
+          <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div className="p-5 overflow-y-auto custom-scrollbar flex-1 min-h-0 space-y-4">
+              {error && (
+                <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[18px] shrink-0 text-rose-400">error</span>
+                  <span>{error}</span>
+                </div>
+              )}
 
-          {/* Banner Notifikasi Auto-Fill dari AR Scan */}
-          {initialData && (
-            <div className={`mt-4 p-3 rounded-xl border text-xs flex items-center justify-between gap-3 animate-fadeIn ${
-              isDark
-                ? "bg-[#1677FF]/15 border-[#1677FF]/30 text-[#38BDF8]"
-                : "bg-blue-50 border-blue-300 text-blue-800"
-            }`}>
-              <div className="flex items-center gap-2.5 min-w-0">
-                <span className={`material-symbols-outlined text-[20px] shrink-0 ${isDark ? "text-[#00E5FF]" : "text-blue-600"}`}>view_in_ar</span>
-                <span className="truncate">
-                  Terisi otomatis dari <strong>AR Digital Twin</strong>: Modul{" "}
-                  <strong className={`font-mono ${isDark ? "text-white" : "text-blue-900 bg-blue-100 px-1 py-0.5 rounded"}`}>{initialData.sn || "Terpilih"}</strong>
-                  {initialData.slotNo && ` (Slot #${initialData.slotNo})`}. Silakan tentukan <strong>perangkat tujuan</strong> mutasi di bawah.
-                </span>
-              </div>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 border ${
-                isDark
-                  ? "bg-[#1677FF]/40 text-white border-blue-400/30"
-                  : "bg-blue-600 text-white border-blue-700"
-              }`}>
-                Auto-Filled
-              </span>
-            </div>
-          )}
+              {/* Banner Notifikasi Auto-Fill dari AR Scan */}
+              {initialData && (
+                <div
+                  className={`p-3 rounded-xl border text-xs flex items-center justify-between gap-3 animate-fadeIn ${
+                    isDark
+                      ? "bg-[#1677FF]/15 border-[#1677FF]/30 text-[#38BDF8]"
+                      : "bg-blue-50 border-blue-300 text-blue-800"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span
+                      className={`material-symbols-outlined text-[20px] shrink-0 ${
+                        isDark ? "text-[#00E5FF]" : "text-blue-600"
+                      }`}
+                    >
+                      view_in_ar
+                    </span>
+                    <span className="truncate">
+                      Terisi otomatis dari <strong>AR Digital Twin</strong>: Modul{" "}
+                      <strong
+                        className={`font-mono ${
+                          isDark ? "text-white" : "text-blue-900 bg-blue-100 px-1 py-0.5 rounded"
+                        }`}
+                      >
+                        {initialData.sn || "Terpilih"}
+                      </strong>
+                      {initialData.slotNo && ` (Slot #${initialData.slotNo})`}. Silakan tentukan <strong>perangkat tujuan</strong> mutasi di bawah.
+                    </span>
+                  </div>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 border ${
+                      isDark
+                        ? "bg-[#1677FF]/40 text-white border-blue-400/30"
+                        : "bg-blue-600 text-white border-blue-700"
+                    }`}
+                  >
+                    Auto-Filled
+                  </span>
+                </div>
+              )}
 
-
-          {loadingInitial ? (
-            <div className="py-12 text-center text-xs text-[#38BDF8]">
-              <span className="material-symbols-outlined animate-spin text-[24px] block mb-2">progress_activity</span>
-              <span>Memuat data modul & perangkat...</span>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+              {loadingInitial ? (
+                <div className="py-12 text-center text-xs text-[#38BDF8]">
+                  <span className="material-symbols-outlined animate-spin text-[24px] block mb-2">progress_activity</span>
+                  <span>Memuat data modul & perangkat...</span>
+                </div>
+              ) : (
+                <>
               {/* 1. PILIH MODUL (Menggunakan Custom Dropdown Style Halaman Perangkat) */}
               <div className="relative" ref={moduleDropdownRef}>
                 <label className={`block text-xs font-semibold mb-1.5 ${isDark ? "text-[#CBD5E1]" : "text-slate-700"
@@ -2013,34 +2072,40 @@ function CreateDirectMutationModal({ onClose, onSuccess, initialData }) {
                     }`}
                 />
               </div>
+                </>
+              )}
+            </div>
 
-              {/* ACTIONS */}
-              <div className={`flex items-center justify-end gap-3 pt-4 border-t ${isDark ? "border-[#1A2E4C]" : "border-slate-200"
-                }`}>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  disabled={submitting}
-                  className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${isDark
-                      ? "border-[#1E3A5F] text-[#94A3B8] hover:text-white hover:bg-[#1A2E4C]"
-                      : "border-slate-300 text-slate-600 hover:bg-slate-100"
-                    }`}
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold bg-[#1677FF] hover:bg-[#1466de] text-white shadow-lg shadow-[#1677FF]/25 transition-all cursor-pointer disabled:opacity-50"
-                >
-                  {submitting && (
-                    <span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
-                  )}
-                  <span>Simpan Mutasi</span>
-                </button>
-              </div>
-            </form>
-          )}
+            {/* ACTIONS (Docked Footer) */}
+            <div
+              className={`flex items-center justify-end gap-3 p-4 border-t shrink-0 ${
+                isDark ? "border-[#1A2E4C] bg-[#071426]/60" : "border-slate-200 bg-slate-50/70"
+              }`}
+            >
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={submitting}
+                className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
+                  isDark
+                    ? "border-[#1E3A5F] text-[#94A3B8] hover:text-white hover:bg-[#1A2E4C]"
+                    : "border-slate-300 text-slate-600 hover:bg-slate-100"
+                }`}
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold bg-[#1677FF] hover:bg-[#1466de] text-white shadow-lg shadow-[#1677FF]/25 transition-all cursor-pointer disabled:opacity-50"
+              >
+                {submitting && (
+                  <span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
+                )}
+                <span>Simpan Mutasi</span>
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </ModalPortal>

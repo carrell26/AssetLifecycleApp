@@ -1,5 +1,6 @@
 import React from "react";
 import { useTheme } from "../context/ThemeContext";
+import infranexiaLogo from "../assets/infranexia_logo.png";
 
 export default function Sidebar({ user }) {
   const { isDark } = useTheme();
@@ -78,15 +79,19 @@ export default function Sidebar({ user }) {
           style={{ backgroundColor: "#071426", borderColor: "#1A2E4C" }}
         >
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white shadow-md bg-gradient-to-br from-[#1677FF] to-[#0D1F36]">
-              <span className="material-symbols-outlined text-[20px]">hub</span>
+            <div className="w-9 h-9 rounded-xl p-[2px] flex items-center justify-center bg-white shadow-md shrink-0 overflow-hidden">
+              <img
+                src={infranexiaLogo}
+                alt="infraNexia by Telkom Indonesia"
+                className="w-full h-full object-contain select-none"
+              />
             </div>
             <div className="flex flex-col">
-              <span className="sidebar-logo-text text-sm font-bold tracking-tight leading-none text-[#E6EDF7]">
-                AssetLifecycle
+              <span className="sidebar-logo-text text-sm font-bold tracking-tight leading-none text-[#E6EDF7] whitespace-nowrap">
+                Asset Lifecycle
               </span>
-              <span className="sidebar-sublogo-text text-[10px] font-medium leading-tight mt-1 text-[#38BDF8]">
-                Telkom Infrastructure
+              <span className="sidebar-sublogo-text text-[10px] font-medium leading-tight mt-1 text-[#38BDF8] whitespace-nowrap">
+                PT Telkom Infrastruktur
               </span>
             </div>
           </div>

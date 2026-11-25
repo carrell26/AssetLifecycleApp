@@ -19,6 +19,7 @@ from flask_login import login_required, current_user
 
 from ...models import Device, SlotDefinition, ModulePosition, Module, Location
 from ...utils.decorators import role_required
+from ...utils.module_classification import is_transceiver, matches_transceiver_type, has_valid_port
 
 ar_bp = Blueprint("ar", __name__, url_prefix="/ar", template_folder="../../templates/ar")
 
@@ -151,11 +152,16 @@ def device_guide(device_id):
 @login_required
 @role_required("admin", "karyawan_tif", "teknisi")
 def device_qr(device_id):
-    Device.query.get_or_404(device_id)
+    device = Device.query.get_or_404(device_id)
 
-    # QR sekarang mengarahkan langsung ke halaman scan dengan device context
-    target_url = url_for("ar.scan", device_id=device_id, _external=True)
-    img = qrcode.make(target_url)
+    # Cek apakah ada file QR statis otentik untuk perangkat ini (misal STO Palu 1 ID 16, STO Palu 2 ID 17)
+    static_qr = os.path.join(current_app.root_path, "static", f"qr_device_{device_id}.png")
+    if os.path.exists(static_qr):
+        return send_file(static_qr, mimetype="image/png")
+
+    # Encode identifier otentik perangkat fisik (hostname / nama perangkat / serial number)
+    payload = device.hostname or device.nama_perangkat or device.serial_number or f"DEVICE-{device_id}"
+    img = qrcode.make(payload)
 
     buffer = BytesIO()
     img.save(buffer, format="PNG")
@@ -189,29 +195,72 @@ def api_device_slots(device_id):
         SlotDefinition.nomor_slot
     ).all()
 
+    # Load all active positions for this device once
+    positions = ModulePosition.query.filter_by(
+        device_id=device.device_id,
+        status="aktif"
+    ).all()
+
+    # Group positions by slot_definition_id
+    pos_by_slot_def = {}
+    for p in positions:
+        pos_by_slot_def.setdefault(p.slot_definition_id, []).append(p)
+
     slots_data = []
+    sfps_by_slot = {}
+
     for slot_def in slot_defs:
-        position = ModulePosition.query.filter_by(
-            device_id=device.device_id,
-            slot_definition_id=slot_def.slot_definition_id,
-            status="aktif"
-        ).first()
+        slot_positions = pos_by_slot_def.get(slot_def.slot_definition_id, [])
+
+        card_pos = None
+        sfp_positions = []
+        for p in slot_positions:
+            mod = p.module
+            ut = mod.module_type.nama_tipe if mod and mod.module_type else ""
+            is_sfp = has_valid_port(p.port) or matches_transceiver_type(ut) or is_transceiver(ut, p.port)
+            if is_sfp:
+                sfp_positions.append(p)
+            else:
+                if card_pos is None:
+                    card_pos = p
+
+        chosen_pos = card_pos if card_pos is not None else (slot_positions[0] if slot_positions else None)
+
+        sfp_list = []
+        for sp in sfp_positions:
+            mod = sp.module
+            sfp_list.append({
+                "position_id": sp.position_id,
+                "port": str(sp.port) if sp.port else "-",
+                "serial_number": mod.serial_number if mod else "-",
+                "unit_part_number": mod.unit_part_number if mod else "-",
+                "tipe": mod.module_type.nama_tipe if mod and mod.module_type else "Transceiver SFP",
+                "unit_type": mod.module_type.nama_tipe if mod and mod.module_type else "Transceiver SFP",
+                "kondisi": mod.kondisi if mod else "AKTIF"
+            })
+
+        slot_num_str = str(slot_def.nomor_slot)
+        if sfp_list:
+            sfps_by_slot[slot_num_str] = sfp_list
 
         slots_data.append({
             "slot_definition_id": slot_def.slot_definition_id,
             "nomor_slot": slot_def.nomor_slot,
             "nama_slot": slot_def.nama_slot or f"Slot {slot_def.nomor_slot}",
             "posisi": slot_def.posisi or "-",
-            "occupied": position is not None,
+            "occupied": chosen_pos is not None or len(sfp_list) > 0,
             "module": {
-                "modul_id": position.module.modul_id,
-                "serial_number": position.module.serial_number,
-                "tipe": position.module.module_type.nama_tipe if position.module and position.module.module_type else "-",
-                "kondisi": position.module.kondisi if position.module else "-"
-            } if position and position.module else None
+                "modul_id": chosen_pos.module.modul_id,
+                "serial_number": chosen_pos.module.serial_number,
+                "unit_part_number": chosen_pos.module.unit_part_number or "-",
+                "tipe": chosen_pos.module.module_type.nama_tipe if chosen_pos.module and chosen_pos.module.module_type else "-",
+                "unit_type": chosen_pos.module.module_type.nama_tipe if chosen_pos.module and chosen_pos.module.module_type else "-",
+                "kondisi": chosen_pos.module.kondisi if chosen_pos.module else "AKTIF"
+            } if chosen_pos and chosen_pos.module else None,
+            "sfps": sfp_list
         })
 
-    return jsonify({"slots": slots_data})
+    return jsonify({"slots": slots_data, "sfps_by_slot": sfps_by_slot})
 
 
 @ar_bp.route("/api/search")
@@ -437,7 +486,7 @@ def api_lookup_qr():
         return jsonify({"found": False, "message": "Query tidak boleh kosong"}), 400
 
     # 1. Cek parameter location_id di query string atau teks URL
-    loc_match = re.search(r'(?:location_id=|loc-|lokasi[-_]?id=)(\d+)', q, re.IGNORECASE)
+    loc_match = re.search(r'(?:location_id=|loc-|lokasi[-_]?id=|location/)(\d+)', q, re.IGNORECASE)
     if loc_match:
         loc_id = int(loc_match.group(1))
         loc = Location.query.get(loc_id)
@@ -449,8 +498,8 @@ def api_lookup_qr():
                 "nama_lokasi": loc.nama_lokasi
             })
 
-    # 2. Cek parameter device_id di URL
-    dev_match = re.search(r'(?:device_id=|device/)(\d+)', q, re.IGNORECASE)
+    # 2. Cek parameter device_id di URL atau prefix qr_device / DEVICE-
+    dev_match = re.search(r'(?:device_id=|device/|qr_device_|device-)(\d+)', q, re.IGNORECASE)
     if dev_match:
         dev_id = int(dev_match.group(1))
         dev = Device.query.get(dev_id)

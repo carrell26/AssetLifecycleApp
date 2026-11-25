@@ -22,7 +22,7 @@ export default defineConfig({
   base: "/static/dist/",
   build: {
     outDir: "../app/static/dist",
-    emptyOutDir: true,
+    emptyOutDir: false,
   },
   server: {
     proxy: {

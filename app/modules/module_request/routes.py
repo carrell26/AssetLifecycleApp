@@ -18,6 +18,7 @@ from ...models import (
 )
 from ...utils.decorators import role_required
 from ...utils.hashing import append_audit_log
+from ...utils.module_classification import is_transceiver
 
 module_request_bp = Blueprint(
     "module_request", __name__, url_prefix="/modules", template_folder="../../templates/module_request"
@@ -105,6 +106,61 @@ def _apply_approved_request(module_request, actor_user):
             "approved_by": actor_user.user_id,
         },
     )
+
+    # SFP Transceiver ikut berpindah secara otomatis bersama modul Card induk
+    mod_type_name = getattr(module_request.module.module_type, 'nama_tipe', '') if module_request.module else ''
+    if old_position and not is_transceiver(mod_type_name, old_position.port):
+        attached_sfps = ModulePosition.query.filter(
+            ModulePosition.device_id == module_request.from_device_id,
+            ModulePosition.slot_definition_id == module_request.from_slot_definition_id,
+            ModulePosition.status == "aktif",
+            ModulePosition.module_id != module_request.module_id,
+        ).all()
+
+        for sfp_pos in attached_sfps:
+            sfp_m = sfp_pos.module
+            sfp_t = (sfp_m.module_type.nama_tipe if sfp_m and sfp_m.module_type else "").strip()
+            if is_transceiver(sfp_t, sfp_pos.port):
+                sfp_pos.status = "dilepas"
+                if jenis in ("pasang", "pindah"):
+                    new_sfp_pos = ModulePosition(
+                        module_id=sfp_m.modul_id,
+                        device_id=module_request.to_device_id,
+                        slot_definition_id=module_request.to_slot_definition_id,
+                        shelf=sfp_pos.shelf or "1",
+                        port=sfp_pos.port,
+                        status="aktif",
+                    )
+                    db.session.add(new_sfp_pos)
+
+                    sfp_mv = ModuleMovement(
+                        module_id=sfp_m.modul_id,
+                        user_id=actor_user.user_id,
+                        from_device_id=module_request.from_device_id,
+                        from_slot_definition_id=module_request.from_slot_definition_id,
+                        to_device_id=module_request.to_device_id,
+                        to_slot_definition_id=module_request.to_slot_definition_id,
+                        jenis_perubahan=jenis,
+                        keterangan=f"Otomatis ikut berpindah bersama modul induk {module_request.module.serial_number} (Port {sfp_pos.port})",
+                    )
+                    db.session.add(sfp_mv)
+                    db.session.flush()
+
+                    append_audit_log(
+                        db,
+                        user_id=actor_user.user_id,
+                        aksi="APPROVE_MOVEMENT",
+                        table_name="module_movements",
+                        record_id=sfp_mv.movement_id,
+                        data_dict={
+                            "module_id": sfp_mv.module_id,
+                            "parent_card_id": module_request.module_id,
+                            "jenis_perubahan": sfp_mv.jenis_perubahan,
+                            "from_device_id": sfp_mv.from_device_id,
+                            "to_device_id": sfp_mv.to_device_id,
+                            "port": sfp_pos.port,
+                        }
+                    )
 
     return True, None
 
@@ -209,6 +265,8 @@ def new_request():
 
 
 @module_request_bp.route("/requests")
+@module_request_bp.route("/movements")
+@module_request_bp.route("/mutasi")
 @login_required
 @role_required("admin", "karyawan_tif", "teknisi")
 def list_requests():

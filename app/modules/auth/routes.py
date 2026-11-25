@@ -96,7 +96,13 @@ def api_login():
         success, otp_res = send_otp_to_user(user)
         if success:
             db.session.commit()
-            telegram_display = f"@{user.telegram_username}" if user.telegram_username else "Telegram Terdaftar"
+            if user.telegram_username:
+                tg = user.telegram_username.strip()
+                telegram_display = tg if tg.startswith("@") else f"@{tg}"
+            elif user.name:
+                telegram_display = user.name
+            else:
+                telegram_display = "terdaftar Anda"
             return jsonify(
                 success=True,
                 requires_otp=True,

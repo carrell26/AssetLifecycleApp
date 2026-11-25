@@ -383,7 +383,7 @@ html:not(.dark) {
   :not(aside).border-\[\#0A545E\],
   :not(aside).border-\[\#5E4413\],
   :not(aside).border-\[\#5C1D25\],
-  main [class*="border-[#"] {
+  main [class*="border-[#"]:not(#ar-camera-viewport *):not(.ar-viewfinder-screen *):not(#subrack-chassis-3d *):not([data-hardware-device="true"] *):not([class*="border-[#00E5FF]"]):not(.port-cage-frame):not(.port-cage-subport) {
     border-color: #E2E8F0 !important;
   }
 
@@ -419,10 +419,26 @@ html:not(.dark) {
     color: #CBD5E1 !important;
   }
 
-  /* Headings & Texts inside dark-turned-light containers */
-  main h3.text-white,
+  /* Headings & Texts inside dark-turned-light containers (including Modals) */
+  :not(aside) h1.text-white,
+  :not(aside) h2.text-white,
+  :not(aside) h3.text-white,
+  :not(aside) h4.text-white,
+  :not(aside) h5.text-white,
+  :not(aside) h6.text-white,
+  :not(aside) span.text-white:not(button span):not(button.text-white):not(.sidebar-link-active *):not([data-preserve-white]),
+  :not(aside) td.text-white,
+  :not(aside) th.text-white,
+  :not(aside) div.text-white:not(button *),
+  :not(aside) p.text-white,
+  :not(aside) label.text-white,
+  :not(aside) strong.text-white,
+  :not(aside) b.text-white,
+  main h1.text-white,
   main h2.text-white,
-  main span.text-white:not(button span):not(button.text-white):not(.sidebar-link-active *),
+  main h3.text-white,
+  main h4.text-white,
+  main span.text-white:not(button span):not(button.text-white):not(.sidebar-link-active *):not([data-preserve-white]),
   main td.text-white,
   main div.text-white,
   main table .text-white:not(button span):not(button.text-white),
@@ -471,7 +487,7 @@ html:not(.dark) {
     color: #0F172A !important;
   }
 
-  button.hover\:text-white:hover {
+  button.hover\:text-white:not([id^="slot-item-"]):not([data-preserve-color]):hover {
     color: #0F172A !important;
   }
 
@@ -643,6 +659,563 @@ html:not(.dark) {
   }
 }
 
+
+/* ==========================================================================
+   3D PHYSICAL HARDWARE CHASSIS PRESERVATION: 100% IDENTICAL IN ALL THEMES
+   Semua elemen fisik perangkat (chassis, faceplates, slot, kartu, label, teks,
+   LEDs, cuping kabel, dan baut) WAJIB tetap 100% identik di Light Mode maupun
+   Dark Mode. Hanya kanvas latar belakang di belakang perangkat yang beradaptasi.
+   ========================================================================== */
+html body main #subrack-chassis-3d,
+html body main #subrack-chassis-3d *,
+html body #subrack-chassis-3d,
+html body #subrack-chassis-3d *,
+#subrack-chassis-3d,
+#subrack-chassis-3d * {
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 1. All Silkscreen Labels & Text on Physical Hardware */
+html body main #subrack-chassis-3d .text-white,
+html body main #subrack-chassis-3d span.text-white,
+html body main #subrack-chassis-3d div.text-white,
+html body main #subrack-chassis-3d p.text-white,
+html body main #subrack-chassis-3d h1.text-white,
+html body main #subrack-chassis-3d h2.text-white,
+html body main #subrack-chassis-3d h3.text-white,
+html body main #subrack-chassis-3d h4.text-white,
+html body main #subrack-chassis-3d h5.text-white,
+html body main #subrack-chassis-3d h6.text-white,
+html body main #subrack-chassis-3d strong.text-white,
+html body main #subrack-chassis-3d b.text-white,
+html body #subrack-chassis-3d .text-white,
+#subrack-chassis-3d .text-white {
+  color: #FFFFFF !important;
+}
+
+html body main #subrack-chassis-3d .text-\[\#38BDF8\],
+html body #subrack-chassis-3d .text-\[\#38BDF8\],
+#subrack-chassis-3d .text-\[\#38BDF8\] {
+  color: #38BDF8 !important;
+}
+
+html body main #subrack-chassis-3d .text-\[\#CBD5E1\],
+html body #subrack-chassis-3d .text-\[\#CBD5E1\],
+#subrack-chassis-3d .text-\[\#CBD5E1\] {
+  color: #CBD5E1 !important;
+}
+
+html body main #subrack-chassis-3d .text-\[\#94A3B8\],
+html body #subrack-chassis-3d .text-\[\#94A3B8\],
+#subrack-chassis-3d .text-\[\#94A3B8\] {
+  color: #94A3B8 !important;
+}
+
+html body main #subrack-chassis-3d .text-\[\#64748B\],
+html body #subrack-chassis-3d .text-\[\#64748B\],
+#subrack-chassis-3d .text-\[\#64748B\] {
+  color: #64748B !important;
+}
+
+html body main #subrack-chassis-3d .text-\[\#1E3A5F\],
+html body #subrack-chassis-3d .text-\[\#1E3A5F\],
+#subrack-chassis-3d .text-\[\#1E3A5F\] {
+  color: #1E3A5F !important;
+}
+
+html body main #subrack-chassis-3d .text-\[\#334155\],
+#subrack-chassis-3d .text-\[\#334155\] {
+  color: #334155 !important;
+}
+
+html body main #subrack-chassis-3d .text-\[\#DC2626\],
+#subrack-chassis-3d .text-\[\#DC2626\] {
+  color: #DC2626 !important;
+}
+
+html body main #subrack-chassis-3d .text-emerald-400,
+#subrack-chassis-3d .text-emerald-400 {
+  color: #34D399 !important;
+}
+
+html body main #subrack-chassis-3d .text-emerald-600,
+#subrack-chassis-3d .text-emerald-600 {
+  color: #059669 !important;
+}
+
+html body main #subrack-chassis-3d .text-rose-400,
+#subrack-chassis-3d .text-rose-400 {
+  color: #FB7185 !important;
+}
+
+html body main #subrack-chassis-3d .text-rose-300,
+#subrack-chassis-3d .text-rose-300 {
+  color: #FDA4AF !important;
+}
+
+html body main #subrack-chassis-3d .text-amber-400,
+#subrack-chassis-3d .text-amber-400 {
+  color: #FBBF24 !important;
+}
+
+html body main #subrack-chassis-3d .text-amber-900,
+#subrack-chassis-3d .text-amber-900 {
+  color: #78350F !important;
+}
+
+html body main #subrack-chassis-3d .text-sky-400,
+#subrack-chassis-3d .text-sky-400 {
+  color: #38BDF8 !important;
+}
+
+html body main #subrack-chassis-3d .text-slate-300,
+#subrack-chassis-3d .text-slate-300 {
+  color: #CBD5E1 !important;
+}
+
+html body main #subrack-chassis-3d .text-slate-400,
+#subrack-chassis-3d .text-slate-400 {
+  color: #94A3B8 !important;
+}
+
+html body main #subrack-chassis-3d .text-slate-500,
+#subrack-chassis-3d .text-slate-500 {
+  color: #64748B !important;
+}
+
+html body main #subrack-chassis-3d .text-slate-600,
+#subrack-chassis-3d .text-slate-600 {
+  color: #475569 !important;
+}
+
+html body main #subrack-chassis-3d .text-slate-700,
+#subrack-chassis-3d .text-slate-700 {
+  color: #334155 !important;
+}
+
+html body main #subrack-chassis-3d .text-slate-800,
+#subrack-chassis-3d .text-slate-800 {
+  color: #1E293B !important;
+}
+
+html body main #subrack-chassis-3d .text-slate-900,
+#subrack-chassis-3d .text-slate-900 {
+  color: #0F172A !important;
+}
+
+html body main #subrack-chassis-3d .text-slate-950,
+#subrack-chassis-3d .text-slate-950 {
+  color: #020617 !important;
+}
+
+html body main #subrack-chassis-3d .text-black,
+#subrack-chassis-3d .text-black {
+  color: #000000 !important;
+}
+
+/* 2. Physical LED Indicators (Authentic Optical Luminescence) */
+html body main #subrack-chassis-3d .bg-\[\#00E5FF\],
+html body #subrack-chassis-3d .bg-\[\#00E5FF\],
+#subrack-chassis-3d .bg-\[\#00E5FF\] {
+  background-color: #00E5FF !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#10B981\],
+html body #subrack-chassis-3d .bg-\[\#10B981\],
+#subrack-chassis-3d .bg-\[\#10B981\] {
+  background-color: #10B981 !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#C084FC\],
+html body #subrack-chassis-3d .bg-\[\#C084FC\],
+#subrack-chassis-3d .bg-\[\#C084FC\] {
+  background-color: #C084FC !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#22C55E\],
+#subrack-chassis-3d .bg-\[\#22C55E\] {
+  background-color: #22C55E !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#EF4444\],
+#subrack-chassis-3d .bg-\[\#EF4444\] {
+  background-color: #EF4444 !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#DC2626\],
+#subrack-chassis-3d .bg-\[\#DC2626\] {
+  background-color: #DC2626 !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#F59E0B\],
+#subrack-chassis-3d .bg-\[\#F59E0B\] {
+  background-color: #F59E0B !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#FACC15\],
+#subrack-chassis-3d .bg-\[\#FACC15\] {
+  background-color: #FACC15 !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#0066FF\],
+#subrack-chassis-3d .bg-\[\#0066FF\] {
+  background-color: #0066FF !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#0066CC\],
+#subrack-chassis-3d .bg-\[\#0066CC\] {
+  background-color: #0066CC !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#0284C7\],
+#subrack-chassis-3d .bg-\[\#0284C7\] {
+  background-color: #0284C7 !important;
+}
+
+/* 3. Physical Dark Steel & Anodized Aluminum Enclosures */
+html body main #subrack-chassis-3d .bg-\[\#071426\],
+html body #subrack-chassis-3d .bg-\[\#071426\],
+#subrack-chassis-3d .bg-\[\#071426\] {
+  background-color: #071426 !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#0D1F36\],
+html body #subrack-chassis-3d .bg-\[\#0D1F36\],
+#subrack-chassis-3d .bg-\[\#0D1F36\] {
+  background-color: #0D1F36 !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#0A182B\],
+html body #subrack-chassis-3d .bg-\[\#0A182B\],
+#subrack-chassis-3d .bg-\[\#0A182B\] {
+  background-color: #0A182B !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#09172A\],
+html body #subrack-chassis-3d .bg-\[\#09172A\],
+#subrack-chassis-3d .bg-\[\#09172A\] {
+  background-color: #09172A !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#0E2038\],
+html body #subrack-chassis-3d .bg-\[\#0E2038\],
+#subrack-chassis-3d .bg-\[\#0E2038\] {
+  background-color: #0E2038 !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#1A3358\],
+html body #subrack-chassis-3d .bg-\[\#1A3358\],
+#subrack-chassis-3d .bg-\[\#1A3358\] {
+  background-color: #1A3358 !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#03060E\],
+#subrack-chassis-3d .bg-\[\#03060E\] {
+  background-color: #03060E !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#09090B\],
+#subrack-chassis-3d .bg-\[\#09090B\] {
+  background-color: #09090B !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#090E1B\],
+#subrack-chassis-3d .bg-\[\#090E1B\] {
+  background-color: #090E1B !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#0B1726\],
+#subrack-chassis-3d .bg-\[\#0B1726\] {
+  background-color: #0B1726 !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#11141A\],
+#subrack-chassis-3d .bg-\[\#11141A\] {
+  background-color: #11141A !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#111A27\],
+#subrack-chassis-3d .bg-\[\#111A27\] {
+  background-color: #111A27 !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#131E2C\],
+#subrack-chassis-3d .bg-\[\#131E2C\] {
+  background-color: #131E2C !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#1E293B\],
+#subrack-chassis-3d .bg-\[\#1E293B\] {
+  background-color: #1E293B !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#020617\],
+#subrack-chassis-3d .bg-\[\#020617\] {
+  background-color: #020617 !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#071527\],
+#subrack-chassis-3d .bg-\[\#071527\] {
+  background-color: #071527 !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#061814\],
+#subrack-chassis-3d .bg-\[\#061814\] {
+  background-color: #061814 !important;
+}
+
+html body main #subrack-chassis-3d .bg-\[\#0F0B1E\],
+#subrack-chassis-3d .bg-\[\#0F0B1E\] {
+  background-color: #0F0B1E !important;
+}
+
+html body main #subrack-chassis-3d .bg-black,
+#subrack-chassis-3d .bg-black {
+  background-color: #000000 !important;
+}
+
+html body main #subrack-chassis-3d .bg-white,
+#subrack-chassis-3d .bg-white {
+  background-color: #FFFFFF !important;
+}
+
+/* 4. Industrial Metallic Precision Borders */
+html body main #subrack-chassis-3d .border-\[\#1E3A5F\],
+html body #subrack-chassis-3d .border-\[\#1E3A5F\],
+#subrack-chassis-3d .border-\[\#1E3A5F\] {
+  border-color: #1E3A5F !important;
+}
+
+html body main #subrack-chassis-3d .border-\[\#1A2E4C\],
+html body #subrack-chassis-3d .border-\[\#1A2E4C\],
+#subrack-chassis-3d .border-\[\#1A2E4C\] {
+  border-color: #1A2E4C !important;
+}
+
+html body main #subrack-chassis-3d .border-\[\#162F52\],
+html body #subrack-chassis-3d .border-\[\#162F52\],
+#subrack-chassis-3d .border-\[\#162F52\] {
+  border-color: #162F52 !important;
+}
+
+html body main #subrack-chassis-3d .border-\[\#18355C\],
+html body #subrack-chassis-3d .border-\[\#18355C\],
+#subrack-chassis-3d .border-\[\#18355C\] {
+  border-color: #18355C !important;
+}
+
+html body main #subrack-chassis-3d .border-\[\#1A3358\],
+html body #subrack-chassis-3d .border-\[\#1A3358\],
+#subrack-chassis-3d .border-\[\#1A3358\] {
+  border-color: #1A3358 !important;
+}
+
+html body main #subrack-chassis-3d .border-\[\#1E293B\],
+#subrack-chassis-3d .border-\[\#1E293B\] {
+  border-color: #1E293B !important;
+}
+
+html body main #subrack-chassis-3d .border-\[\#1E2B3E\],
+#subrack-chassis-3d .border-\[\#1E2B3E\] {
+  border-color: #1E2B3E !important;
+}
+
+html body main #subrack-chassis-3d .border-\[\#223348\],
+#subrack-chassis-3d .border-\[\#223348\] {
+  border-color: #223348 !important;
+}
+
+html body main #subrack-chassis-3d .border-\[\#38BDF8\],
+#subrack-chassis-3d .border-\[\#38BDF8\] {
+  border-color: #38BDF8 !important;
+}
+
+html body main #subrack-chassis-3d .border-\[\#0055AA\],
+#subrack-chassis-3d .border-\[\#0055AA\] {
+  border-color: #0055AA !important;
+}
+
+html body main #subrack-chassis-3d .border-\[\#0284C7\],
+#subrack-chassis-3d .border-\[\#0284C7\] {
+  border-color: #0284C7 !important;
+}
+
+html body main #subrack-chassis-3d .border-\[\#4ADE80\],
+#subrack-chassis-3d .border-\[\#4ADE80\] {
+  border-color: #4ADE80 !important;
+}
+
+/* ==========================================================================
+   PORT CAGE & SFP FRAME PRESERVATION: EXACT INDUSTRIAL HARDWARE BORDERS
+   Card port di dalam subrack 3D WAJIB mempertahankan garis tepi (border)
+   yang tegas (#64748B / #475569) baik pada Mode Light maupun Mode Dark.
+   ========================================================================== */
+.port-cage-frame,
+#subrack-chassis-3d .port-cage-frame,
+html:not(.dark) #subrack-chassis-3d .port-cage-frame,
+html:not(.dark) body main #subrack-chassis-3d .port-cage-frame,
+html body main #subrack-chassis-3d .port-cage-frame {
+  border: 1px solid #64748B !important;
+  box-shadow: 0 0.5px 1.5px rgba(0, 0, 0, 0.28) !important;
+}
+
+.port-cage-subport,
+#subrack-chassis-3d .port-cage-subport,
+html:not(.dark) #subrack-chassis-3d .port-cage-subport,
+html:not(.dark) body main #subrack-chassis-3d .port-cage-subport,
+html body main #subrack-chassis-3d .port-cage-subport {
+  border: 1px solid #1E293B !important;
+}
+
+/* Slot column vertical divider lines preservation in 3D subrack */
+#subrack-chassis-3d [id^="slot-item-"],
+html:not(.dark) body main #subrack-chassis-3d [id^="slot-item-"] {
+  border-color: #CBD5E1 !important;
+}
+
+html body main #subrack-chassis-3d .border-\[\#64748B\],
+html:not(.dark) body main #subrack-chassis-3d .border-\[\#64748B\],
+html body main #subrack-chassis-3d [class*="border-[#64748B]"],
+#subrack-chassis-3d .border-\[\#64748B\],
+#subrack-chassis-3d [class*="border-[#64748B]"] {
+  border-color: #64748B !important;
+}
+
+html body main #subrack-chassis-3d .border-\[\#1E293B\],
+html:not(.dark) body main #subrack-chassis-3d .border-\[\#1E293B\],
+html body main #subrack-chassis-3d [class*="border-[#1E293B]"],
+#subrack-chassis-3d .border-\[\#1E293B\],
+#subrack-chassis-3d [class*="border-[#1E293B]"] {
+  border-color: #1E293B !important;
+}
+
+html body main #subrack-chassis-3d .border-\[\#94A3B8\],
+#subrack-chassis-3d .border-\[\#94A3B8\] {
+  border-color: #94A3B8 !important;
+}
+
+html body main #subrack-chassis-3d .border-\[\#B0BDCC\],
+#subrack-chassis-3d .border-\[\#B0BDCC\] {
+  border-color: #B0BDCC !important;
+}
+
+html body main #subrack-chassis-3d .border-slate-300,
+#subrack-chassis-3d .border-slate-300 {
+  border-color: #CBD5E1 !important;
+}
+
+html body main #subrack-chassis-3d .border-slate-400,
+#subrack-chassis-3d .border-slate-400 {
+  border-color: #94A3B8 !important;
+}
+
+html body main #subrack-chassis-3d .border-slate-500,
+#subrack-chassis-3d .border-slate-500 {
+  border-color: #64748B !important;
+}
+
+html body main #subrack-chassis-3d .border-slate-600,
+#subrack-chassis-3d .border-slate-600 {
+  border-color: #475569 !important;
+}
+
+html body main #subrack-chassis-3d .border-slate-700,
+#subrack-chassis-3d .border-slate-700 {
+  border-color: #334155 !important;
+}
+
+html body main #subrack-chassis-3d .border-slate-900,
+#subrack-chassis-3d .border-slate-900 {
+  border-color: #0F172A !important;
+}
+
+html body main #subrack-chassis-3d .border-black,
+#subrack-chassis-3d .border-black {
+  border-color: #000000 !important;
+}
+
+/* ==========================================================================
+   AR CAMERA VIEWFINDER: PRESERVE CYAN / BLUE HOLOGRAM BORDERS IN LIGHT MODE
+   Viewfinder kamera adalah kanvas HUD optik yang selalu berlatar gelap.
+   Semua border-[#00E5FF] dan elemen reticle HUD di dalam viewfinder kamera
+   WAJIB mempertahankan warna cyan/biru (#00E5FF) di mode Light maupun Dark.
+   ========================================================================== */
+#ar-camera-viewport,
+#ar-camera-viewport *,
+.ar-viewfinder-screen,
+.ar-viewfinder-screen * {
+  -webkit-font-smoothing: antialiased;
+}
+
+#ar-camera-viewport .border-\[\#00E5FF\],
+#ar-camera-viewport [class*="border-[#00E5FF]"],
+.ar-viewfinder-screen .border-\[\#00E5FF\],
+.ar-viewfinder-screen [class*="border-[#00E5FF]"],
+html body main #ar-camera-viewport .border-\[\#00E5FF\],
+html body main #ar-camera-viewport [class*="border-[#00E5FF]"],
+html body main .ar-viewfinder-screen .border-\[\#00E5FF\],
+html body main .ar-viewfinder-screen [class*="border-[#00E5FF]"] {
+  border-color: #00E5FF !important;
+}
+
+#ar-camera-viewport .border-\[\#00E5FF\]\/30,
+html body main #ar-camera-viewport .border-\[\#00E5FF\]\/30,
+.ar-viewfinder-screen .border-\[\#00E5FF\]\/30,
+html body main .ar-viewfinder-screen .border-\[\#00E5FF\]\/30 {
+  border-color: rgba(0, 229, 255, 0.45) !important;
+}
+
+#ar-camera-viewport .text-\[\#00E5FF\],
+html body main #ar-camera-viewport .text-\[\#00E5FF\],
+.ar-viewfinder-screen .text-\[\#00E5FF\],
+html body main .ar-viewfinder-screen .text-\[\#00E5FF\] {
+  color: #00E5FF !important;
+}
+
+#ar-camera-viewport .text-\[\#38BDF8\],
+html body main #ar-camera-viewport .text-\[\#38BDF8\],
+.ar-viewfinder-screen .text-\[\#38BDF8\],
+html body main .ar-viewfinder-screen .text-\[\#38BDF8\] {
+  color: #38BDF8 !important;
+}
+
+/* ==========================================================================
+   AR CAMERA QR READER: FULL COVER VIDEO & SQUARE CYAN RETICLE
+   ========================================================================== */
+#ar-qr-reader {
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;
+  overflow: hidden !important;
+  border: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#ar-qr-reader video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 14px !important;
+}
+
+#ar-qr-reader.obs-standby-active video {
+  opacity: 0 !important;
+}
+
+#qr-shaded-region {
+  border-color: rgba(5, 13, 26, 0.65) !important;
+  transform: translateY(9px) !important;
+}
+
+#qr-shaded-region > div {
+  background-color: #00E5FF !important;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.85), 0 0 20px rgba(0, 229, 255, 0.45) !important;
+  border-radius: 2px !important;
+}
+
+
 /* ============================================================
    EXPORT PAGE: SINGLE THEMED CALENDAR ICON ON THE LEFT
    ============================================================ */
@@ -773,4 +1346,63 @@ html.dark #devicesTable thead tr {
 .hide-scrollbar {
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
+}
+
+
+/* ============================================================
+   SCAN PAGE: SEARCH INPUT (IDENTICAL TO MODULES PAGE)
+   ============================================================ */
+.scan-search-input {
+  outline: none !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+/* Unselected state in Dark Mode: Hapus border hitam tambahan (border transparent) */
+html.dark .scan-search-input,
+html.dark input.scan-search-input {
+  background-color: #0A182B !important;
+  color: #E6EDF7 !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+html.dark .scan-search-input::placeholder,
+html.dark input.scan-search-input::placeholder {
+  color: #4D6686 !important;
+}
+
+/* Focused / Selected state in Dark Mode: Biru #1677FF dengan background tetap gelap #0A182B */
+html.dark .scan-search-input:focus,
+html.dark input.scan-search-input:focus {
+  border-color: #1677FF !important;
+  background-color: #0A182B !important;
+  color: #E6EDF7 !important;
+  box-shadow: 0 0 0 1px #1677FF !important;
+  outline: none !important;
+}
+
+/* Unselected state in Light Mode: strictly scoped under html:not(.dark) */
+html:not(.dark) .scan-search-input,
+html:not(.dark) input.scan-search-input {
+  background-color: #F8FAFC !important;
+  color: #0F172A !important;
+  border-color: #E2E8F0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+html:not(.dark) .scan-search-input::placeholder,
+html:not(.dark) input.scan-search-input::placeholder {
+  color: #94A3B8 !important;
+}
+
+/* Focused / Selected state in Light Mode: strictly scoped under html:not(.dark) */
+html:not(.dark) .scan-search-input:focus,
+html:not(.dark) input.scan-search-input:focus {
+  border-color: #3B82F6 !important;
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  box-shadow: 0 0 0 1px #3B82F6 !important;
+  outline: none !important;
 }

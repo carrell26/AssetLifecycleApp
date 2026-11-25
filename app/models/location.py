@@ -6,6 +6,7 @@ class Location(db.Model):
     __tablename__ = "locations"
 
     location_id = db.Column(db.Integer, primary_key=True)
+    kode_site = db.Column(db.String(20), nullable=True)
     nama_lokasi = db.Column(db.String(150))  # 'Palu 1', 'Palu 2', 'Donggala'
     alamat = db.Column(db.Text)
     district = db.Column(db.String(100))
